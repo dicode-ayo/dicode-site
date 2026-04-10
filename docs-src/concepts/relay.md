@@ -111,6 +111,64 @@ The relay strips hop-by-hop headers (`Connection`, `Keep-Alive`, `Transfer-Encod
 
 ---
 
+## OAuth Broker (dicode.app Pro)
+
+The hosted relay at `relay.dicode.app` includes an **OAuth broker** that eliminates the need to register your own OAuth apps with providers. This is a key feature of the dicode.app Pro plan.
+
+### How it works
+
+1. Your task calls `dicode.openAuth("github", { scopes: ["repo", "user"] })`
+2. The daemon signs the request with its ECDSA identity key and opens the user's browser
+3. The browser hits the relay's `/auth/github` endpoint — the broker verifies the signature
+4. The broker redirects to GitHub's OAuth consent screen (using dicode's registered app)
+5. User approves → GitHub redirects back to the broker with an authorization code
+6. The broker exchanges the code for an access token
+7. The token is **encrypted to the daemon's public key** (ECIES: P-256 ECDH + HKDF + AES-256-GCM)
+8. The encrypted payload is forwarded over the existing relay WebSocket
+9. The daemon decrypts and stores the token in its local secrets store
+
+The token never appears in a browser URL, never touches the relay in plaintext, and never leaves your machine unencrypted.
+
+### Supported providers
+
+| Provider | PKCE | Scopes |
+|----------|------|--------|
+| GitHub | Yes | `user repo` |
+| Slack | Yes | `channels:read` |
+| Google | Yes | `userinfo.email` |
+| Spotify | Yes | `user-read-private` |
+| Linear | Yes | `read` |
+| Discord | Yes | `identify email` |
+| GitLab | Yes | `read_user read_api` |
+| Airtable | Yes | `data.records:read` |
+| Notion | No | — |
+| Confluence | Yes | `read:me` |
+| Salesforce | Yes | `api refresh_token` |
+| Stripe | No | `read_write` |
+| Office 365 | Yes | `User.Read Mail.Read` |
+| Azure AD | Yes | `openid profile email` |
+
+Tasks can override scopes per request. New providers can be added to the broker without any changes to your daemon or tasks.
+
+### Security
+
+- **ECDSA-signed auth requests** — the broker verifies the caller controls the relay UUID before starting the OAuth flow
+- **ECIES token encryption** — tokens are encrypted to the daemon's P-256 public key before entering the relay. Even a compromised relay server cannot read tokens.
+- **PKCE binding** — the PKCE challenge is signed into the broker request and cross-verified on delivery
+- **Single-use sessions** — broker sessions expire after 5 minutes and are deleted immediately after token delivery
+- **No token storage** — the broker never stores tokens. They're encrypted and forwarded in one step.
+
+### Self-hosted vs Pro
+
+| | Self-hosted (free) | dicode.app Pro |
+|---|---|---|
+| Webhook relay | Yes (run your own server) | Yes (managed, unlimited) |
+| OAuth broker | No — register your own apps | Yes — 14 providers, zero setup |
+| Custom domain | Your own domain | `*.dicode.app` |
+| Token encryption | N/A | ECIES (P-256 + AES-256-GCM) |
+
+---
+
 ## Self-hosted relay
 
 You can run your own relay server instead of using the hosted `relay.dicode.app` service. Two implementations are available:

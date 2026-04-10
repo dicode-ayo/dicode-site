@@ -34,8 +34,8 @@ features:
     title: Encrypted Secrets
     details: ChaCha20-Poly1305 encrypted local store with Argon2id key derivation. Provider chain falls back to env vars. Secrets never leave your machine.
   - icon: "\U0001F310"
-    title: Webhook Relay
-    details: Receive webhooks behind NAT via a persistent WebSocket tunnel. Stable public URLs without port forwarding or ngrok.
+    title: Webhook Relay + OAuth Broker
+    details: Receive webhooks behind NAT via a persistent WebSocket tunnel. Zero-setup OAuth with 14 providers — GitHub, Slack, Google, and more. Tokens encrypted end-to-end.
   - icon: "\U0001F9E9"
     title: MCP Server
     details: Expose dicode as an MCP server so AI agents (Claude Code, Cursor) can list tasks, trigger runs, and control dev mode autonomously.
@@ -138,7 +138,7 @@ return { prCount: prs.length };
 | [**SDK Globals**](/concepts/sdk) | params, kv, input, output, dicode, mcp — Deno & Python |
 | [**Secrets**](/concepts/secrets) | Encrypted store, provider chain, CLI management |
 | [**Sources**](/concepts/sources) | TaskSets, git sources, local sources, dev mode |
-| [**Webhook Relay**](/concepts/relay) | NAT traversal, ECDSA identity, self-hosted options |
+| [**Webhook Relay & OAuth**](/concepts/relay) | NAT traversal, ECDSA identity, zero-setup OAuth, self-hosted options |
 | [**Examples**](/examples/cron-task) | Cron task, webhook form, Docker container |
 
 </div>

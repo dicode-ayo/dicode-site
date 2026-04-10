@@ -468,7 +468,12 @@
       <div class="feature-card">
         <div class="feature-icon">🌐</div>
         <h3>Webhook Relay</h3>
-        <p>Persistent WebSocket tunnel to dicode.app gives you a stable public URL for incoming webhooks — no port forwarding, no ngrok, no hassle.</p>
+        <p>Persistent WebSocket tunnel gives you a stable public URL for incoming webhooks — no port forwarding, no ngrok. Cryptographic identity with ECDSA P-256 challenge-response auth.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔑</div>
+        <h3>Zero-Setup OAuth</h3>
+        <p>Connect to GitHub, Slack, Google, Spotify, Linear, and 10+ providers without registering OAuth apps. The relay broker handles the entire OAuth dance and delivers encrypted tokens directly to your daemon.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">🧩</div>
@@ -638,42 +643,42 @@ console.<span class="fn">log</span>(<span class="str">"digest sent"</span>, { <s
     <div class="deploy-cards stagger">
       <div class="deploy-card">
         <div class="deploy-icon">🖥️</div>
-        <h3>Desktop App</h3>
+        <h3>Self-Hosted</h3>
         <div class="price">Free</div>
         <ul>
-          <li>System tray icon</li>
+          <li>Full engine — no feature gates</li>
+          <li>All 4 runtimes included</li>
+          <li>Webhook relay (self-hosted)</li>
+          <li>BYO OAuth apps</li>
           <li>Local SQLite database</li>
-          <li>All runtimes included</li>
-          <li>Local git watching</li>
-          <li>No internet required</li>
-          <li>Full task marketplace</li>
-        </ul>
-      </div>
-      <div class="deploy-card">
-        <div class="deploy-icon">🚀</div>
-        <h3>Headless Server</h3>
-        <div class="price">Free</div>
-        <ul>
-          <li>Single Go binary</li>
-          <li>Docker-ready</li>
-          <li>Webhook support</li>
-          <li>REST API</li>
-          <li>Multi-repo watching</li>
-          <li>CI/CD integration</li>
+          <li>System tray + web dashboard</li>
         </ul>
       </div>
       <div class="deploy-card featured">
-        <div class="featured-badge">Cloud · Coming soon</div>
+        <div class="featured-badge">Recommended</div>
         <div class="deploy-icon">☁️</div>
-        <h3>dicode.app</h3>
+        <h3>dicode.app Pro</h3>
         <div class="price">$12<span>/mo</span></div>
         <ul>
-          <li>Managed infrastructure</li>
-          <li>Webhook relay included</li>
-          <li>Private repos</li>
-          <li>Team collaboration</li>
-          <li>RBAC &amp; SSO</li>
+          <li>Unlimited webhook relay</li>
+          <li style="color: var(--sky); font-weight: 600;">🔑 Zero-setup OAuth (14 providers)</li>
+          <li>GitHub, Slack, Google, Spotify, Linear, Discord, GitLab, Notion, Stripe &amp; more</li>
+          <li>Private git repos</li>
+          <li>Custom relay domain</li>
+          <li>Priority support</li>
+        </ul>
+      </div>
+      <div class="deploy-card">
+        <div class="deploy-icon">🏢</div>
+        <h3>Team / Enterprise</h3>
+        <div class="price">$20<span>/seat/mo</span></div>
+        <ul>
+          <li>Everything in Pro</li>
+          <li>Multi-user RBAC</li>
+          <li>SSO / SAML</li>
           <li>Audit logs</li>
+          <li>Managed Postgres/MySQL</li>
+          <li>SLA &amp; dedicated support</li>
         </ul>
       </div>
     </div>
