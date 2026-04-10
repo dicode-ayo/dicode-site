@@ -4,7 +4,7 @@ export default defineConfig({
   title: "dicode",
   description: "Documentation for the dicode task orchestrator",
   base: "/docs/",
-  outDir: "../../docs/docs",
+  outDir: "../docs/docs",
   cleanUrls: true,
 
   head: [
@@ -68,7 +68,7 @@ export default defineConfig({
     ],
 
     editLink: {
-      pattern: "https://github.com/dicode-ayo/dicode-site/edit/main/content/docs/:path",
+      pattern: "https://github.com/dicode-ayo/dicode-site/edit/main/docs-src/:path",
       text: "Edit this page on GitHub",
     },
   },
