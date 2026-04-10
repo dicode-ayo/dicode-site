@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vitepress dev docs-src",
+    "dev": "vitepress dev docs-src --host 0.0.0.0",
     "build": "vitepress build docs-src",
     "preview": "vitepress preview docs-src"
   },
