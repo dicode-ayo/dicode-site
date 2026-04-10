@@ -3,12 +3,12 @@ import { defineConfig } from "vitepress";
 export default defineConfig({
   title: "dicode",
   description: "Documentation for the dicode task orchestrator",
-  base: "/docs/",
+  base: "/dicode-site/docs/",
   outDir: "../docs/docs",
   cleanUrls: true,
 
   head: [
-    ["link", { rel: "icon", href: "/docs/favicon.ico" }],
+    ["link", { rel: "icon", href: "/dicode-site/docs/favicon.ico" }],
   ],
 
   themeConfig: {
@@ -16,7 +16,7 @@ export default defineConfig({
     siteTitle: "dicode docs",
 
     nav: [
-      { text: "Home", link: "https://dicode-ayo.github.io/dicode-site/" },
+      { text: "Home", link: "/dicode-site/" },
       { text: "Getting Started", link: "/getting-started/" },
       { text: "Concepts", link: "/concepts/tasks" },
       { text: "Examples", link: "/examples/cron-task" },
