@@ -1,11 +1,14 @@
-name: Deploy Landing Page
+name: Deploy Site + Docs
 
 on:
   push:
     branches: [main]
     paths:
-      - 'site/**'
-      - '.github/workflows/pages.yml'
+      - "docs/**"
+      - "docs-src/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/pages.yml"
   workflow_dispatch:
 
 permissions:
@@ -13,20 +16,30 @@ permissions:
   pages: write
   id-token: write
 
-# Only one deployment at a time
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
   deploy:
-    name: Deploy to GitHub Pages
+    name: Build & Deploy
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build VitePress docs
+        run: npx vitepress build docs-src
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
