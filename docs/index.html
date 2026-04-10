@@ -259,7 +259,7 @@
 
     /* ── RUNTIMES ── */
     #runtimes { background: var(--navy); }
-    .runtime-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .runtime-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 2rem; }
     @media (max-width: 640px) { .runtime-grid { grid-template-columns: 1fr; } }
     .runtime-card {
       background: var(--card-bg); border: 1px solid var(--border);
@@ -361,6 +361,7 @@
 <nav>
   <a href="#" class="nav-logo">⚡ <span>di</span>code</a>
   <ul class="nav-links">
+    <li><a href="/dicode-site/docs/">Docs</a></li>
     <li><a href="#how">How it works</a></li>
     <li><a href="#features">Features</a></li>
     <li><a href="#demo">Demo</a></li>
@@ -488,48 +489,51 @@
   <div class="container">
     <div class="demo-grid">
       <div class="demo-text reveal-left">
-        <h2>Write once, run everywhere with a rich JavaScript API</h2>
-        <p>Every task gets a powerful set of built-in globals — no imports needed. Make HTTP calls, store state, send notifications, chain tasks, and access secrets — all in a sandboxed JavaScript runtime powered by goja.</p>
-        <p>Or go full Docker: run any language, any container, with live log streaming and kill support.</p>
+        <h2>Write once, run everywhere with native runtimes</h2>
+        <p>Every task gets SDK globals injected automatically — params, kv, output, dicode, mcp. Use native fetch() for HTTP, Deno.env.get() for secrets. TypeScript, Python, Docker, or Podman — pick the runtime that fits.</p>
+        <p>Or go full Docker: run any language in any container with live log streaming, kill support, and automatic orphan cleanup.</p>
         <div class="demo-pills">
-          <span class="pill">http</span>
+          <span class="pill">params</span>
           <span class="pill">kv store</span>
-          <span class="pill">notify</span>
+          <span class="pill">output</span>
           <span class="pill">dicode API</span>
-          <span class="pill">env vars</span>
+          <span class="pill">fetch()</span>
           <span class="pill">secrets</span>
-          <span class="pill">webhooks</span>
           <span class="pill">task chaining</span>
+          <span class="pill">mcp</span>
         </div>
       </div>
       <div class="code-block reveal-right">
         <div class="code-header">
           <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-          <span class="filename">tasks/github-digest.js</span>
+          <span class="filename">tasks/github-digest.ts</span>
         </div>
         <pre><code><span class="cmt">// @name    GitHub Digest
 // @cron    0 9 * * 1-5
 // @desc    Post open PRs to Slack every weekday morning</span>
 
-<span class="kw">const</span> token = <span class="fn">env</span>(<span class="str">"GITHUB_TOKEN"</span>);
-<span class="kw">const</span> repo  = <span class="fn">env</span>(<span class="str">"GITHUB_REPO"</span>);
+<span class="kw">const</span> token = Deno.env.<span class="fn">get</span>(<span class="str">"GITHUB_TOKEN"</span>);
+<span class="kw">const</span> repo = <span class="kw">await</span> params.<span class="fn">get</span>(<span class="str">"repo"</span>) ?? <span class="str">"my-org/my-repo"</span>;
 
-<span class="kw">const</span> resp = <span class="kw">await</span> http.<span class="fn">get</span>(
+<span class="kw">const</span> resp = <span class="kw">await</span> <span class="fn">fetch</span>(
   <span class="str">`https://api.github.com/repos/<span style="color:var(--yellow)">${repo}</span>/pulls`</span>,
-  { headers: { Authorization: <span class="str">`Bearer <span style="color:var(--yellow)">${token}</span>`</span> } }
+  { <span class="prop">headers</span>: { <span class="prop">Authorization</span>: <span class="str">`Bearer <span style="color:var(--yellow)">${token}</span>`</span> } }
 );
 
-<span class="kw">const</span> prs = resp.json();
+<span class="kw">const</span> prs = <span class="kw">await</span> resp.<span class="fn">json</span>();
 <span class="kw">const</span> last = <span class="kw">await</span> kv.<span class="fn">get</span>(<span class="str">"last_pr_count"</span>) ?? <span class="num">0</span>;
 
 <span class="kw">if</span> (prs.length !== last) {
-  <span class="kw">await</span> http.<span class="fn">post</span>(env(<span class="str">"SLACK_WEBHOOK"</span>), {
-    text: <span class="str">`📋 <span style="color:var(--yellow)">${prs.length}</span> open PRs in <span style="color:var(--yellow)">${repo}</span>`</span>
+  <span class="kw">await</span> <span class="fn">fetch</span>(Deno.env.<span class="fn">get</span>(<span class="str">"SLACK_WEBHOOK"</span>), {
+    <span class="prop">method</span>: <span class="str">"POST"</span>,
+    <span class="prop">body</span>: JSON.<span class="fn">stringify</span>({
+      <span class="prop">text</span>: <span class="str">`📋 <span style="color:var(--yellow)">${prs.length}</span> open PRs in <span style="color:var(--yellow)">${repo}</span>`</span>
+    })
   });
   <span class="kw">await</span> kv.<span class="fn">set</span>(<span class="str">"last_pr_count"</span>, prs.length);
 }
 
-log.<span class="fn">info</span>(<span class="str">"digest sent"</span>, { count: prs.length });</code></pre>
+console.<span class="fn">log</span>(<span class="str">"digest sent"</span>, { <span class="prop">count</span>: prs.length });</code></pre>
       </div>
     </div>
   </div>
@@ -538,45 +542,37 @@ log.<span class="fn">info</span>(<span class="str">"digest sent"</span>, { count
 <!-- GLOBALS -->
 <section id="globals">
   <div class="container">
-    <p class="section-label reveal">JavaScript API</p>
-    <h2 class="section-title reveal">Built-in globals — no imports needed</h2>
-    <p class="section-sub reveal">Every task runs in a sandboxed JS runtime with a powerful standard library already available.</p>
+    <p class="section-label reveal">Task SDK</p>
+    <h2 class="section-title reveal">Built-in globals for every runtime</h2>
+    <p class="section-sub reveal">Deno and Python tasks get SDK globals injected automatically. No imports needed.</p>
     <div class="globals-grid stagger">
       <div class="global-item">
-        <div class="global-name">http</div>
-        <div class="global-desc">Outbound HTTP requests — GET, POST, PUT, DELETE with full header/body control</div>
+        <div class="global-name">params</div>
+        <div class="global-desc">Access typed task parameters. await params.get('key') in Deno, params.get('key') in Python</div>
       </div>
       <div class="global-item">
         <div class="global-name">kv</div>
-        <div class="global-desc">Per-task persistent key-value store — survive restarts, share state across runs</div>
-      </div>
-      <div class="global-item">
-        <div class="global-name">log</div>
-        <div class="global-desc">Structured logging — debug, info, warn, error levels with full context</div>
-      </div>
-      <div class="global-item">
-        <div class="global-name">env</div>
-        <div class="global-desc">Read environment variables and secrets safely</div>
-      </div>
-      <div class="global-item">
-        <div class="global-name">params</div>
-        <div class="global-desc">Access typed task parameters passed at trigger time</div>
-      </div>
-      <div class="global-item">
-        <div class="global-name">notify</div>
-        <div class="global-desc">Send push notifications to desktop or mobile via ntfy, Pushover, Telegram</div>
-      </div>
-      <div class="global-item">
-        <div class="global-name">webhook</div>
-        <div class="global-desc">Access the incoming webhook payload that triggered this task</div>
+        <div class="global-desc">Per-task persistent key-value store — survives restarts, tracks state across runs</div>
       </div>
       <div class="global-item">
         <div class="global-name">input</div>
-        <div class="global-desc">Output from the upstream task in a chained workflow</div>
+        <div class="global-desc">Payload from upstream task (chain trigger) or incoming webhook request body</div>
+      </div>
+      <div class="global-item">
+        <div class="global-name">output</div>
+        <div class="global-desc">Render rich output — HTML, text, images, files — stored alongside the run</div>
       </div>
       <div class="global-item">
         <div class="global-name">dicode</div>
-        <div class="global-desc">Orchestrator API — report progress, trigger other tasks, request human approval</div>
+        <div class="global-desc">Run other tasks, list tasks, fetch run history, read config, manage secrets</div>
+      </div>
+      <div class="global-item">
+        <div class="global-name">mcp</div>
+        <div class="global-desc">Call tools on MCP daemon tasks — list_tools, call</div>
+      </div>
+      <div class="global-item">
+        <div class="global-name">env</div>
+        <div class="global-desc">Deno.env.get() or env.get() — only vars declared in task.yaml are accessible</div>
       </div>
     </div>
   </div>
@@ -587,28 +583,46 @@ log.<span class="fn">info</span>(<span class="str">"digest sent"</span>, { count
   <div class="container">
     <p class="section-label reveal">Runtimes</p>
     <h2 class="section-title reveal">Run any language, any container</h2>
-    <p class="section-sub reveal">Two first-class runtimes for every use case.</p>
+    <p class="section-sub reveal">Four first-class runtimes for every use case.</p>
     <div class="runtime-grid stagger">
       <div class="runtime-card">
-        <h3>⚡ JavaScript Runtime</h3>
-        <p>Sandboxed JS execution via goja with Node.js compatibility layer. Zero cold-start, instant execution, rich built-in API. Perfect for lightweight automations, API integrations, and data pipelines.</p>
+        <h3>⚡ Deno (TypeScript)</h3>
+        <p>Auto-installed, full TypeScript, npm imports, native fetch, SDK globals.</p>
         <div class="runtime-tags">
-          <span class="tag">goja engine</span>
-          <span class="tag">Node.js compat</span>
-          <span class="tag">instant start</span>
-          <span class="tag">built-in globals</span>
-          <span class="tag">sandboxed</span>
+          <span class="tag">TypeScript</span>
+          <span class="tag">npm imports</span>
+          <span class="tag">auto-install</span>
+          <span class="tag">native fetch</span>
+          <span class="tag">SDK globals</span>
         </div>
       </div>
       <div class="runtime-card">
-        <h3>🐳 Docker Runtime</h3>
-        <p>Run any language in any container. Full Docker SDK integration with live log streaming, resource limits, and kill support. Bring Python, Ruby, Rust, or any custom image.</p>
+        <h3>🐍 Python (uv)</h3>
+        <p>Auto-installed, PEP 723 inline deps, async detection, SDK globals.</p>
+        <div class="runtime-tags">
+          <span class="tag">uv runtime</span>
+          <span class="tag">PEP 723</span>
+          <span class="tag">async detection</span>
+          <span class="tag">SDK globals</span>
+        </div>
+      </div>
+      <div class="runtime-card">
+        <h3>🐳 Docker</h3>
+        <p>Any language, live logs, kill support, orphan cleanup.</p>
         <div class="runtime-tags">
           <span class="tag">any language</span>
           <span class="tag">live logs</span>
           <span class="tag">kill support</span>
-          <span class="tag">resource limits</span>
-          <span class="tag">custom images</span>
+          <span class="tag">Dockerfile build</span>
+        </div>
+      </div>
+      <div class="runtime-card">
+        <h3>🦭 Podman</h3>
+        <p>Rootless alternative, same config as Docker.</p>
+        <div class="runtime-tags">
+          <span class="tag">rootless</span>
+          <span class="tag">drop-in Docker replacement</span>
+          <span class="tag">no daemon</span>
         </div>
       </div>
     </div>
