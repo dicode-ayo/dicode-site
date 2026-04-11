@@ -451,8 +451,7 @@
   <div class="hero-badge"><span class="dot"></span> Open Source · Apache 2.0</div>
   <h1>Automate anything.<br><em>In plain English.</em></h1>
   <p class="hero-sub">
-    Describe what you want to automate. dicode writes the code, commits it to your git repo,
-    and runs it automatically — no redeployment, no config changes ever again.
+    The single-binary, GitOps-native automation platform. Describe what you want — AI writes the code, git stores it, dicode runs it. No infrastructure to manage. No vendor lock-in. Free forever to self-host.
   </p>
   <div class="hero-actions">
     <a href="https://github.com/dr14/dicode" class="btn-primary">Get started free</a>
@@ -482,22 +481,22 @@
       <div class="step">
         <div class="step-num">1</div>
         <h3>Describe in plain English</h3>
-        <p>Tell dicode what you want to automate. Use the CLI, the web UI, or even an AI agent via MCP. Natural language is all you need.</p>
+        <p>Use the web dashboard, CLI, or let an AI agent create tasks via MCP. Or write TypeScript/Python yourself — you choose the level of control.</p>
       </div>
       <div class="step">
         <div class="step-num">2</div>
-        <h3>AI writes & commits the code</h3>
-        <p>dicode generates a validated task script and commits it directly to your git repository — your single source of truth.</p>
+        <h3>Code in seconds, live instantly</h3>
+        <p>AI generates validated task code — task.yaml + task.ts — and saves it to your tasks directory. Edit locally? Changes are live in ~100ms via filesystem watching. No build step, no deployment, no restart.</p>
       </div>
       <div class="step">
         <div class="step-num">3</div>
         <h3>GitOps reconciliation</h3>
-        <p>dicode watches your repo and auto-registers tasks from the <code style="color:var(--sky)">tasks/</code> directory. Push a change — it's live within 30 seconds. Zero restarts.</p>
+        <p>dicode watches all your sources — local directories, git repos, community stores — via TaskSet manifests. Content hashes, automatic diff, zero restarts. Like ArgoCD, but for automation tasks.</p>
       </div>
       <div class="step">
         <div class="step-num">4</div>
-        <h3>Monitor & iterate</h3>
-        <p>Watch live logs, inspect run history, trigger tasks manually, and chain them together — all from the web dashboard or REST API.</p>
+        <h3>Test, monitor, iterate</h3>
+        <p>Run tasks from the web dashboard or CLI. Watch live logs. Chain tasks together. Set up failure alerts. Review history. Test before production. All from one place.</p>
       </div>
     </div>
   </div>
@@ -818,6 +817,47 @@
   </div>
 </section>
 
+<!-- DEVELOPER EXPERIENCE -->
+<section id="dx" style="background: var(--navy);">
+  <div class="container">
+    <p class="section-label reveal">Developer Experience</p>
+    <h2 class="section-title reveal">Built for developers who ship</h2>
+    <p class="section-sub reveal">Not another no-code tool. Not another YAML pipeline. Real code, real debugging, real confidence.</p>
+    <div class="features-grid stagger">
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>100ms Hot Reload</h3>
+        <p>Edit a task file locally — it's live in ~100ms via filesystem watching. No build step, no restart, no deployment pipeline. Save and it's running.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧪</div>
+        <h3>Test Before Production</h3>
+        <p>Static validation catches schema errors instantly. Unit tests with mocked globals verify logic offline. Dry-run mode checks secret resolution and API endpoints without side effects.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🖥️</div>
+        <h3>Desktop Tray App</h3>
+        <p>Runs in your system tray on macOS, Linux, and Windows. Get instant desktop notifications when tasks fail. Starts automatically on login. One click to open the dashboard.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔐</div>
+        <h3>Secrets Done Right</h3>
+        <p>ChaCha20-Poly1305 encrypted local store with Argon2id key derivation. Provider chain falls back to env vars, then Vault, AWS Secrets Manager, or any custom backend. One command: <code style="color:var(--sky)">dicode secrets set MY_TOKEN xxx</code></p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📡</div>
+        <h3>No More Ngrok</h3>
+        <p>Built-in webhook relay gives you a stable public URL behind any NAT/firewall. ECDSA P-256 cryptographic identity. No accounts, no config, no monthly ngrok bill. Just enable it.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧠</div>
+        <h3>AI in Your Editor</h3>
+        <p>Monaco editor with built-in AI panel. Ask: "rewrite this to batch API calls" — AI modifies the file in-place. Streaming responses, full context, works with Claude, GPT, or any OpenAI-compatible model.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- AI IN CONTROL -->
 <section id="ai-control" style="background: var(--navy);">
   <div class="container">
@@ -856,12 +896,12 @@
       <div class="feature-card">
         <div class="feature-icon">🧩</div>
         <h3>MCP Server Built In</h3>
-        <p>Expose dicode as an MCP server so AI agents can autonomously develop, deploy, and manage tasks. Plug into Claude Code, Cursor, or any MCP-compatible assistant.</p>
+        <p>Expose dicode as an MCP server. AI agents can list tasks, read code, trigger runs, and control dev mode today. Write, validate, test, and deploy tasks autonomously — coming soon. Works with Claude Code, Cursor, and any MCP-compatible agent.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">🔌</div>
         <h3>Turn Tasks Into MCP Tools</h3>
-        <p>Any task — or any combination of tasks — can become its own MCP server for other agents and tools. Your automation becomes an API that AI agents can discover and call. Build internal tools once, expose them to every AI in your stack.</p>
+        <p>Any task — or combination of tasks — becomes an MCP tool that other agents can discover and call. A Slack notifier task becomes a Slack tool. A deploy pipeline becomes a deploy tool. Build once, expose to every AI agent in your organization.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">🔗</div>
@@ -919,6 +959,111 @@
           <li>SLA &amp; dedicated support</li>
         </ul>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON -->
+<section id="compare" style="background: var(--navy);">
+  <div class="container">
+    <p class="section-label reveal">Comparison</p>
+    <h2 class="section-title reveal">How dicode compares</h2>
+    <p class="section-sub reveal">Honest feature comparison with the tools you might already know.</p>
+    <div class="reveal" style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; font-size: .85rem; min-width: 700px;">
+        <thead>
+          <tr style="border-bottom: 2px solid var(--border);">
+            <th style="text-align: left; padding: .8rem; color: var(--muted); font-weight: 600;"></th>
+            <th style="text-align: center; padding: .8rem; color: var(--sky); font-weight: 700;">dicode</th>
+            <th style="text-align: center; padding: .8rem; color: var(--muted); font-weight: 600;">Zapier</th>
+            <th style="text-align: center; padding: .8rem; color: var(--muted); font-weight: 600;">n8n</th>
+            <th style="text-align: center; padding: .8rem; color: var(--muted); font-weight: 600;">Windmill</th>
+            <th style="text-align: center; padding: .8rem; color: var(--muted); font-weight: 600;">Airflow</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: .6rem .8rem; color: var(--text);">Single binary, no infra</td>
+            <td style="text-align: center; color: var(--green);">✓</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: .6rem .8rem; color: var(--text);">Git as source of truth</td>
+            <td style="text-align: center; color: var(--green);">✓</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+            <td style="text-align: center; color: var(--yellow);">partial</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: .6rem .8rem; color: var(--text);">Auto-sync from git</td>
+            <td style="text-align: center; color: var(--green);">✓</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+            <td style="text-align: center; color: var(--yellow);">manual</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: .6rem .8rem; color: var(--text);">AI task generation</td>
+            <td style="text-align: center; color: var(--green);">✓</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+            <td style="text-align: center; color: var(--green);">✓</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: .6rem .8rem; color: var(--text);">MCP server for AI agents</td>
+            <td style="text-align: center; color: var(--green);">✓</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: .6rem .8rem; color: var(--text);">Webhook relay (no ngrok)</td>
+            <td style="text-align: center; color: var(--green);">✓</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: .6rem .8rem; color: var(--text);">Desktop tray app</td>
+            <td style="text-align: center; color: var(--green);">✓</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: .6rem .8rem; color: var(--text);">Code you own & review</td>
+            <td style="text-align: center; color: var(--green);">✓</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+            <td style="text-align: center; color: var(--yellow);">partial</td>
+            <td style="text-align: center; color: var(--green);">✓</td>
+            <td style="text-align: center; color: var(--green);">✓</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: .6rem .8rem; color: var(--text);">Zero-setup OAuth (14+)</td>
+            <td style="text-align: center; color: var(--green);">✓</td>
+            <td style="text-align: center; color: var(--green);">✓</td>
+            <td style="text-align: center; color: var(--green);">✓</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+          </tr>
+          <tr>
+            <td style="padding: .6rem .8rem; color: var(--text);">Free self-hosted (all features)</td>
+            <td style="text-align: center; color: var(--green);">✓</td>
+            <td style="text-align: center; color: var(--muted);">—</td>
+            <td style="text-align: center; color: var(--green);">✓</td>
+            <td style="text-align: center; color: var(--green);">✓</td>
+            <td style="text-align: center; color: var(--green);">✓</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </section>
