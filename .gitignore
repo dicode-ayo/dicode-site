@@ -2,3 +2,4 @@ node_modules/
 docs/docs/
 docs/assets/
 docs-src/.vitepress/cache/
+docs/index.html
