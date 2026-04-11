@@ -10,7 +10,7 @@ export class DcHowItWorks extends LitElement {
   render() {
     return html`
       <style>
-        dc-how-it-works section { padding: 100px 2rem; background: var(--navy2); }
+        dc-how-it-works section { background: var(--navy2); }
         dc-how-it-works .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 2rem; }
         dc-how-it-works .step {
           background: var(--card-bg); border: 1px solid var(--border);

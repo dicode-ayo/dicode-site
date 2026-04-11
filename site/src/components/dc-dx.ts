@@ -9,7 +9,7 @@ export class DcDx extends LitElement {
 
   render() {
     return html`
-      <section id="dx" style="background: var(--navy); padding: 100px 2rem;">
+      <section id="dx" style="background: var(--navy);">
         <div class="container">
           <p class="section-label reveal">Developer Experience</p>
           <h2 class="section-title reveal">Built for developers who ship</h2>

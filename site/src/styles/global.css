@@ -12,6 +12,23 @@ body {
   overflow-x: hidden;
 }
 
+/* ── CUSTOM ELEMENTS ── */
+dc-nav, dc-hero, dc-how-it-works, dc-gitops, dc-code-demo,
+dc-control, dc-share, dc-connect, dc-runs-anywhere, dc-dx,
+dc-ai-control, dc-pricing, dc-compare, dc-opensource, dc-footer {
+  display: block;
+}
+
+/* ── SECTIONS ── */
+section { padding: 100px 2rem; }
+
+@media (max-width: 640px) {
+  section { padding: 60px 1rem; }
+}
+@media (max-width: 380px) {
+  section { padding: 50px .8rem; }
+}
+
 /* ── SHARED LAYOUT ── */
 .container { max-width: 1120px; margin: 0 auto; }
 

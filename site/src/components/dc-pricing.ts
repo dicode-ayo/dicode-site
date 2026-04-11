@@ -48,7 +48,7 @@ export class DcPricing extends LitElement {
           dc-pricing .featured-badge { font-size: .65rem; }
         }
       </style>
-      <section id="deploy" style="background: var(--navy2); padding: 100px 2rem;">
+      <section id="deploy" style="background: var(--navy2);">
         <div class="container">
           <p class="section-label reveal">Deployment</p>
           <h2 class="section-title reveal">From laptop to enterprise</h2>

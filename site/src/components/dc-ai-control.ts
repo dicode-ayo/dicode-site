@@ -28,7 +28,7 @@ export class DcAiControl extends LitElement {
           dc-ai-control .flow-box { min-width: 140px; padding: .8rem 1rem; }
         }
       </style>
-      <section id="ai-control" style="background: var(--navy); padding: 100px 2rem;">
+      <section id="ai-control" style="background: var(--navy);">
         <div class="container">
           <p class="section-label reveal">AI In Control</p>
           <h2 class="section-title reveal">AI writes code. You approve it.</h2>

@@ -30,7 +30,7 @@ export class DcRunsAnywhere extends LitElement {
           dc-runs-anywhere .device-grid { grid-template-columns: 1fr 1fr; }
         }
       </style>
-      <section id="runs-anywhere" style="background: var(--navy2); padding: 100px 2rem;">
+      <section id="runs-anywhere" style="background: var(--navy2);">
         <div class="container">
           <p class="section-label reveal">Runs Anywhere</p>
           <h2 class="section-title reveal">You own everything</h2>
