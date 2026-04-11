@@ -224,7 +224,7 @@
     /* ── DEMO / CODE ── */
     #demo { background: var(--navy2); }
     .demo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; }
-    @media (max-width: 768px) { .demo-grid { grid-template-columns: 1fr; } }
+    /* demo-grid responsive handled in consolidated @media block */
     .demo-text h2 { font-size: clamp(1.6rem, 3.5vw, 2.4rem); font-weight: 800; color: #fff; letter-spacing: -.02em; margin-bottom: 1rem; }
     .demo-text p { color: var(--muted); line-height: 1.7; margin-bottom: 1rem; font-size: .95rem; }
     .demo-pills { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.5rem; }
@@ -260,7 +260,7 @@
     /* ── RUNTIMES ── */
     #runtimes { background: var(--navy); }
     .runtime-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 2rem; }
-    @media (max-width: 640px) { .runtime-grid { grid-template-columns: 1fr; } }
+    /* runtime-grid responsive handled in consolidated @media block */
     .runtime-card {
       background: var(--card-bg); border: 1px solid var(--border);
       border-radius: var(--radius); padding: 2rem;
@@ -341,11 +341,117 @@
     footer a { color: var(--sky); text-decoration: none; }
     footer a:hover { text-decoration: underline; }
 
+    /* ── HAMBURGER ── */
+    .nav-hamburger {
+      display: none; background: none; border: none; cursor: pointer;
+      flex-direction: column; gap: 5px; padding: 4px; z-index: 110;
+    }
+    .nav-hamburger span {
+      display: block; width: 22px; height: 2px; background: var(--text);
+      border-radius: 2px; transition: transform .3s, opacity .3s;
+    }
+    .nav-hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
     /* ── RESPONSIVE ── */
+
+    /* Tablet */
+    @media (max-width: 768px) {
+      .demo-grid { grid-template-columns: 1fr; }
+      .runtime-grid { grid-template-columns: 1fr 1fr; }
+      .deploy-cards { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: 1fr; }
+      .control-cards { grid-template-columns: 1fr; }
+      .provider-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+      .device-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    /* Mobile */
     @media (max-width: 640px) {
       nav { padding: 0 1rem; }
-      .nav-links { display: none; }
-      section { padding: 70px 1.2rem; }
+      .nav-hamburger { display: flex; }
+      .nav-cta-desktop { display: none; }
+      .nav-links {
+        display: none; position: fixed; top: 60px; left: 0; right: 0; bottom: 0;
+        background: rgba(13,13,26,.97); backdrop-filter: blur(20px);
+        flex-direction: column; align-items: center; justify-content: center;
+        gap: 2rem; padding: 2rem; z-index: 100;
+      }
+      .nav-links.open { display: flex; }
+      .nav-links a { font-size: 1.2rem; color: var(--text); }
+      .nav-links a:hover { color: var(--sky); }
+      section { padding: 60px 1rem; }
+
+      /* Hero */
+      #hero { padding: 100px 1rem 60px; min-height: auto; }
+      h1 { font-size: 2rem; }
+      .hero-sub { font-size: .95rem; }
+      .hero-actions { flex-direction: column; align-items: center; }
+      .btn-primary, .btn-ghost { width: 100%; max-width: 280px; text-align: center; }
+      .hero-prompt { font-size: .78rem; padding: 1rem; margin-top: 2rem; }
+      .hero-badge { font-size: .7rem; }
+
+      /* Section headings */
+      .section-title { font-size: 1.5rem; }
+      .section-sub { font-size: .9rem; margin-bottom: 2rem; }
+
+      /* Steps */
+      .steps { grid-template-columns: 1fr; gap: 1rem; }
+
+      /* Grids */
+      .features-grid { grid-template-columns: 1fr; gap: 1rem; }
+      .runtime-grid { grid-template-columns: 1fr; }
+      .deploy-cards { grid-template-columns: 1fr; gap: 1.2rem; }
+      .control-cards { grid-template-columns: 1fr; }
+      .provider-grid { grid-template-columns: repeat(3, 1fr); gap: .6rem; }
+      .device-grid { grid-template-columns: repeat(2, 1fr); gap: .8rem; }
+      .globals-grid { grid-template-columns: 1fr 1fr; gap: .8rem; }
+
+      /* Provider items */
+      .provider-item { padding: .8rem .5rem; }
+      .provider-logo { width: 24px; height: 24px; }
+      .provider-name { font-size: .75rem; }
+
+      /* Code blocks */
+      .code-block pre { font-size: .72rem; padding: .8rem; }
+      .code-header .filename { font-size: .7rem; }
+
+      /* Demo */
+      .demo-text h2 { font-size: 1.4rem; }
+      .demo-pills { gap: .35rem; }
+      .pill { font-size: .7rem; padding: .2rem .6rem; }
+
+      /* Flow diagrams */
+      .flow-diagram { gap: .6rem; }
+      .flow-box { min-width: 140px; padding: .8rem 1rem; }
+      .gitops-visual { gap: .8rem; }
+      .gitops-node { min-width: 140px; padding: 1rem 1.2rem; }
+
+      /* Deploy cards */
+      .deploy-card { padding: 1.5rem; }
+      .featured-badge { font-size: .65rem; }
+
+      /* Comparison table */
+      #compare table { font-size: .75rem; }
+      #compare th, #compare td { padding: .5rem .4rem; }
+
+      /* Open source */
+      #opensource h2 { font-size: 1.5rem; }
+      #opensource p { font-size: .9rem; }
+      .github-btn { font-size: .9rem; padding: .7rem 1.6rem; }
+
+      /* Footer */
+      footer p { font-size: .78rem; }
+    }
+
+    /* Small mobile (iPhone SE etc) */
+    @media (max-width: 380px) {
+      h1 { font-size: 1.7rem; }
+      .provider-grid { grid-template-columns: repeat(3, 1fr); }
+      .globals-grid { grid-template-columns: 1fr; }
+      .device-grid { grid-template-columns: 1fr 1fr; }
+      section { padding: 50px .8rem; }
     }
 
     /* ── CONTROL CARDS ── */
@@ -441,7 +547,7 @@
 <!-- NAV -->
 <nav>
   <a href="#" class="nav-logo">⚡ <span>di</span>code</a>
-  <ul class="nav-links">
+  <ul class="nav-links" id="navLinks">
     <li><a href="/dicode-site/docs/">Docs</a></li>
     <li><a href="#how">How it works</a></li>
     <li><a href="#gitops">GitOps</a></li>
@@ -449,7 +555,10 @@
     <li><a href="#deploy">Pricing</a></li>
     <li><a href="#opensource">GitHub</a></li>
   </ul>
-  <a href="https://github.com/dr14/dicode" class="nav-cta">View on GitHub →</a>
+  <a href="https://github.com/dr14/dicode" class="nav-cta nav-cta-desktop">View on GitHub →</a>
+  <button class="nav-hamburger" id="navHamburger" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
 
 <!-- HERO -->
@@ -1147,6 +1256,24 @@
       ? 'rgba(13,13,26,0.97)'
       : 'rgba(13,13,26,0.8)';
   }, { passive: true });
+
+  // Hamburger menu toggle
+  const hamburger = document.getElementById('navHamburger');
+  const navLinks = document.getElementById('navLinks');
+  if (hamburger && navLinks) {
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('open');
+      navLinks.classList.toggle('open');
+      document.body.style.overflow = navLinks.classList.contains('open') ? 'hidden' : '';
+    });
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        hamburger.classList.remove('open');
+        navLinks.classList.remove('open');
+        document.body.style.overflow = '';
+      });
+    });
+  }
 </script>
 </body>
 </html>
