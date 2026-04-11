@@ -1,0 +1,18 @@
+:root {
+  --navy:    #0d0d1a;
+  --navy2:   #1a1a2e;
+  --navy3:   #16213e;
+  --blue:    #0d6efd;
+  --blue2:   #3a8bfd;
+  --sky:     #a0c4ff;
+  --lavender:#cdd6f4;
+  --green:   #a6e3a1;
+  --yellow:  #f9e2af;
+  --red:     #f38ba8;
+  --code-bg: #1e1e2e;
+  --text:    #e8eaf0;
+  --muted:   #8b93a8;
+  --border:  rgba(160, 196, 255, .15);
+  --card-bg: rgba(255, 255, 255, .04);
+  --radius:  14px;
+}
