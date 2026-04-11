@@ -363,12 +363,14 @@
     .provider-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1rem; }
     .provider-item {
       background: var(--card-bg); border: 1px solid var(--border);
-      border-radius: 10px; padding: 1rem 1.2rem;
+      border-radius: 10px; padding: 1.2rem 1rem;
       text-align: center;
       transition: border-color .25s, transform .2s;
+      display: flex; flex-direction: column; align-items: center; gap: .6rem;
     }
     .provider-item:hover { border-color: rgba(160,196,255,.3); transform: translateY(-2px); }
-    .provider-name { font-size: .9rem; color: var(--sky); font-weight: 700; }
+    .provider-logo { width: 32px; height: 32px; flex-shrink: 0; }
+    .provider-name { font-size: .85rem; color: var(--sky); font-weight: 600; }
     .provider-item.special { border-color: rgba(13,110,253,.4); background: rgba(13,110,253,.08); }
     .provider-item.special .provider-name { color: var(--blue2); }
 
@@ -506,25 +508,54 @@
   <div class="container">
     <p class="section-label reveal">True GitOps</p>
     <h2 class="section-title reveal">Everything lives in git</h2>
-    <p class="section-sub reveal">Your tasks directory IS your automation infrastructure. Push a change, it's live in seconds. No config files to manage, no redeployment ever. The same pattern as ArgoCD and Flux — but for automation tasks.</p>
+    <p class="section-sub reveal">A <strong style="color:var(--sky)">TaskSet</strong> manifest maps tasks from anywhere — your own repo, a community store, shared team repos — into one unified automation surface. Push a change, it's live in seconds. The same pattern as ArgoCD and Flux — but for automation tasks.</p>
+
+    <div class="code-block reveal" style="max-width: 600px; margin: 0 auto 3rem;">
+      <div class="code-header">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        <span class="filename">taskset.yaml</span>
+      </div>
+      <pre><code><span class="kw">apiVersion</span>: dicode/v1
+<span class="kw">kind</span>: TaskSet
+<span class="kw">metadata</span>:
+  <span class="prop">name</span>: <span class="str">my-infra</span>
+
+<span class="kw">spec</span>:
+  <span class="prop">entries</span>:
+    <span class="cmt"># Your own tasks</span>
+    <span class="prop">pr-digest</span>:
+      <span class="kw">ref</span>: { <span class="prop">path</span>: <span class="str">./tasks/pr-digest</span> }
+
+    <span class="cmt"># Community store task</span>
+    <span class="prop">slack-alerts</span>:
+      <span class="kw">ref</span>: { <span class="prop">url</span>: <span class="str">github.com/dicode-community/tasks</span>, <span class="prop">path</span>: <span class="str">slack-alerts</span> }
+
+    <span class="cmt"># Shared team repo</span>
+    <span class="prop">deploy</span>:
+      <span class="kw">ref</span>: { <span class="prop">url</span>: <span class="str">github.com/my-org/shared-ops</span>, <span class="prop">path</span>: <span class="str">deploy</span> }
+
+    <span class="cmt"># Nested TaskSet — compose hierarchies</span>
+    <span class="prop">monitoring</span>:
+      <span class="kw">ref</span>: { <span class="prop">path</span>: <span class="str">./monitoring/taskset.yaml</span> }</code></pre>
+    </div>
 
     <div class="gitops-visual stagger">
       <div class="gitops-node">
         <div class="node-icon">💻</div>
         <h4>Your Laptop</h4>
-        <p>Edit tasks locally,<br>push to git</p>
+        <p>Edit locally, instant reload<br>via fsnotify (~100ms)</p>
       </div>
       <div class="gitops-arrow">→</div>
       <div class="gitops-node">
         <div class="node-icon">🖥️</div>
-        <h4>Self-Hosted Server</h4>
-        <p>Same code, Docker<br>or Kubernetes</p>
+        <h4>Self-Hosted</h4>
+        <p>Docker, Kubernetes,<br>bare metal — same code</p>
       </div>
       <div class="gitops-arrow">→</div>
       <div class="gitops-node">
         <div class="node-icon">☁️</div>
         <h4>dicode.app Cloud</h4>
-        <p>Same code, zero<br>changes needed</p>
+        <p>Managed, zero changes<br>needed to migrate</p>
       </div>
     </div>
 
@@ -532,17 +563,17 @@
       <div class="feature-card">
         <div class="feature-icon">🔄</div>
         <h3>Auto-Reconciliation</h3>
-        <p>dicode watches your repo, computes content hashes, and reconciles automatically. Add, update, or delete tasks without restarting anything.</p>
+        <p>dicode watches all sources, computes content hashes, and reconciles. Add, update, or remove tasks without restarting anything.</p>
       </div>
       <div class="feature-card">
-        <div class="feature-icon">📂</div>
-        <h3>Tasks Directory = Infrastructure</h3>
-        <p>Drop a folder in <code style="color:var(--sky)">tasks/</code> and it's a live task. Remove it and it's gone. Git history is your audit trail.</p>
+        <div class="feature-icon">🗂️</div>
+        <h3>TaskSet Composition</h3>
+        <p>Map tasks from multiple git repos, local directories, and community stores into one namespace. Nested TaskSets, override inheritance, namespace-scoped IDs like <code style="color:var(--sky)">infra/deploy</code>.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">🔁</div>
         <h3>Fully Portable</h3>
-        <p>Works on your laptop. Same code on a self-hosted server. Same code on dicode.app cloud. Zero changes needed between environments.</p>
+        <p>Works on your laptop, same code on Docker/Kubernetes, same code on cloud. Zero config changes between environments. Git permissions control access.</p>
       </div>
     </div>
   </div>
@@ -679,21 +710,66 @@
     <h2 class="section-title reveal">OAuth to every major SaaS</h2>
     <p class="section-sub reveal">14 OAuth connectors built in. Use the relay's OAuth broker for zero-setup, or roll your own flow from scratch. Your choice.</p>
     <div class="provider-grid stagger">
-      <div class="provider-item"><div class="provider-name">GitHub</div></div>
-      <div class="provider-item"><div class="provider-name">Slack</div></div>
-      <div class="provider-item"><div class="provider-name">Google</div></div>
-      <div class="provider-item"><div class="provider-name">Spotify</div></div>
-      <div class="provider-item"><div class="provider-name">Linear</div></div>
-      <div class="provider-item"><div class="provider-name">Discord</div></div>
-      <div class="provider-item"><div class="provider-name">GitLab</div></div>
-      <div class="provider-item"><div class="provider-name">Notion</div></div>
-      <div class="provider-item"><div class="provider-name">Stripe</div></div>
-      <div class="provider-item"><div class="provider-name">Salesforce</div></div>
-      <div class="provider-item"><div class="provider-name">Office 365</div></div>
-      <div class="provider-item"><div class="provider-name">Azure</div></div>
-      <div class="provider-item"><div class="provider-name">Airtable</div></div>
-      <div class="provider-item"><div class="provider-name">Confluence</div></div>
-      <div class="provider-item special"><div class="provider-name">+ Your Own</div></div>
+      <div class="provider-item">
+        <svg class="provider-logo" viewBox="0 0 24 24" fill="#fff"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        <div class="provider-name">GitHub</div>
+      </div>
+      <div class="provider-item">
+        <svg class="provider-logo" viewBox="0 0 24 24" fill="#E01E5A"><path d="M5.042 15.165a2.528 2.528 0 01-2.52 2.523A2.528 2.528 0 010 15.165a2.527 2.527 0 012.522-2.52h2.52v2.52zm1.271 0a2.527 2.527 0 012.521-2.52 2.527 2.527 0 012.521 2.52v6.313A2.528 2.528 0 018.834 24a2.528 2.528 0 01-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 01-2.521-2.52A2.528 2.528 0 018.834 0a2.528 2.528 0 012.521 2.522v2.52H8.834zm0 1.271a2.528 2.528 0 012.521 2.521 2.528 2.528 0 01-2.521 2.521H2.522A2.528 2.528 0 010 8.834a2.528 2.528 0 012.522-2.521h6.312zm6.313 2.521a2.528 2.528 0 012.521-2.521A2.528 2.528 0 0124 8.834a2.528 2.528 0 01-2.332 2.521h-2.521V8.834zm-1.271 0a2.528 2.528 0 01-2.521 2.521 2.528 2.528 0 01-2.521-2.521V2.522A2.528 2.528 0 018.834 0a2.528 2.528 0 012.521 2.522v6.312zm-2.521 6.313a2.528 2.528 0 012.521 2.521 2.528 2.528 0 01-2.521 2.522 2.528 2.528 0 01-2.521-2.522v-2.521h2.521zm0-1.271a2.528 2.528 0 01-2.521-2.521 2.528 2.528 0 012.521-2.522h6.313A2.528 2.528 0 0124 15.165a2.528 2.528 0 01-2.522 2.521h-6.313z"/></svg>
+        <div class="provider-name">Slack</div>
+      </div>
+      <div class="provider-item">
+        <svg class="provider-logo" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        <div class="provider-name">Google</div>
+      </div>
+      <div class="provider-item">
+        <svg class="provider-logo" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+        <div class="provider-name">Spotify</div>
+      </div>
+      <div class="provider-item">
+        <svg class="provider-logo" viewBox="0 0 24 24" fill="#5E6AD2"><path d="M3 3h18v18H3V3zm1.2 1.2v15.6h15.6V4.2H4.2zm3.3 4.5h9v1.8h-9V8.7zm0 3.6h6v1.8h-6v-1.8z"/></svg>
+        <div class="provider-name">Linear</div>
+      </div>
+      <div class="provider-item">
+        <svg class="provider-logo" viewBox="0 0 24 24" fill="#5865F2"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/></svg>
+        <div class="provider-name">Discord</div>
+      </div>
+      <div class="provider-item">
+        <svg class="provider-logo" viewBox="0 0 24 24" fill="#FC6D26"><path d="M4.845.904c-.435 0-.82.28-.955.692C2.639 5.449 1.246 9.728.07 13.335a1.437 1.437 0 00.522 1.607l11.071 8.045c.2.145.472.144.67-.004l11.073-8.04a1.436 1.436 0 00.522-1.61c-1.285-3.942-2.683-8.256-3.817-11.746a1.004 1.004 0 00-.957-.684.987.987 0 00-.949.69l-2.405 7.408H8.203l-2.41-7.408a.987.987 0 00-.942-.69h-.006z"/></svg>
+        <div class="provider-name">GitLab</div>
+      </div>
+      <div class="provider-item">
+        <svg class="provider-logo" viewBox="0 0 24 24" fill="#fff"><path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L18.29 2.27c-.42-.326-.98-.7-2.055-.607L3.01 2.721c-.466.046-.56.28-.374.466l1.823 1.021zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.166V6.354c0-.606-.233-.933-.748-.886l-15.177.887c-.56.046-.747.326-.747.933zm14.337.745c.093.42 0 .84-.42.888l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952l1.448.327s0 .84-1.168.84l-3.222.186c-.093-.186 0-.653.327-.746l.84-.233V9.854L7.822 9.76c-.094-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.14c-.093-.514.28-.886.747-.933l3.222-.186z"/></svg>
+        <div class="provider-name">Notion</div>
+      </div>
+      <div class="provider-item">
+        <svg class="provider-logo" viewBox="0 0 24 24" fill="#635BFF"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-7.076-2.19l-.893 5.575C4.746 22.724 7.772 24 11.97 24c2.6 0 4.507-.635 5.885-1.856C19.33 20.69 20.2 18.823 20.2 16.554c0-4.132-2.753-5.894-6.224-7.404z"/></svg>
+        <div class="provider-name">Stripe</div>
+      </div>
+      <div class="provider-item">
+        <svg class="provider-logo" viewBox="0 0 24 24" fill="#00A1E0"><path d="M12 0C5.373 0 0 5.394 0 12.044c0 2.737.907 5.273 2.437 7.31L.394 23.896l4.63-2.015A11.862 11.862 0 0012 24.088C18.627 24.088 24 18.694 24 12.044 24 5.394 18.627 0 12 0zm-.622 4.287h1.244c3.494 0 6.336 2.85 6.336 6.355 0 3.506-2.842 6.355-6.336 6.355H11.378c-3.494 0-6.336-2.849-6.336-6.355 0-3.505 2.842-6.355 6.336-6.355z"/></svg>
+        <div class="provider-name">Salesforce</div>
+      </div>
+      <div class="provider-item">
+        <svg class="provider-logo" viewBox="0 0 24 24" fill="#D83B01"><path d="M11.255 2.004A4.166 4.166 0 007.6 4.156L2.87 8.08A3.478 3.478 0 001 10.96v2.084a3.478 3.478 0 001.87 2.878l4.73 3.922a4.166 4.166 0 003.655 2.152h1.49a4.166 4.166 0 003.655-2.152l4.73-3.922A3.478 3.478 0 0023 13.044v-2.084a3.478 3.478 0 00-1.87-2.878L16.4 4.16a4.166 4.166 0 00-3.655-2.152h-1.49zm0 2h1.49c.746 0 1.44.395 1.827 1.038l.18.312H9.248l.18-.312a2.166 2.166 0 011.827-1.038z"/></svg>
+        <div class="provider-name">Office 365</div>
+      </div>
+      <div class="provider-item">
+        <svg class="provider-logo" viewBox="0 0 24 24" fill="#0078D4"><path d="M12 0L1.75 6v12L12 24l10.25-6V6L12 0zm0 2.16l8.25 4.84v9.6L12 21.84l-8.25-5.24V7z"/></svg>
+        <div class="provider-name">Azure</div>
+      </div>
+      <div class="provider-item">
+        <svg class="provider-logo" viewBox="0 0 24 24" fill="#18BFFF"><path d="M14 0H2a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V2a2 2 0 00-2-2zM2 22a2 2 0 01-2-2v-4h6v4a2 2 0 01-2 2H2zm20-2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4h6v4zm0-6H0v-2h24v2zm0-4h-8V0h6a2 2 0 012 2v8z"/></svg>
+        <div class="provider-name">Airtable</div>
+      </div>
+      <div class="provider-item">
+        <svg class="provider-logo" viewBox="0 0 24 24" fill="#0052CC"><path d="M.387 4.166C.1 3.796.07 3.315.323 2.913.576 2.51 1.04 2.31 1.5 2.36l9.965 1.08c.23.025.44.137.582.312l2.494 3.065-1.552 1.262L.387 4.166zm23.226 15.668c.287.37.317.852.064 1.254-.253.403-.717.603-1.177.553l-9.965-1.08a.888.888 0 01-.582-.312l-2.494-3.065 1.552-1.262 12.602 3.912zM14.29 7.958l-2.16-2.655L.388 4.166l10.03 7.743 3.873-3.951zm-4.58 8.084l2.16 2.655 11.743 1.137-10.03-7.743-3.873 3.951z"/></svg>
+        <div class="provider-name">Confluence</div>
+      </div>
+      <div class="provider-item special">
+        <svg class="provider-logo" viewBox="0 0 24 24" fill="var(--sky)"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/><line x1="12" y1="7" x2="12" y2="13" stroke="var(--sky)" stroke-width="2"/><circle cx="12" cy="16" r="1" fill="var(--sky)"/></svg>
+        <div class="provider-name">+ Your Own</div>
+      </div>
     </div>
     <p class="reveal" style="text-align: center; color: var(--muted); margin-top: 2rem; font-size: .9rem;">
       No app registration needed with dicode.app Pro. Or write your own OAuth flow — dicode gives you the building blocks.
