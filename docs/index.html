@@ -348,6 +348,79 @@
       section { padding: 70px 1.2rem; }
     }
 
+    /* ── CONTROL CARDS ── */
+    .control-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; }
+    .control-card {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 2rem;
+      transition: border-color .25s, transform .25s;
+    }
+    .control-card:hover { border-color: rgba(160,196,255,.3); transform: translateY(-3px); }
+    .control-card h3 { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: .5rem; display: flex; align-items: center; gap: .6rem; }
+    .control-card p { color: var(--muted); font-size: .875rem; line-height: 1.65; }
+
+    /* ── PROVIDER GRID ── */
+    .provider-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1rem; }
+    .provider-item {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1rem 1.2rem;
+      text-align: center;
+      transition: border-color .25s, transform .2s;
+    }
+    .provider-item:hover { border-color: rgba(160,196,255,.3); transform: translateY(-2px); }
+    .provider-name { font-size: .9rem; color: var(--sky); font-weight: 700; }
+    .provider-item.special { border-color: rgba(13,110,253,.4); background: rgba(13,110,253,.08); }
+    .provider-item.special .provider-name { color: var(--blue2); }
+
+    /* ── FLOW DIAGRAM ── */
+    .flow-diagram {
+      display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 1rem;
+      margin-top: 2rem;
+    }
+    .flow-box {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1rem 1.4rem; text-align: center;
+      min-width: 160px;
+    }
+    .flow-box h4 { font-size: .85rem; font-weight: 700; color: #fff; margin-bottom: .3rem; }
+    .flow-box p { font-size: .78rem; color: var(--muted); line-height: 1.4; }
+    .flow-arrow { color: var(--blue); font-size: 1.5rem; font-weight: 700; flex-shrink: 0; }
+    @media (max-width: 640px) {
+      .flow-diagram { flex-direction: column; }
+      .flow-arrow { transform: rotate(90deg); }
+    }
+
+    /* ── DEVICE GRID ── */
+    .device-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1.2rem; }
+    .device-item {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem 1rem;
+      text-align: center; transition: border-color .25s, transform .2s;
+    }
+    .device-item:hover { border-color: rgba(160,196,255,.3); transform: translateY(-2px); }
+    .device-icon { font-size: 2rem; margin-bottom: .6rem; }
+    .device-item h4 { font-size: .9rem; font-weight: 700; color: #fff; margin-bottom: .25rem; }
+    .device-item p { font-size: .78rem; color: var(--muted); }
+
+    /* ── GITOPS VISUAL ── */
+    .gitops-visual {
+      display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 1.5rem;
+      margin-top: 2.5rem; margin-bottom: 1rem;
+    }
+    .gitops-node {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.4rem 2rem; text-align: center;
+      min-width: 180px;
+    }
+    .gitops-node .node-icon { font-size: 2rem; margin-bottom: .5rem; }
+    .gitops-node h4 { font-size: .95rem; font-weight: 700; color: #fff; margin-bottom: .3rem; }
+    .gitops-node p { font-size: .78rem; color: var(--muted); }
+    .gitops-arrow { color: var(--green); font-size: 1.6rem; font-weight: 700; }
+    @media (max-width: 640px) {
+      .gitops-visual { flex-direction: column; }
+      .gitops-arrow { transform: rotate(90deg); }
+    }
+
     /* ── SCROLLBAR ── */
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: var(--navy); }
@@ -363,8 +436,8 @@
   <ul class="nav-links">
     <li><a href="/dicode-site/docs/">Docs</a></li>
     <li><a href="#how">How it works</a></li>
-    <li><a href="#features">Features</a></li>
-    <li><a href="#demo">Demo</a></li>
+    <li><a href="#gitops">GitOps</a></li>
+    <li><a href="#code">Code</a></li>
     <li><a href="#deploy">Pricing</a></li>
     <li><a href="#opensource">GitHub</a></li>
   </ul>
@@ -428,207 +501,291 @@
   </div>
 </section>
 
-<!-- FEATURES -->
-<section id="features">
+<!-- GITOPS -->
+<section id="gitops" style="background: var(--navy);">
   <div class="container">
-    <p class="section-label reveal">Capabilities</p>
-    <h2 class="section-title reveal">Everything your automation stack needs</h2>
-    <p class="section-sub reveal">One binary, batteries included.</p>
-    <div class="features-grid stagger">
+    <p class="section-label reveal">True GitOps</p>
+    <h2 class="section-title reveal">Everything lives in git</h2>
+    <p class="section-sub reveal">Your tasks directory IS your automation infrastructure. Push a change, it's live in seconds. No config files to manage, no redeployment ever. The same pattern as ArgoCD and Flux — but for automation tasks.</p>
+
+    <div class="gitops-visual stagger">
+      <div class="gitops-node">
+        <div class="node-icon">💻</div>
+        <h4>Your Laptop</h4>
+        <p>Edit tasks locally,<br>push to git</p>
+      </div>
+      <div class="gitops-arrow">→</div>
+      <div class="gitops-node">
+        <div class="node-icon">🖥️</div>
+        <h4>Self-Hosted Server</h4>
+        <p>Same code, Docker<br>or Kubernetes</p>
+      </div>
+      <div class="gitops-arrow">→</div>
+      <div class="gitops-node">
+        <div class="node-icon">☁️</div>
+        <h4>dicode.app Cloud</h4>
+        <p>Same code, zero<br>changes needed</p>
+      </div>
+    </div>
+
+    <div class="features-grid stagger" style="margin-top: 3rem;">
       <div class="feature-card">
         <div class="feature-icon">🔄</div>
-        <h3>GitOps-Native Reconciliation</h3>
-        <p>Tasks live in git. dicode watches for changes, computes content hashes, and reconciles automatically — add, update, or delete tasks without ever restarting the server.</p>
+        <h3>Auto-Reconciliation</h3>
+        <p>dicode watches your repo, computes content hashes, and reconciles automatically. Add, update, or delete tasks without restarting anything.</p>
       </div>
       <div class="feature-card">
-        <div class="feature-icon">🤖</div>
-        <h3>AI Task Generation</h3>
-        <p>Claude/GPT-powered code generation with a validation loop. Describe your automation, get a working task script, committed and running immediately.</p>
+        <div class="feature-icon">📂</div>
+        <h3>Tasks Directory = Infrastructure</h3>
+        <p>Drop a folder in <code style="color:var(--sky)">tasks/</code> and it's a live task. Remove it and it's gone. Git history is your audit trail.</p>
       </div>
       <div class="feature-card">
-        <div class="feature-icon">⏰</div>
-        <h3>Flexible Triggers</h3>
-        <p>Cron schedules, HTTP webhooks, manual execution, task chaining, and persistent daemon mode. Every trigger pattern you'll ever need.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🔗</div>
-        <h3>Task Chaining & Orchestration</h3>
-        <p>Chain tasks together with typed outputs. One task's result becomes the next task's input. Build complex multi-step workflows declaratively.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🔐</div>
-        <h3>Encrypted Secrets Store</h3>
-        <p>Local SQLite-backed secret storage with unlock mechanism. Your API keys stay on your machine, never sent anywhere.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🔔</div>
-        <h3>Push Notifications</h3>
-        <p>Desktop alerts, mobile push via ntfy, Gotify, Pushover, or Telegram. Know the moment a task succeeds, fails, or needs your approval.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🌐</div>
-        <h3>Webhook Relay</h3>
-        <p>Persistent WebSocket tunnel gives you a stable public URL for incoming webhooks — no port forwarding, no ngrok. Cryptographic identity with ECDSA P-256 challenge-response auth.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🔑</div>
-        <h3>Zero-Setup OAuth</h3>
-        <p>Connect to GitHub, Slack, Google, Spotify, Linear, and 10+ providers without registering OAuth apps. The relay broker handles the entire OAuth dance and delivers encrypted tokens directly to your daemon.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🧩</div>
-        <h3>MCP Server & Agent Skill</h3>
-        <p>Expose dicode as an MCP server so AI agents can autonomously develop, deploy, and manage tasks. Plug into any AI assistant.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">📦</div>
-        <h3>Task Marketplace</h3>
-        <p>Install community tasks from git repos. Share your own automations. Revenue sharing for marketplace authors (70/30 split).</p>
+        <div class="feature-icon">🔁</div>
+        <h3>Fully Portable</h3>
+        <p>Works on your laptop. Same code on a self-hosted server. Same code on dicode.app cloud. Zero changes needed between environments.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- DEMO -->
-<section id="demo">
+<!-- CODE YOU OWN -->
+<section id="code" style="background: var(--navy2);">
   <div class="container">
     <div class="demo-grid">
       <div class="demo-text reveal-left">
-        <h2>Write once, run everywhere with native runtimes</h2>
-        <p>Every task gets SDK globals injected automatically — params, kv, output, dicode, mcp. Use native fetch() for HTTP, Deno.env.get() for secrets. TypeScript, Python, Docker, or Podman — pick the runtime that fits.</p>
-        <p>Or go full Docker: run any language in any container with live log streaming, kill support, and automatic orphan cleanup.</p>
+        <h2>No black boxes, no surprises</h2>
+        <p>Tasks are predictable code — TypeScript, Python, or Docker containers. You see every line. You can read, review, and adjust at any time.</p>
+        <p>No vendor lock-in. No proprietary formats. Standard languages, standard git, standard tools. When something breaks, you look at the code — not a support ticket.</p>
         <div class="demo-pills">
-          <span class="pill">params</span>
-          <span class="pill">kv store</span>
-          <span class="pill">output</span>
-          <span class="pill">dicode API</span>
-          <span class="pill">fetch()</span>
-          <span class="pill">secrets</span>
-          <span class="pill">task chaining</span>
-          <span class="pill">mcp</span>
+          <span class="pill">TypeScript</span>
+          <span class="pill">Python</span>
+          <span class="pill">Docker</span>
+          <span class="pill">Standard git</span>
+          <span class="pill">Code review</span>
+          <span class="pill">Full ownership</span>
         </div>
       </div>
       <div class="code-block reveal-right">
         <div class="code-header">
           <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-          <span class="filename">tasks/github-digest.ts</span>
+          <span class="filename">tasks/pr-digest/task.yaml</span>
         </div>
-        <pre><code><span class="cmt">// @name    GitHub Digest
-// @cron    0 9 * * 1-5
-// @desc    Post open PRs to Slack every weekday morning</span>
+        <pre><code><span class="prop">name</span>: <span class="str">PR Digest</span>
+<span class="prop">runtime</span>: <span class="str">deno</span>
+<span class="prop">cron</span>: <span class="str">"0 9 * * 1-5"</span>
+<span class="prop">params</span>:
+  <span class="prop">repo</span>: { <span class="prop">type</span>: <span class="str">string</span>, <span class="prop">default</span>: <span class="str">"my-org/api"</span> }
+<span class="prop">env</span>:
+  - <span class="str">GITHUB_TOKEN</span>
+  - <span class="str">SLACK_WEBHOOK</span></code></pre>
+      </div>
+    </div>
 
-<span class="kw">const</span> token = Deno.env.<span class="fn">get</span>(<span class="str">"GITHUB_TOKEN"</span>);
-<span class="kw">const</span> repo = <span class="kw">await</span> params.<span class="fn">get</span>(<span class="str">"repo"</span>) ?? <span class="str">"my-org/my-repo"</span>;
+    <div style="margin-top: 2rem;">
+      <div class="code-block reveal">
+        <div class="code-header">
+          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+          <span class="filename">tasks/pr-digest/task.ts</span>
+        </div>
+        <pre><code><span class="cmt">// That's it. Real code you can read, review, and debug.</span>
 
+<span class="kw">const</span> repo = <span class="kw">await</span> params.<span class="fn">get</span>(<span class="str">"repo"</span>) ?? <span class="str">"my-org/api"</span>;
 <span class="kw">const</span> resp = <span class="kw">await</span> <span class="fn">fetch</span>(
-  <span class="str">`https://api.github.com/repos/<span style="color:var(--yellow)">${repo}</span>/pulls`</span>,
-  { <span class="prop">headers</span>: { <span class="prop">Authorization</span>: <span class="str">`Bearer <span style="color:var(--yellow)">${token}</span>`</span> } }
+  <span class="str">`https://api.github.com/repos/<span style="color:var(--yellow)">${repo}</span>/pulls?state=open`</span>,
+  { <span class="prop">headers</span>: { <span class="prop">Authorization</span>: <span class="str">`Bearer <span style="color:var(--yellow)">${Deno.env.<span class="fn">get</span>(<span class="str">"GITHUB_TOKEN"</span>)}</span>`</span> } }
 );
-
 <span class="kw">const</span> prs = <span class="kw">await</span> resp.<span class="fn">json</span>();
-<span class="kw">const</span> last = <span class="kw">await</span> kv.<span class="fn">get</span>(<span class="str">"last_pr_count"</span>) ?? <span class="num">0</span>;
 
-<span class="kw">if</span> (prs.length !== last) {
-  <span class="kw">await</span> <span class="fn">fetch</span>(Deno.env.<span class="fn">get</span>(<span class="str">"SLACK_WEBHOOK"</span>), {
-    <span class="prop">method</span>: <span class="str">"POST"</span>,
-    <span class="prop">body</span>: JSON.<span class="fn">stringify</span>({
-      <span class="prop">text</span>: <span class="str">`📋 <span style="color:var(--yellow)">${prs.length}</span> open PRs in <span style="color:var(--yellow)">${repo}</span>`</span>
-    })
-  });
-  <span class="kw">await</span> kv.<span class="fn">set</span>(<span class="str">"last_pr_count"</span>, prs.length);
-}
-
-console.<span class="fn">log</span>(<span class="str">"digest sent"</span>, { <span class="prop">count</span>: prs.length });</code></pre>
+<span class="kw">await</span> <span class="fn">fetch</span>(Deno.env.<span class="fn">get</span>(<span class="str">"SLACK_WEBHOOK"</span>), {
+  <span class="prop">method</span>: <span class="str">"POST"</span>,
+  <span class="prop">body</span>: JSON.<span class="fn">stringify</span>({ <span class="prop">text</span>: <span class="str">`<span style="color:var(--yellow)">${prs.length}</span> open PRs in <span style="color:var(--yellow)">${repo}</span>`</span> })
+});</code></pre>
       </div>
     </div>
   </div>
 </section>
 
-<!-- GLOBALS -->
-<section id="globals">
+<!-- YOUR LEVEL OF CONTROL -->
+<section id="control" style="background: var(--navy);">
   <div class="container">
-    <p class="section-label reveal">Task SDK</p>
-    <h2 class="section-title reveal">Built-in globals for every runtime</h2>
-    <p class="section-sub reveal">Deno and Python tasks get SDK globals injected automatically. No imports needed.</p>
-    <div class="globals-grid stagger">
-      <div class="global-item">
-        <div class="global-name">params</div>
-        <div class="global-desc">Access typed task parameters. await params.get('key') in Deno, params.get('key') in Python</div>
+    <p class="section-label reveal">Your Level of Control</p>
+    <h2 class="section-title reveal">From full hands-on to full AI</h2>
+    <p class="section-sub reveal">Choose how much AI involvement you want. Move the dial anywhere between manual control and full autonomy.</p>
+    <div class="control-cards stagger">
+      <div class="control-card">
+        <h3>🛠️ Full Hands-On</h3>
+        <p>Write task.yaml and task.ts yourself. Review every line. Deploy by pushing to git. Complete control, zero magic.</p>
       </div>
-      <div class="global-item">
-        <div class="global-name">kv</div>
-        <div class="global-desc">Per-task persistent key-value store — survives restarts, tracks state across runs</div>
+      <div class="control-card" style="border-color: rgba(13,110,253,.4);">
+        <h3>🤝 AI-Assisted</h3>
+        <p>Describe what you want in plain English. AI generates the code. You review and approve before it goes live. Best of both worlds.</p>
       </div>
-      <div class="global-item">
-        <div class="global-name">input</div>
-        <div class="global-desc">Payload from upstream task (chain trigger) or incoming webhook request body</div>
-      </div>
-      <div class="global-item">
-        <div class="global-name">output</div>
-        <div class="global-desc">Render rich output — HTML, text, images, files — stored alongside the run</div>
-      </div>
-      <div class="global-item">
-        <div class="global-name">dicode</div>
-        <div class="global-desc">Run other tasks, list tasks, fetch run history, read config, manage secrets</div>
-      </div>
-      <div class="global-item">
-        <div class="global-name">mcp</div>
-        <div class="global-desc">Call tools on MCP daemon tasks — list_tools, call</div>
-      </div>
-      <div class="global-item">
-        <div class="global-name">env</div>
-        <div class="global-desc">Deno.env.get() or env.get() — only vars declared in task.yaml are accessible</div>
+      <div class="control-card">
+        <h3>🚀 Full AI</h3>
+        <p>AI writes, validates, tests, and commits autonomously via MCP. You just monitor. Or have another AI review it — wire up an AI reviewer that checks code quality before tasks go live.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- RUNTIMES -->
-<section id="runtimes">
+<!-- SHARE & COMPOSE -->
+<section id="share" style="background: var(--navy2);">
   <div class="container">
-    <p class="section-label reveal">Runtimes</p>
-    <h2 class="section-title reveal">Run any language, any container</h2>
-    <p class="section-sub reveal">Four first-class runtimes for every use case.</p>
-    <div class="runtime-grid stagger">
-      <div class="runtime-card">
-        <h3>⚡ Deno (TypeScript)</h3>
-        <p>Auto-installed, full TypeScript, npm imports, native fetch, SDK globals.</p>
-        <div class="runtime-tags">
-          <span class="tag">TypeScript</span>
-          <span class="tag">npm imports</span>
-          <span class="tag">auto-install</span>
-          <span class="tag">native fetch</span>
-          <span class="tag">SDK globals</span>
+    <p class="section-label reveal">Share & Compose</p>
+    <h2 class="section-title reveal">Tasks are building blocks</h2>
+    <p class="section-sub reveal">Share, install, and chain tasks together into complex workflows. One task's output feeds the next.</p>
+
+    <div class="flow-diagram reveal">
+      <div class="flow-box">
+        <h4>Task A</h4>
+        <p>Fetch data from API</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">
+        <h4>Task B</h4>
+        <p>Process & transform</p>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">
+        <h4>Task C</h4>
+        <p>Post to Slack</p>
+      </div>
+    </div>
+
+    <div class="features-grid stagger" style="margin-top: 3rem;">
+      <div class="feature-card">
+        <div class="feature-icon">📦</div>
+        <h3>Install from Git</h3>
+        <p>Any task from anyone can be used if shared — it's just a git repo with task folders. Point to a git URL. That's it.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔗</div>
+        <h3>Chain Into Workflows</h3>
+        <p>Tasks compose into complex workflows via chaining. One task's output becomes the next task's input. Build pipelines declaratively.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🏪</div>
+        <h3>Community Store</h3>
+        <p>Publish approved tasks to the community store. Share privately via git permissions — the same model as private repos.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONNECT EVERYTHING -->
+<section id="connect" style="background: var(--navy);">
+  <div class="container">
+    <p class="section-label reveal">Connect Everything</p>
+    <h2 class="section-title reveal">OAuth to every major SaaS</h2>
+    <p class="section-sub reveal">14 OAuth connectors built in. Use the relay's OAuth broker for zero-setup, or roll your own flow from scratch. Your choice.</p>
+    <div class="provider-grid stagger">
+      <div class="provider-item"><div class="provider-name">GitHub</div></div>
+      <div class="provider-item"><div class="provider-name">Slack</div></div>
+      <div class="provider-item"><div class="provider-name">Google</div></div>
+      <div class="provider-item"><div class="provider-name">Spotify</div></div>
+      <div class="provider-item"><div class="provider-name">Linear</div></div>
+      <div class="provider-item"><div class="provider-name">Discord</div></div>
+      <div class="provider-item"><div class="provider-name">GitLab</div></div>
+      <div class="provider-item"><div class="provider-name">Notion</div></div>
+      <div class="provider-item"><div class="provider-name">Stripe</div></div>
+      <div class="provider-item"><div class="provider-name">Salesforce</div></div>
+      <div class="provider-item"><div class="provider-name">Office 365</div></div>
+      <div class="provider-item"><div class="provider-name">Azure</div></div>
+      <div class="provider-item"><div class="provider-name">Airtable</div></div>
+      <div class="provider-item"><div class="provider-name">Confluence</div></div>
+      <div class="provider-item special"><div class="provider-name">+ Your Own</div></div>
+    </div>
+    <p class="reveal" style="text-align: center; color: var(--muted); margin-top: 2rem; font-size: .9rem;">
+      No app registration needed with dicode.app Pro. Or write your own OAuth flow — dicode gives you the building blocks.
+    </p>
+  </div>
+</section>
+
+<!-- RUNS ANYWHERE -->
+<section id="runs-anywhere" style="background: var(--navy2);">
+  <div class="container">
+    <p class="section-label reveal">Runs Anywhere</p>
+    <h2 class="section-title reveal">You own everything</h2>
+    <p class="section-sub reveal">Single binary, no dependencies. Runs on any OS. Local encrypted secrets that never leave your machine. Full dashboard, full API, full MCP server — wherever it runs.</p>
+    <div class="device-grid stagger">
+      <div class="device-item">
+        <div class="device-icon">💻</div>
+        <h4>macOS / Linux / Windows</h4>
+        <p>System tray + web dashboard</p>
+      </div>
+      <div class="device-item">
+        <div class="device-icon">🍓</div>
+        <h4>Raspberry Pi</h4>
+        <p>ARM binary, runs on a shelf</p>
+      </div>
+      <div class="device-item">
+        <div class="device-icon">🐳</div>
+        <h4>Docker</h4>
+        <p>One-line docker run</p>
+      </div>
+      <div class="device-item">
+        <div class="device-icon">☸️</div>
+        <h4>Kubernetes</h4>
+        <p>Helm chart, production-ready</p>
+      </div>
+      <div class="device-item">
+        <div class="device-icon">🗄️</div>
+        <h4>SQLite or Postgres</h4>
+        <p>Embedded or bring your own</p>
+      </div>
+      <div class="device-item">
+        <div class="device-icon">🔐</div>
+        <h4>Local Secrets</h4>
+        <p>Encrypted, never leaves your machine</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI IN CONTROL -->
+<section id="ai-control" style="background: var(--navy);">
+  <div class="container">
+    <p class="section-label reveal">AI In Control</p>
+    <h2 class="section-title reveal">AI writes code. You approve it.</h2>
+    <p class="section-sub reveal">Build as many AI-powered tasks as you want. Each one is just a task with dicode.run_task(). Use dicode to bind AI tools together through chaining and webhooks.</p>
+
+    <div class="reveal" style="background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; margin-bottom: 2.5rem;">
+      <h3 style="color: #fff; font-size: 1.15rem; font-weight: 700; margin-bottom: .75rem;">Real example: AI-Powered PR Review Bot</h3>
+      <p style="color: var(--muted); font-size: .9rem; line-height: 1.7; margin-bottom: 1.5rem;">A GitHub App that monitors PRs on your tasks repo, runs an AI code review on each change, posts review comments, and sends a Slack notification. All built as 3 chained dicode tasks — no custom infrastructure.</p>
+
+      <div class="flow-diagram" style="margin-top: 0;">
+        <div class="flow-box">
+          <h4>Task 1: Webhook</h4>
+          <p>GitHub sends PR event<br>via webhook relay</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box" style="border-color: rgba(13,110,253,.4);">
+          <h4>Task 2: AI Review</h4>
+          <p>Claude reviews the diff,<br>generates comments</p>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">
+          <h4>Task 3: Notify</h4>
+          <p>Posts to GitHub PR<br>+ Slack channel</p>
         </div>
       </div>
-      <div class="runtime-card">
-        <h3>🐍 Python (uv)</h3>
-        <p>Auto-installed, PEP 723 inline deps, async detection, SDK globals.</p>
-        <div class="runtime-tags">
-          <span class="tag">uv runtime</span>
-          <span class="tag">PEP 723</span>
-          <span class="tag">async detection</span>
-          <span class="tag">SDK globals</span>
-        </div>
+    </div>
+
+    <div class="features-grid stagger">
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <h3>AI Generates, You Approve</h3>
+        <p>AI writes code, you review and approve. Or have another AI review it — use dicode's MCP server to wire up an AI reviewer that checks quality before tasks go live.</p>
       </div>
-      <div class="runtime-card">
-        <h3>🐳 Docker</h3>
-        <p>Any language, live logs, kill support, orphan cleanup.</p>
-        <div class="runtime-tags">
-          <span class="tag">any language</span>
-          <span class="tag">live logs</span>
-          <span class="tag">kill support</span>
-          <span class="tag">Dockerfile build</span>
-        </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧩</div>
+        <h3>MCP Server Built In</h3>
+        <p>Expose dicode as an MCP server so AI agents can autonomously develop, deploy, and manage tasks. Plug into any AI assistant that speaks MCP.</p>
       </div>
-      <div class="runtime-card">
-        <h3>🦭 Podman</h3>
-        <p>Rootless alternative, same config as Docker.</p>
-        <div class="runtime-tags">
-          <span class="tag">rootless</span>
-          <span class="tag">drop-in Docker replacement</span>
-          <span class="tag">no daemon</span>
-        </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔗</div>
+        <h3>Chain AI With Everything</h3>
+        <p>Use dicode to bind AI tools together through chaining and webhooks. Build complex AI workflows from simple, composable tasks.</p>
       </div>
     </div>
   </div>
