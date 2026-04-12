@@ -1,0 +1,144 @@
+/* ╔═══════════════════════════════════════════════════════════════════════════╗
+ * ║   dicode Design System → VitePress theme override                        ║
+ * ║                                                                           ║
+ * ║   Imports theme.css and maps our tokens to VitePress default-theme        ║
+ * ║   variables so the docs look identical to the landing page.              ║
+ * ║                                                                           ║
+ * ║   VitePress theme vars: https://vitepress.dev/reference/default-theme-    ║
+ * ║   config#theme-colors                                                     ║
+ * ╚═══════════════════════════════════════════════════════════════════════════╝
+ */
+
+@import "../../../site/src/styles/theme.css";
+
+/* ─── Map dicode tokens → VitePress variables ─────────────────────────────── */
+
+:root {
+  /* Brand */
+  --vp-c-brand-1:         var(--blue2);
+  --vp-c-brand-2:         var(--blue);
+  --vp-c-brand-3:         var(--blue);
+  --vp-c-brand-soft:      var(--blue-tint-strong);
+
+  /* Backgrounds */
+  --vp-c-bg:              var(--bg);
+  --vp-c-bg-alt:          var(--bg-alt);
+  --vp-c-bg-elv:          var(--bg-alt);
+  --vp-c-bg-soft:         var(--bg-alt);
+
+  /* Surfaces */
+  --vp-c-default-1:       var(--bg);
+  --vp-c-default-2:       var(--bg-alt);
+  --vp-c-default-3:       var(--bg-accent);
+  --vp-c-default-soft:    var(--card-bg);
+
+  /* Foreground */
+  --vp-c-text-1:          var(--text);
+  --vp-c-text-2:          var(--muted);
+  --vp-c-text-3:          var(--muted);
+
+  /* Borders */
+  --vp-c-border:          var(--border);
+  --vp-c-divider:         var(--border);
+  --vp-c-gutter:          var(--border);
+
+  /* Status colors */
+  --vp-c-tip-1:           var(--blue2);
+  --vp-c-tip-2:           var(--blue);
+  --vp-c-tip-3:           var(--blue);
+  --vp-c-tip-soft:        var(--blue-tint);
+
+  --vp-c-warning-1:       var(--yellow);
+  --vp-c-warning-2:       var(--yellow);
+  --vp-c-warning-soft:    rgba(249, 226, 175, .12);
+
+  --vp-c-danger-1:        var(--red);
+  --vp-c-danger-2:        var(--red);
+  --vp-c-danger-soft:     rgba(243, 139, 168, .12);
+
+  /* Code blocks */
+  --vp-code-block-bg:     var(--code-bg);
+  --vp-code-color:        var(--code-text);
+  --vp-code-bg:           var(--blue-tint);
+  --vp-code-line-highlight-color: var(--blue-tint-strong);
+
+  /* Typography */
+  --vp-font-family-base:  var(--font-sans);
+  --vp-font-family-mono:  var(--font-mono);
+
+  /* Layout */
+  --vp-layout-max-width:  1440px;
+  --vp-sidebar-width:     272px;
+
+  /* Nav */
+  --vp-nav-bg-color:      var(--nav-bg);
+  --vp-nav-height:        64px;
+
+  /* Button colors */
+  --vp-button-brand-border:      var(--blue);
+  --vp-button-brand-text:         #ffffff;
+  --vp-button-brand-bg:           var(--blue);
+  --vp-button-brand-hover-border: var(--blue2);
+  --vp-button-brand-hover-text:   #ffffff;
+  --vp-button-brand-hover-bg:     var(--blue2);
+
+  /* Custom block */
+  --vp-custom-block-info-bg:      var(--blue-tint);
+  --vp-custom-block-tip-bg:       var(--blue-tint);
+  --vp-custom-block-warning-bg:   rgba(249, 226, 175, .12);
+  --vp-custom-block-danger-bg:    rgba(243, 139, 168, .12);
+}
+
+/* ─── LIGHT MODE ────────────────────────────────────────────────────────────
+ *  VitePress uses the .dark class on <html> for dark mode. We bridge this
+ *  to our own [data-theme] attribute so both systems stay in sync.
+ */
+
+html:not(.dark) {
+  /* VitePress light mode — apply our light-mode tokens too */
+  --bg:                #f7f8fc;
+  --bg-alt:            #eef1f8;
+  --bg-accent:         #e5e9f3;
+  --card-bg:           rgba(13, 13, 26, .03);
+  --overlay-bg:        rgba(13, 13, 26, .4);
+
+  --text:              #1a1a2e;
+  --heading:           #0d0d1a;
+  --muted:             #5c6680;
+  --lavender:          #4c6ef5;
+
+  --sky:               #0d6efd;
+  --green:             #16a34a;
+  --yellow:            #ca8a04;
+  --red:               #dc2626;
+
+  --border:            rgba(13, 13, 26, .1);
+  --border-strong:     rgba(13, 13, 26, .2);
+
+  --nav-bg:            rgba(247, 248, 252, .85);
+  --nav-bg-scrolled:   rgba(247, 248, 252, .97);
+  --blue-tint:         rgba(13, 110, 253, .08);
+  --blue-tint-strong:  rgba(13, 110, 253, .12);
+
+  --shadow-sm:         0 2px 8px rgba(13, 13, 26, .06);
+  --shadow:            0 4px 16px rgba(13, 13, 26, .08);
+  --shadow-card:       0 12px 40px rgba(13, 13, 26, .12);
+  --shadow-strong:     0 16px 48px rgba(13, 13, 26, .15);
+
+  --code-bg:           #f6f8fa;
+  --code-text:         #24292f;
+  --code-border:       rgba(13, 13, 26, .12);
+}
+
+/* ─── Polish for the docs home page ──────────────────────────────────────── */
+
+.VPHero .name .clip {
+  background-image: linear-gradient(120deg, var(--blue) 30%, var(--blue2));
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* Inline code in prose */
+:root {
+  --vp-code-font-size: 0.875em;
+}

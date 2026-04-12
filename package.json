@@ -1,13 +1,22 @@
 {
-  "name": "dicode-docs",
+  "name": "dicode-site",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vitepress dev docs-src --host 0.0.0.0",
-    "build": "vitepress build docs-src",
-    "preview": "vitepress preview docs-src"
+    "dev": "vite dev site --host 0.0.0.0",
+    "build": "vite build site && vitepress build docs-src",
+    "build:site": "vite build site",
+    "build:docs": "vitepress build docs-src",
+    "preview": "vite preview site",
+    "dev:docs": "vitepress dev docs-src --host 0.0.0.0"
+  },
+  "dependencies": {
+    "@iconify-icons/logos": "^1.2.36",
+    "lit": "^3.3.2"
   },
   "devDependencies": {
+    "typescript": "^6.0.2",
+    "vite": "^5.4.21",
     "vitepress": "^1.6.3"
   }
 }

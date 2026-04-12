@@ -8,7 +8,7 @@ export default defineConfig({
   cleanUrls: true,
 
   head: [
-    ["link", { rel: "icon", href: "/dicode-site/docs/favicon.ico" }],
+    ["link", { rel: "icon", type: "image/svg+xml", href: "/dicode-site/favicon.svg" }],
   ],
 
   themeConfig: {
