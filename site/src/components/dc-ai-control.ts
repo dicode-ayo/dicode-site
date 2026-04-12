@@ -21,10 +21,15 @@ export class DcAiControl extends LitElement {
         }
         dc-ai-control .flow-box h4 { font-size: .85rem; font-weight: 700; color: var(--heading); margin-bottom: .3rem; }
         dc-ai-control .flow-box p { font-size: .78rem; color: var(--muted); line-height: 1.4; }
-        dc-ai-control .flow-arrow { color: var(--blue); font-size: 1.5rem; font-weight: 700; flex-shrink: 0; }
+        dc-ai-control .flow-arrow {
+          color: var(--blue); font-size: 1.5rem; font-weight: 700; flex-shrink: 0;
+          line-height: 1;
+          display: flex; align-items: center; justify-content: center;
+        }
+        dc-ai-control .flow-arrow::before { content: "\2192"; }
         @media (max-width: 900px) {
           dc-ai-control .flow-diagram { flex-direction: column; gap: var(--space-md); }
-          dc-ai-control .flow-arrow { transform: rotate(90deg); }
+          dc-ai-control .flow-arrow::before { content: "\2193"; }
           dc-ai-control .flow-box { min-width: 140px; padding: .8rem 1rem; width: 100%; max-width: 100%; }
         }
       </style>
@@ -43,12 +48,12 @@ export class DcAiControl extends LitElement {
                 <h4>Task 1: Webhook</h4>
                 <p>GitHub sends PR event<br>via webhook relay</p>
               </div>
-              <div class="flow-arrow">&rarr;</div>
+              <div class="flow-arrow"></div>
               <div class="flow-box" style="border-color: rgba(13,110,253,.4);">
                 <h4>Task 2: AI Review</h4>
                 <p>Claude reviews the diff,<br>generates comments</p>
               </div>
-              <div class="flow-arrow">&rarr;</div>
+              <div class="flow-arrow"></div>
               <div class="flow-box">
                 <h4>Task 3: Notify</h4>
                 <p>Posts to GitHub PR<br>+ Slack channel</p>

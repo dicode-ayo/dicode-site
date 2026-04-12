@@ -42,18 +42,21 @@ export class DcGitops extends LitElement {
         }
         dc-gitops .gitops-arrow {
           font-size: 2rem;
+          line-height: 1;
           color: var(--sky);
           font-weight: bold;
           flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
+        dc-gitops .gitops-arrow::before { content: "\2192"; }
         @media (max-width: 900px) {
           dc-gitops .gitops-visual {
             flex-direction: column;
             gap: var(--space-md);
           }
-          dc-gitops .gitops-arrow {
-            transform: rotate(90deg);
-          }
+          dc-gitops .gitops-arrow::before { content: "\2193"; }
           dc-gitops .gitops-node {
             max-width: 100%;
             width: 100%;
@@ -101,13 +104,13 @@ export class DcGitops extends LitElement {
               <h4>Your Laptop</h4>
               <p>Edit locally, instant reload<br>via fsnotify (~100ms)</p>
             </div>
-            <div class="gitops-arrow">→</div>
+            <div class="gitops-arrow"></div>
             <div class="gitops-node">
               <div class="node-icon">🖥️</div>
               <h4>Self-Hosted</h4>
               <p>Docker, Kubernetes,<br>bare metal — same code</p>
             </div>
-            <div class="gitops-arrow">→</div>
+            <div class="gitops-arrow"></div>
             <div class="gitops-node">
               <div class="node-icon">☁️</div>
               <h4>dicode.app Cloud</h4>

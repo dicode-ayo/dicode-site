@@ -37,18 +37,21 @@ export class DcShare extends LitElement {
         }
         dc-share .flow-arrow {
           font-size: 2rem;
+          line-height: 1;
           color: var(--sky);
           font-weight: bold;
           flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
+        dc-share .flow-arrow::before { content: "\2192"; }
         @media (max-width: 900px) {
           dc-share .flow-diagram {
             flex-direction: column;
             gap: var(--space-md);
           }
-          dc-share .flow-arrow {
-            transform: rotate(90deg);
-          }
+          dc-share .flow-arrow::before { content: "\2193"; }
           dc-share .flow-box {
             width: 100%;
             max-width: 100%;
@@ -66,12 +69,12 @@ export class DcShare extends LitElement {
               <h4>Task A</h4>
               <p>Fetch data from API</p>
             </div>
-            <div class="flow-arrow">→</div>
+            <div class="flow-arrow"></div>
             <div class="flow-box">
               <h4>Task B</h4>
               <p>Process & transform</p>
             </div>
-            <div class="flow-arrow">→</div>
+            <div class="flow-arrow"></div>
             <div class="flow-box">
               <h4>Task C</h4>
               <p>Post to Slack</p>
