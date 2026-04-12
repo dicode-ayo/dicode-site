@@ -15,6 +15,8 @@ import "./components/dc-code-demo.js";
 import "./components/dc-control.js";
 import "./components/dc-share.js";
 import "./components/dc-connect.js";
+import "./components/dc-runtimes.js";
+import "./components/dc-security.js";
 import "./components/dc-runs-anywhere.js";
 import "./components/dc-dx.js";
 import "./components/dc-ai-control.js";

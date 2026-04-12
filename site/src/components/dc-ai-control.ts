@@ -22,10 +22,10 @@ export class DcAiControl extends LitElement {
         dc-ai-control .flow-box h4 { font-size: .85rem; font-weight: 700; color: var(--heading); margin-bottom: .3rem; }
         dc-ai-control .flow-box p { font-size: .78rem; color: var(--muted); line-height: 1.4; }
         dc-ai-control .flow-arrow { color: var(--blue); font-size: 1.5rem; font-weight: 700; flex-shrink: 0; }
-        @media (max-width: 640px) {
-          dc-ai-control .flow-diagram { flex-direction: column; gap: .6rem; }
+        @media (max-width: 900px) {
+          dc-ai-control .flow-diagram { flex-direction: column; gap: var(--space-md); }
           dc-ai-control .flow-arrow { transform: rotate(90deg); }
-          dc-ai-control .flow-box { min-width: 140px; padding: .8rem 1rem; }
+          dc-ai-control .flow-box { min-width: 140px; padding: .8rem 1rem; width: 100%; max-width: 100%; }
         }
       </style>
       <section id="ai-control" style="background: var(--bg);">

@@ -14,15 +14,14 @@ export class DcGitops extends LitElement {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 1.5rem;
-          flex-wrap: wrap;
-          margin-top: 2rem;
+          gap: var(--space-lg);
+          margin-top: var(--space-xl);
         }
         dc-gitops .gitops-node {
-          background: rgba(255,255,255,.04);
-          border: 1px solid rgba(255,255,255,.08);
-          border-radius: 12px;
-          padding: 1.5rem;
+          background: var(--card-bg);
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          padding: var(--space-lg);
           text-align: center;
           min-width: 180px;
           flex: 1;
@@ -30,28 +29,34 @@ export class DcGitops extends LitElement {
         }
         dc-gitops .gitops-node .node-icon {
           font-size: 2rem;
-          margin-bottom: .5rem;
+          margin-bottom: var(--space-sm);
         }
         dc-gitops .gitops-node h4 {
-          margin: 0 0 .5rem;
+          margin: 0 0 var(--space-sm);
           color: var(--heading);
         }
         dc-gitops .gitops-node p {
           margin: 0;
           color: var(--muted);
-          font-size: .9rem;
+          font-size: var(--text-base);
         }
         dc-gitops .gitops-arrow {
           font-size: 2rem;
           color: var(--sky);
           font-weight: bold;
+          flex-shrink: 0;
         }
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
           dc-gitops .gitops-visual {
             flex-direction: column;
+            gap: var(--space-md);
           }
           dc-gitops .gitops-arrow {
             transform: rotate(90deg);
+          }
+          dc-gitops .gitops-node {
+            max-width: 100%;
+            width: 100%;
           }
         }
       </style>

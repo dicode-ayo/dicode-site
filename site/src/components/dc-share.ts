@@ -39,13 +39,19 @@ export class DcShare extends LitElement {
           font-size: 2rem;
           color: var(--sky);
           font-weight: bold;
+          flex-shrink: 0;
         }
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
           dc-share .flow-diagram {
             flex-direction: column;
+            gap: var(--space-md);
           }
           dc-share .flow-arrow {
             transform: rotate(90deg);
+          }
+          dc-share .flow-box {
+            width: 100%;
+            max-width: 100%;
           }
         }
       </style>

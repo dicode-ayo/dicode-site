@@ -101,6 +101,8 @@ export class DcNav extends LitElement {
           <a href="#how" @click=${() => this._closeMenu()}>How it works</a>
           <a href="#gitops" @click=${() => this._closeMenu()}>GitOps</a>
           <a href="#code" @click=${() => this._closeMenu()}>Code</a>
+          <a href="#runtimes" @click=${() => this._closeMenu()}>Runtimes</a>
+          <a href="#security" @click=${() => this._closeMenu()}>Security</a>
           <a href="#download" @click=${() => this._closeMenu()}>Download</a>
           <a href="#deploy" @click=${() => this._closeMenu()}>Pricing</a>
           <a href="#opensource" @click=${() => this._closeMenu()}>GitHub</a>

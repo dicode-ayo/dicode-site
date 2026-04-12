@@ -65,9 +65,11 @@ export class DcHero extends LitElement {
       </style>
       <section id="hero">
         <div class="hero-badge"><span class="dot"></span> Now in public beta</div>
-        <h1>Automate anything with <em>plain English</em></h1>
+        <h1>DevOps-grade automation, <em>AI-enhanced</em>, fully yours</h1>
         <p class="hero-sub">
-          Describe what you want. AI generates validated automation code. Run it locally, sync via GitOps, iterate in real time.
+          Git-backed. Code-first. Sandboxed by default. AI writes tasks, you review every line,
+          and every run is traceable end-to-end. Best practices from DevOps, the speed of AI,
+          full control at every step.
         </p>
         <div class="hero-actions">
           <a class="btn-primary" href="#download">Download free</a>
