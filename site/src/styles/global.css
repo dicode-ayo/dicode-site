@@ -58,12 +58,19 @@ section { padding: 100px 2rem; }
 .reveal-right { opacity: 0; transform: translateX(40px); transition: opacity .65s ease, transform .65s ease; }
 .reveal-right.visible { opacity: 1; transform: translateX(0); }
 .stagger > * { opacity: 0; transform: translateY(28px); transition: opacity .55s ease, transform .55s ease; }
-.stagger.visible > *:nth-child(1) { opacity:1; transform:none; transition-delay: .05s; }
-.stagger.visible > *:nth-child(2) { opacity:1; transform:none; transition-delay: .15s; }
-.stagger.visible > *:nth-child(3) { opacity:1; transform:none; transition-delay: .25s; }
-.stagger.visible > *:nth-child(4) { opacity:1; transform:none; transition-delay: .35s; }
-.stagger.visible > *:nth-child(5) { opacity:1; transform:none; transition-delay: .45s; }
-.stagger.visible > *:nth-child(6) { opacity:1; transform:none; transition-delay: .55s; }
+/* Default: any child becomes visible once parent is .visible (no delay). */
+.stagger.visible > * { opacity: 1; transform: none; }
+/* Staggered entrance delays for the first 6 children. */
+.stagger.visible > *:nth-child(1) { transition-delay: .05s; }
+.stagger.visible > *:nth-child(2) { transition-delay: .10s; }
+.stagger.visible > *:nth-child(3) { transition-delay: .15s; }
+.stagger.visible > *:nth-child(4) { transition-delay: .20s; }
+.stagger.visible > *:nth-child(5) { transition-delay: .25s; }
+.stagger.visible > *:nth-child(6) { transition-delay: .30s; }
+.stagger.visible > *:nth-child(7) { transition-delay: .35s; }
+.stagger.visible > *:nth-child(8) { transition-delay: .40s; }
+.stagger.visible > *:nth-child(9) { transition-delay: .45s; }
+.stagger.visible > *:nth-child(n+10) { transition-delay: .50s; }
 
 /* ── BUTTONS ── */
 .btn-primary {
