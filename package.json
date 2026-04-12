@@ -11,6 +11,7 @@
     "dev:docs": "vitepress dev docs-src --host 0.0.0.0"
   },
   "dependencies": {
+    "@iconify-icons/logos": "^1.2.36",
     "lit": "^3.3.2"
   },
   "devDependencies": {
