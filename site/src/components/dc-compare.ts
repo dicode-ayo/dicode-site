@@ -19,9 +19,9 @@ export class DcCompare extends LitElement {
         dc-compare tbody tr:last-child { border-bottom: none; }
         dc-compare td { padding: .6rem .8rem; color: var(--text); }
         dc-compare td:not(:first-child) { text-align: center; }
-        dc-compare .check { color: var(--green); }
+        dc-compare .check { color: var(--green); font-weight: 700; font-size: 1rem; }
         dc-compare .dash { color: var(--muted); }
-        dc-compare .partial { color: var(--yellow); }
+        dc-compare .partial { color: var(--yellow); font-weight: 600; font-size: .8rem; }
         @media (max-width: 640px) {
           dc-compare table { font-size: .75rem; }
           dc-compare th, dc-compare td { padding: .5rem .4rem; }

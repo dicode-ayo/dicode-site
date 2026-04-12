@@ -28,12 +28,12 @@
   --muted:       #8b93a8;
   --lavender:    #cdd6f4;
 
-  /* Brand (invariant across themes) */
+  /* Brand (semantic — have light-mode overrides below) */
   --blue:        #0d6efd;
   --blue2:       #3a8bfd;
-  --sky:         #a0c4ff;
-  --green:       #a6e3a1;
-  --yellow:      #f9e2af;
+  --sky:         #a0c4ff;    /* pill/tag/accent text — on dark */
+  --green:       #a6e3a1;    /* ✓ checkmarks */
+  --yellow:      #f9e2af;    /* partial/manual warnings */
   --red:         #f38ba8;
 
   /* Decorative */
@@ -83,6 +83,12 @@
   --heading:     #0d0d1a;
   --muted:       #5c6680;
   --lavender:    #4c6ef5;
+
+  /* Brand colors adjusted for contrast on light backgrounds */
+  --sky:         #0d6efd;    /* pill/tag/accent — use full blue on light */
+  --green:       #16a34a;    /* saturated green for checkmarks */
+  --yellow:      #ca8a04;    /* saturated amber for partial/manual */
+  --red:         #dc2626;
 
   --border:      rgba(13, 13, 26, .1);
   --nav-bg:      rgba(247, 248, 252, .85);

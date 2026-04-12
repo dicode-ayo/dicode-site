@@ -27,17 +27,18 @@ export class DcPricing extends LitElement {
           letter-spacing: .05em; text-transform: uppercase; padding: .25rem .75rem; border-radius: 100px;
           white-space: nowrap;
         }
-        dc-pricing .deploy-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,.4); }
+        dc-pricing .deploy-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-strong); }
         dc-pricing .deploy-icon { font-size: 2rem; margin-bottom: 1rem; }
         dc-pricing .deploy-card h3 { font-size: 1.1rem; font-weight: 700; color: var(--heading); margin-bottom: .4rem; }
         dc-pricing .deploy-card .price { font-size: 1.6rem; font-weight: 800; color: var(--sky); margin: .75rem 0; }
         dc-pricing .deploy-card .price span { font-size: .9rem; font-weight: 400; color: var(--muted); }
         dc-pricing .deploy-card ul { list-style: none; margin-top: 1rem; }
         dc-pricing .deploy-card li {
-          color: var(--muted); font-size: .875rem; padding: .35rem 0;
-          border-bottom: 1px solid rgba(255,255,255,.05);
+          color: var(--text); font-size: .875rem; padding: .35rem 0;
+          border-bottom: 1px solid var(--border);
           display: flex; gap: .5rem; align-items: flex-start;
         }
+        dc-pricing .deploy-card li:last-child { border-bottom: none; }
         dc-pricing .deploy-card li::before { content: '\u2713'; color: var(--green); flex-shrink: 0; margin-top: 1px; }
         @media (max-width: 768px) {
           dc-pricing .deploy-cards { grid-template-columns: 1fr; }
