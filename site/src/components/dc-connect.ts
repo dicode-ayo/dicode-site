@@ -29,17 +29,19 @@ interface Provider {
   name: string;
   icon: IconData;
   comingSoon?: boolean;
+  /** Auto-invert in dark mode (for black-fill brand icons) */
+  adaptive?: boolean;
 }
 
 const AVAILABLE: Provider[] = [
-  { name: "GitHub", icon: githubIcon },
+  { name: "GitHub", icon: githubIcon, adaptive: true },
   { name: "Slack", icon: slackIcon },
   { name: "Google", icon: googleIcon },
   { name: "Discord", icon: discordIcon },
   { name: "GitLab", icon: gitlabIcon },
   { name: "Spotify", icon: spotifyIcon },
   { name: "Linear", icon: linearIcon },
-  { name: "Notion", icon: notionIcon },
+  { name: "Notion", icon: notionIcon, adaptive: true },
   { name: "Stripe", icon: stripeIcon },
   { name: "Salesforce", icon: salesforceIcon },
   { name: "Office 365", icon: microsoftOfficeIcon },
@@ -163,7 +165,7 @@ export class DcConnect extends LitElement {
             ${AVAILABLE.map(
               (p) => html`
                 <div class="provider-item">
-                  ${renderIcon(p.icon, "provider-logo")}
+                  ${renderIcon(p.icon, { className: "provider-logo", adaptive: p.adaptive })}
                   <div class="provider-name">${p.name}</div>
                 </div>
               `,
@@ -171,7 +173,7 @@ export class DcConnect extends LitElement {
             ${COMING_SOON.map(
               (p) => html`
                 <div class="provider-item coming-soon">
-                  ${renderIcon(p.icon, "provider-logo")}
+                  ${renderIcon(p.icon, { className: "provider-logo", adaptive: p.adaptive })}
                   <div class="provider-name">${p.name}</div>
                 </div>
               `,

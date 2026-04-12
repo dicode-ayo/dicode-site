@@ -173,7 +173,7 @@ export class DcNav extends LitElement {
             aria-label="View on GitHub"
             title="View on GitHub"
           >
-            ${renderIcon(githubIcon)}
+            ${renderIcon(githubIcon, { adaptive: true })}
           </a>
         </div>
         <button class="nav-hamburger" aria-label="Toggle menu" @click=${() => this._toggleMenu()}>

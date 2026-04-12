@@ -170,6 +170,13 @@ section { padding: 100px 2rem; }
   font-size: .75rem; padding: .2rem .6rem; border-radius: 6px;
 }
 
+/* ── ICON UTILITIES ── */
+/* Brand icons with hardcoded black fills (GitHub, Apple, Notion) look
+   invisible on a dark background. The .icon-adaptive class inverts them
+   in dark mode so they become near-white. Apply via renderIcon({ adaptive: true }). */
+svg.icon-adaptive { transition: filter var(--duration) var(--ease); }
+:root:not([data-theme="light"]) svg.icon-adaptive { filter: invert(1); }
+
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }

@@ -58,7 +58,7 @@ export class DcRunsAnywhere extends LitElement {
           <div class="device-grid stagger">
             <div class="device-item">
               <div class="device-icons">
-                ${renderIcon(appleIcon)} ${renderIcon(linuxIcon)} ${renderIcon(windowsIcon)}
+                ${renderIcon(appleIcon, { adaptive: true })} ${renderIcon(linuxIcon)} ${renderIcon(windowsIcon)}
               </div>
               <h4>macOS · Linux · Windows</h4>
               <p>System tray + web dashboard</p>

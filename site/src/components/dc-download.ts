@@ -15,6 +15,8 @@ const ACTIONS = `${REPO}/actions/workflows/release.yml`;
 
 interface DownloadTarget {
   icon: IconData;
+  /** Auto-invert the icon in dark mode (for black-fill brand icons) */
+  adaptive?: boolean;
   title: string;
   subtitle: string;
   platform: string;
@@ -33,6 +35,7 @@ const TARGETS: DownloadTarget[] = [
   },
   {
     icon: appleIcon,
+    adaptive: true,
     title: "macOS",
     subtitle: "Apple Silicon · Intel",
     platform: "darwin",
@@ -136,7 +139,7 @@ export class DcDownload extends LitElement {
         }
         dc-download .download-cta-note a { color: var(--sky); text-decoration: none; }
         dc-download .download-cta-note a:hover { text-decoration: underline; }
-        dc-download .cta-icon { width: 18px; height: 18px; }
+        dc-download .cta-icon { width: 18px; height: 18px; filter: invert(1); }
         @media (max-width: 640px) {
           dc-download .download-grid { grid-template-columns: 1fr; gap: 1rem; }
           dc-download .download-cmd { font-size: .65rem; padding: .5rem .6rem; }
@@ -155,7 +158,7 @@ export class DcDownload extends LitElement {
               (t) => html`
                 <div class="download-card">
                   <div class="download-header">
-                    ${renderIcon(t.icon)}
+                    ${renderIcon(t.icon, { adaptive: t.adaptive })}
                     <div class="download-title">
                       <h4>${t.title}</h4>
                       <p>${t.subtitle}</p>
