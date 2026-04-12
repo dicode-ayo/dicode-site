@@ -68,6 +68,7 @@ export class DcNav extends LitElement {
           transition: background .2s, transform .15s;
         }
         dc-nav .nav-cta:hover { background: var(--blue2); transform: translateY(-1px); }
+        dc-nav .nav-right { display: flex; align-items: center; gap: .8rem; }
         dc-nav .nav-hamburger {
           display: none; background: none; border: none; cursor: pointer;
           flex-direction: column; gap: 5px; padding: 4px; z-index: 110;
@@ -104,7 +105,10 @@ export class DcNav extends LitElement {
           <a href="#deploy" @click=${() => this._closeMenu()}>Pricing</a>
           <a href="#opensource" @click=${() => this._closeMenu()}>GitHub</a>
         </div>
-        <a class="nav-cta nav-cta-desktop" href="https://github.com/dicode-ayo/dicode-core" target="_blank" rel="noopener">View on GitHub &rarr;</a>
+        <div class="nav-right">
+          <dc-theme-toggle></dc-theme-toggle>
+          <a class="nav-cta nav-cta-desktop" href="https://github.com/dicode-ayo/dicode-core" target="_blank" rel="noopener">View on GitHub &rarr;</a>
+        </div>
         <button class="nav-hamburger" aria-label="Toggle menu" @click=${() => this._toggleMenu()}>
           <span></span>
           <span></span>

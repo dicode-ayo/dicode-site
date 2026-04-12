@@ -1,6 +1,12 @@
 import "./styles/global.css";
 
+import { initTheme } from "./utils/theme.js";
+
+// Init theme as early as possible to minimize FOUC
+initTheme();
+
 // Import all components
+import "./components/dc-theme-toggle.js";
 import "./components/dc-nav.js";
 import "./components/dc-hero.js";
 import "./components/dc-how-it-works.js";

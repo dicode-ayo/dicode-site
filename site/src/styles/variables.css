@@ -1,18 +1,81 @@
+/* ───────────────────────────────────────────────────────────────────────────
+ * Design tokens — defaults are DARK mode.
+ * Light mode overrides live in [data-theme="light"] below.
+ * ───────────────────────────────────────────────────────────────────────── */
+
 :root {
-  --navy:    #0d0d1a;
-  --navy2:   #1a1a2e;
-  --navy3:   #16213e;
-  --blue:    #0d6efd;
-  --blue2:   #3a8bfd;
-  --sky:     #a0c4ff;
-  --lavender:#cdd6f4;
-  --green:   #a6e3a1;
-  --yellow:  #f9e2af;
-  --red:     #f38ba8;
-  --code-bg: #1e1e2e;
-  --text:    #e8eaf0;
-  --muted:   #8b93a8;
-  --border:  rgba(160, 196, 255, .15);
-  --card-bg: rgba(255, 255, 255, .04);
-  --radius:  14px;
+  /* Backgrounds (dark mode values) */
+  --bg:          #0d0d1a;
+  --bg-alt:      #1a1a2e;
+  --bg-accent:   #16213e;
+  --card-bg:     rgba(255, 255, 255, .04);
+  --code-bg:     #1e1e2e;
+
+  /* Foreground */
+  --text:        #e8eaf0;
+  --heading:     #ffffff;
+  --muted:       #8b93a8;
+  --lavender:    #cdd6f4;
+
+  /* Brand (invariant across themes) */
+  --blue:        #0d6efd;
+  --blue2:       #3a8bfd;
+  --sky:         #a0c4ff;
+  --green:       #a6e3a1;
+  --yellow:      #f9e2af;
+  --red:         #f38ba8;
+
+  /* Decorative */
+  --border:      rgba(160, 196, 255, .15);
+  --nav-bg:      rgba(13, 13, 26, .8);
+  --nav-bg-scrolled: rgba(13, 13, 26, .97);
+  --blue-tint:   rgba(13, 110, 253, .12);
+  --blue-tint-strong: rgba(13, 110, 253, .18);
+
+  /* Hero glow */
+  --hero-glow-1: rgba(13, 110, 253, .35);
+  --hero-glow-2: rgba(13, 110, 253, .12);
+
+  /* Shadows */
+  --shadow-card:   0 12px 40px rgba(0, 0, 0, .4);
+  --shadow-strong: 0 16px 48px rgba(0, 0, 0, .4);
+
+  /* Legacy aliases (kept so existing components don't break during migration) */
+  --navy:        var(--bg);
+  --navy2:       var(--bg-alt);
+  --navy3:       var(--bg-accent);
+
+  /* Layout */
+  --radius:      14px;
+}
+
+/* ─── LIGHT MODE ─── */
+:root[data-theme="light"] {
+  --bg:          #f7f8fc;
+  --bg-alt:      #eef1f8;
+  --bg-accent:   #e5e9f3;
+  --card-bg:     rgba(13, 13, 26, .03);
+  --code-bg:     #1e1e2e;  /* keep code blocks dark for readability */
+
+  --text:        #1a1a2e;
+  --heading:     #0d0d1a;
+  --muted:       #5c6680;
+  --lavender:    #4c6ef5;
+
+  --border:      rgba(13, 13, 26, .1);
+  --nav-bg:      rgba(247, 248, 252, .85);
+  --nav-bg-scrolled: rgba(247, 248, 252, .97);
+  --blue-tint:   rgba(13, 110, 253, .08);
+  --blue-tint-strong: rgba(13, 110, 253, .12);
+
+  --hero-glow-1: rgba(13, 110, 253, .18);
+  --hero-glow-2: rgba(13, 110, 253, .08);
+
+  --shadow-card:   0 12px 40px rgba(13, 13, 26, .12);
+  --shadow-strong: 0 16px 48px rgba(13, 13, 26, .15);
+}
+
+/* Smooth theme transition */
+html {
+  transition: background-color .25s ease, color .25s ease;
 }

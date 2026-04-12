@@ -9,6 +9,24 @@
   <meta property="og:description" content="GitOps-native task orchestrator with AI generation. Open source, single binary, runs everywhere." />
   <meta property="og:type" content="website" />
   <link rel="icon" type="image/svg+xml" href="/dicode-site/favicon.svg" />
+  <script>
+    // Inline theme init — runs before any CSS loads so there's no flash.
+    (function () {
+      try {
+        var stored = localStorage.getItem("dicode-theme");
+        var theme =
+          stored === "light" || stored === "dark"
+            ? stored
+            : window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches
+              ? "light"
+              : "dark";
+        document.documentElement.setAttribute("data-theme", theme);
+        document.documentElement.style.colorScheme = theme;
+      } catch (e) {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+    })();
+  </script>
   <script type="module" src="/src/main.ts"></script>
 </head>
 <body>
