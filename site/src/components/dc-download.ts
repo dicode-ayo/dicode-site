@@ -100,12 +100,12 @@ export class DcDownload extends LitElement {
         }
         dc-download .download-cmd {
           background: var(--code-bg);
-          border: 1px solid var(--border);
+          border: 1px solid var(--code-border);
           border-radius: 8px;
           padding: .6rem .8rem;
           font-family: 'Fira Code', 'Cascadia Code', monospace;
           font-size: .72rem;
-          color: var(--lavender);
+          color: var(--code-text);
           overflow-x: auto;
           white-space: nowrap;
           margin: 0;

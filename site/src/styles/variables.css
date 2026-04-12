@@ -9,7 +9,18 @@
   --bg-alt:      #1a1a2e;
   --bg-accent:   #16213e;
   --card-bg:     rgba(255, 255, 255, .04);
+
+  /* Code blocks (theme-aware syntax highlighting) */
   --code-bg:     #1e1e2e;
+  --code-text:   #e8eaf0;
+  --code-border: rgba(160, 196, 255, .15);
+  --code-filename: #8b93a8;
+  --code-kw:     #89b4fa;
+  --code-str:    #a6e3a1;
+  --code-cmt:    #585b70;
+  --code-fn:     #cba6f7;
+  --code-num:    #fab387;
+  --code-prop:   #f38ba8;
 
   /* Foreground */
   --text:        #e8eaf0;
@@ -55,7 +66,18 @@
   --bg-alt:      #eef1f8;
   --bg-accent:   #e5e9f3;
   --card-bg:     rgba(13, 13, 26, .03);
-  --code-bg:     #1e1e2e;  /* keep code blocks dark for readability */
+
+  /* Light-mode code colors (GitHub-style) */
+  --code-bg:     #f6f8fa;
+  --code-text:   #24292f;
+  --code-border: rgba(13, 13, 26, .12);
+  --code-filename: #6e7781;
+  --code-kw:     #cf222e;
+  --code-str:    #0a3069;
+  --code-cmt:    #6e7781;
+  --code-fn:     #8250df;
+  --code-num:    #0550ae;
+  --code-prop:   #116329;
 
   --text:        #1a1a2e;
   --heading:     #0d0d1a;

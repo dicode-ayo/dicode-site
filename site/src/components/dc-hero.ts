@@ -37,7 +37,7 @@ export class DcHero extends LitElement {
         dc-hero .hero-sub { margin-top: 1.4rem; font-size: clamp(1rem, 2.5vw, 1.25rem); color: var(--muted); max-width: 560px; line-height: 1.7; }
         dc-hero .hero-actions { display: flex; gap: 1rem; margin-top: 2.4rem; flex-wrap: wrap; justify-content: center; }
         dc-hero .hero-prompt {
-          margin-top: 3.5rem; background: var(--code-bg); border: 1px solid var(--border);
+          margin-top: 3.5rem; background: var(--code-bg); border: 1px solid var(--code-border);
           border-radius: var(--radius); padding: 1.2rem 1.6rem; text-align: left;
           max-width: 640px; width: 100%; font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: .875rem; position: relative;
         }
@@ -48,8 +48,8 @@ export class DcHero extends LitElement {
         }
         dc-hero .prompt-line { display: flex; gap: .75rem; align-items: flex-start; }
         dc-hero .prompt-icon { color: var(--blue); flex-shrink: 0; margin-top: 2px; }
-        dc-hero .prompt-text { color: var(--lavender); line-height: 1.5; }
-        dc-hero .prompt-output { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+        dc-hero .prompt-text { color: var(--code-text); line-height: 1.5; }
+        dc-hero .prompt-output { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--code-border); }
         dc-hero .out-line { color: var(--green); font-size: .82rem; }
         dc-hero .out-line::before { content: '\u2713 '; }
         dc-hero .cursor { display: inline-block; width: 8px; height: 1em; background: var(--blue); animation: blink 1s step-end infinite; vertical-align: text-bottom; }
