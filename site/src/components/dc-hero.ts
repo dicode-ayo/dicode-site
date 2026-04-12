@@ -17,8 +17,8 @@ export class DcHero extends LitElement {
         }
         dc-hero #hero::before {
           content: ''; position: absolute; inset: 0;
-          background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(13,110,253,.35) 0%, transparent 70%),
-                      radial-gradient(ellipse 50% 40% at 80% 80%, rgba(13,110,253,.12) 0%, transparent 60%);
+          background: radial-gradient(ellipse 80% 60% at 50% -10%, var(--hero-glow-1) 0%, transparent 70%),
+                      radial-gradient(ellipse 50% 40% at 80% 80%, var(--hero-glow-2) 0%, transparent 60%);
           pointer-events: none;
         }
         dc-hero .hero-badge {
@@ -31,7 +31,7 @@ export class DcHero extends LitElement {
         @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
         dc-hero h1 {
           font-size: clamp(2.6rem, 6vw, 5rem); font-weight: 800; line-height: 1.08;
-          letter-spacing: -.03em; color: #fff; max-width: 820px;
+          letter-spacing: -.03em; color: var(--heading); max-width: 820px;
         }
         dc-hero h1 em { font-style: normal; color: var(--sky); }
         dc-hero .hero-sub { margin-top: 1.4rem; font-size: clamp(1rem, 2.5vw, 1.25rem); color: var(--muted); max-width: 560px; line-height: 1.7; }

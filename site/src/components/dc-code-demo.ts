@@ -22,7 +22,7 @@ export class DcCodeDemo extends LitElement {
           }
         }
       </style>
-      <section id="code" style="background: var(--navy2);">
+      <section id="code" style="background: var(--bg-alt);">
         <div class="container">
           <div class="demo-grid">
             <div class="demo-text reveal-left">

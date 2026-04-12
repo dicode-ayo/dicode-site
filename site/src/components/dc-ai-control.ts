@@ -19,7 +19,7 @@ export class DcAiControl extends LitElement {
           border-radius: 10px; padding: 1rem 1.4rem; text-align: center;
           min-width: 160px;
         }
-        dc-ai-control .flow-box h4 { font-size: .85rem; font-weight: 700; color: #fff; margin-bottom: .3rem; }
+        dc-ai-control .flow-box h4 { font-size: .85rem; font-weight: 700; color: var(--heading); margin-bottom: .3rem; }
         dc-ai-control .flow-box p { font-size: .78rem; color: var(--muted); line-height: 1.4; }
         dc-ai-control .flow-arrow { color: var(--blue); font-size: 1.5rem; font-weight: 700; flex-shrink: 0; }
         @media (max-width: 640px) {
@@ -28,14 +28,14 @@ export class DcAiControl extends LitElement {
           dc-ai-control .flow-box { min-width: 140px; padding: .8rem 1rem; }
         }
       </style>
-      <section id="ai-control" style="background: var(--navy);">
+      <section id="ai-control" style="background: var(--bg);">
         <div class="container">
           <p class="section-label reveal">AI In Control</p>
           <h2 class="section-title reveal">AI writes code. You approve it.</h2>
           <p class="section-sub reveal">Build as many AI-powered tasks as you want. Each one is just a task with dicode.run_task(). Use dicode to bind AI tools together through chaining and webhooks.</p>
 
           <div class="reveal" style="background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; margin-bottom: 2.5rem;">
-            <h3 style="color: #fff; font-size: 1.15rem; font-weight: 700; margin-bottom: .75rem;">Real example: AI-Powered PR Review Bot</h3>
+            <h3 style="color: var(--heading); font-size: 1.15rem; font-weight: 700; margin-bottom: .75rem;">Real example: AI-Powered PR Review Bot</h3>
             <p style="color: var(--muted); font-size: .9rem; line-height: 1.7; margin-bottom: 1.5rem;">A GitHub App that monitors PRs on your tasks repo, runs an AI code review on each change, posts review comments, and sends a Slack notification. All built as 3 chained dicode tasks — no custom infrastructure.</p>
 
             <div class="flow-diagram">

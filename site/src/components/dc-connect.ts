@@ -96,7 +96,7 @@ export class DcConnect extends LitElement {
           flex-shrink: 0;
         }
         dc-connect .provider-name {
-          color: #fff;
+          color: var(--heading);
           font-size: .85rem;
           font-weight: 500;
           line-height: 1.2;
@@ -151,7 +151,7 @@ export class DcConnect extends LitElement {
           dc-connect .provider-name { font-size: .75rem; }
         }
       </style>
-      <section id="connect" style="background: var(--navy);">
+      <section id="connect" style="background: var(--bg);">
         <div class="container">
           <p class="section-label reveal">Connect Everything</p>
           <h2 class="section-title reveal">OAuth to every major SaaS</h2>

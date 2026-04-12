@@ -33,7 +33,7 @@ export class DcRunsAnywhere extends LitElement {
           gap: .5rem; margin-bottom: .8rem;
         }
         dc-runs-anywhere .device-icons svg { width: 32px; height: 32px; }
-        dc-runs-anywhere .device-item h4 { font-size: .9rem; font-weight: 700; color: #fff; margin-bottom: .25rem; }
+        dc-runs-anywhere .device-item h4 { font-size: .9rem; font-weight: 700; color: var(--heading); margin-bottom: .25rem; }
         dc-runs-anywhere .device-item p { font-size: .78rem; color: var(--muted); line-height: 1.4; }
         @media (max-width: 768px) {
           dc-runs-anywhere .device-grid { grid-template-columns: repeat(3, 1fr); }
@@ -47,7 +47,7 @@ export class DcRunsAnywhere extends LitElement {
           dc-runs-anywhere .device-grid { grid-template-columns: 1fr 1fr; }
         }
       </style>
-      <section id="runs-anywhere" style="background: var(--navy2);">
+      <section id="runs-anywhere" style="background: var(--bg-alt);">
         <div class="container">
           <p class="section-label reveal">Runs Anywhere</p>
           <h2 class="section-title reveal">You own everything</h2>

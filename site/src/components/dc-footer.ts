@@ -11,7 +11,7 @@ export class DcFooter extends LitElement {
     return html`
       <style>
         dc-footer footer {
-          background: var(--navy); border-top: 1px solid var(--border);
+          background: var(--bg); border-top: 1px solid var(--border);
           padding: 2rem; text-align: center;
         }
         dc-footer footer p { color: var(--muted); font-size: .85rem; }

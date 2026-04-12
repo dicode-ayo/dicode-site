@@ -93,7 +93,7 @@ export class DcDownload extends LitElement {
         }
         dc-download .download-header svg { width: 36px; height: 36px; flex-shrink: 0; }
         dc-download .download-title h4 {
-          color: #fff; font-size: 1rem; font-weight: 700; margin: 0;
+          color: var(--heading); font-size: 1rem; font-weight: 700; margin: 0;
         }
         dc-download .download-title p {
           color: var(--muted); font-size: .75rem; margin: 0;
@@ -135,7 +135,7 @@ export class DcDownload extends LitElement {
           dc-download .download-cmd { font-size: .65rem; padding: .5rem .6rem; }
         }
       </style>
-      <section id="download" style="background: var(--navy);">
+      <section id="download" style="background: var(--bg);">
         <div class="container">
           <p class="section-label reveal">Download</p>
           <h2 class="section-title reveal">Get dicode in seconds</h2>

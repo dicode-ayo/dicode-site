@@ -27,7 +27,7 @@ export class DcCompare extends LitElement {
           dc-compare th, dc-compare td { padding: .5rem .4rem; }
         }
       </style>
-      <section id="compare" style="background: var(--navy);">
+      <section id="compare" style="background: var(--bg);">
         <div class="container">
           <p class="section-label reveal">Comparison</p>
           <h2 class="section-title reveal">How dicode compares</h2>

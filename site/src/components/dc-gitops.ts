@@ -34,7 +34,7 @@ export class DcGitops extends LitElement {
         }
         dc-gitops .gitops-node h4 {
           margin: 0 0 .5rem;
-          color: #fff;
+          color: var(--heading);
         }
         dc-gitops .gitops-node p {
           margin: 0;
@@ -55,7 +55,7 @@ export class DcGitops extends LitElement {
           }
         }
       </style>
-      <section id="gitops" style="background: var(--navy);">
+      <section id="gitops" style="background: var(--bg);">
         <div class="container">
           <p class="section-label reveal">True GitOps</p>
           <h2 class="section-title reveal">Everything lives in git</h2>

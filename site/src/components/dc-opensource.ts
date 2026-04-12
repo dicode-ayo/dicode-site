@@ -14,10 +14,10 @@ export class DcOpensource extends LitElement {
     return html`
       <style>
         dc-opensource section {
-          background: linear-gradient(135deg, var(--navy2) 0%, var(--navy3) 100%);
+          background: linear-gradient(135deg, var(--bg-alt) 0%, var(--bg-accent) 100%);
           text-align: center;
         }
-        dc-opensource h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; color: #fff; margin-bottom: 1rem; }
+        dc-opensource h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; color: var(--heading); margin-bottom: 1rem; }
         dc-opensource p { color: var(--muted); max-width: 540px; margin: 0 auto 2.5rem; line-height: 1.7; font-size: 1rem; }
         dc-opensource .github-btn {
           display: inline-flex; align-items: center; gap: .6rem;

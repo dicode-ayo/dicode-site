@@ -29,7 +29,7 @@ export class DcPricing extends LitElement {
         }
         dc-pricing .deploy-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,.4); }
         dc-pricing .deploy-icon { font-size: 2rem; margin-bottom: 1rem; }
-        dc-pricing .deploy-card h3 { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: .4rem; }
+        dc-pricing .deploy-card h3 { font-size: 1.1rem; font-weight: 700; color: var(--heading); margin-bottom: .4rem; }
         dc-pricing .deploy-card .price { font-size: 1.6rem; font-weight: 800; color: var(--sky); margin: .75rem 0; }
         dc-pricing .deploy-card .price span { font-size: .9rem; font-weight: 400; color: var(--muted); }
         dc-pricing .deploy-card ul { list-style: none; margin-top: 1rem; }
@@ -48,7 +48,7 @@ export class DcPricing extends LitElement {
           dc-pricing .featured-badge { font-size: .65rem; }
         }
       </style>
-      <section id="deploy" style="background: var(--navy2);">
+      <section id="deploy" style="background: var(--bg-alt);">
         <div class="container">
           <p class="section-label reveal">Deployment</p>
           <h2 class="section-title reveal">From laptop to enterprise</h2>

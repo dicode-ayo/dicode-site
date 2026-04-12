@@ -23,9 +23,9 @@ export class DcNav extends LitElement {
     const nav = this.querySelector("nav");
     if (!nav) return;
     if (window.scrollY > 40) {
-      nav.style.background = "rgba(13,13,26,.95)";
+      nav.style.background = "var(--nav-bg-scrolled)";
     } else {
-      nav.style.background = "rgba(13,13,26,.8)";
+      nav.style.background = "var(--nav-bg)";
     }
   }
 
@@ -54,10 +54,10 @@ export class DcNav extends LitElement {
           position: fixed; top: 0; left: 0; right: 0; z-index: 100;
           display: flex; align-items: center; justify-content: space-between;
           padding: 0 2rem; height: 60px;
-          background: rgba(13,13,26,.8); backdrop-filter: blur(16px);
+          background: var(--nav-bg); backdrop-filter: blur(16px);
           border-bottom: 1px solid var(--border); transition: background .3s;
         }
-        dc-nav .nav-logo { font-size: 1.2rem; font-weight: 700; color: #fff; text-decoration: none; display: flex; align-items: center; gap: .5rem; }
+        dc-nav .nav-logo { font-size: 1.2rem; font-weight: 700; color: var(--heading); text-decoration: none; display: flex; align-items: center; gap: .5rem; }
         dc-nav .nav-logo span { color: var(--blue); }
         dc-nav .nav-links { display: flex; gap: 1.4rem; list-style: none; }
         dc-nav .nav-links a { color: var(--muted); text-decoration: none; font-size: .85rem; transition: color .2s; white-space: nowrap; }
@@ -84,7 +84,7 @@ export class DcNav extends LitElement {
           dc-nav .nav-cta-desktop { display: none; }
           dc-nav .nav-links {
             display: none; position: fixed; top: 60px; left: 0; right: 0; bottom: 0;
-            background: rgba(13,13,26,.97); backdrop-filter: blur(20px);
+            background: var(--nav-bg-scrolled); backdrop-filter: blur(20px);
             flex-direction: column; align-items: center; justify-content: center;
             gap: 2rem; padding: 2rem; z-index: 100;
           }

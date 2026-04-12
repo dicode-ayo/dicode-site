@@ -28,7 +28,7 @@ export class DcShare extends LitElement {
         }
         dc-share .flow-box h4 {
           margin: 0 0 .5rem;
-          color: #fff;
+          color: var(--heading);
         }
         dc-share .flow-box p {
           margin: 0;
@@ -49,7 +49,7 @@ export class DcShare extends LitElement {
           }
         }
       </style>
-      <section id="share" style="background: var(--navy2);">
+      <section id="share" style="background: var(--bg-alt);">
         <div class="container">
           <p class="section-label reveal">Share & Compose</p>
           <h2 class="section-title reveal">Tasks are building blocks</h2>
