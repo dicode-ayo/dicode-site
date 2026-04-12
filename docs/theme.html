@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Design System — dicode</title>
+  <meta name="description" content="The dicode design system: colors, spacing, typography, radii, shadows, and transitions. Theme-aware CSS tokens usable in any project." />
+  <meta property="og:title" content="dicode Design System" />
+  <meta property="og:description" content="Drop-in theme.css for colors, spacing, typography, radii, shadows, and transitions." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" type="image/svg+xml" href="/dicode-site/favicon.svg" />
+  <script>
+    // Inline theme init — runs before any CSS loads so there's no flash.
+    (function () {
+      try {
+        var stored = localStorage.getItem("dicode-theme");
+        var theme =
+          stored === "light" || stored === "dark"
+            ? stored
+            : window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches
+              ? "light"
+              : "dark";
+        document.documentElement.setAttribute("data-theme", theme);
+        document.documentElement.style.colorScheme = theme;
+      } catch (e) {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+    })();
+  </script>
+  <script type="module" crossorigin src="/dicode-site/assets/theme-BJbx4Cn7.js"></script>
+  <link rel="modulepreload" crossorigin href="/dicode-site/assets/dc-footer-CXZbycBE.js">
+  <link rel="stylesheet" crossorigin href="/dicode-site/assets/dc-footer-BM8TRU_R.css">
+</head>
+<body>
+  <dc-nav></dc-nav>
+  <dc-theme-showcase></dc-theme-showcase>
+  <dc-footer></dc-footer>
+</body>
+</html>

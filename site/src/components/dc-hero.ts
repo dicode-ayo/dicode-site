@@ -73,7 +73,7 @@ export class DcHero extends LitElement {
         </p>
         <div class="hero-actions">
           <a class="btn-primary" href="#download">Download free</a>
-          <a class="btn-ghost" href="/dicode-site/docs/">Read the docs</a>
+          <a class="btn-ghost" href="/dicode-site/docs/getting-started/">Read the docs</a>
         </div>
         <div class="hero-prompt">
           <div class="prompt-line">
