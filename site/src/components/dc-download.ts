@@ -82,6 +82,8 @@ export class DcDownload extends LitElement {
           display: flex;
           flex-direction: column;
           gap: .8rem;
+          min-width: 0;            /* allow shrinking below content size */
+          overflow: hidden;        /* clip any overflowing children */
         }
         dc-download .download-card:hover {
           border-color: rgba(160, 196, 255, .35);
@@ -109,6 +111,10 @@ export class DcDownload extends LitElement {
           overflow-x: auto;
           white-space: nowrap;
           margin: 0;
+          max-width: 100%;
+          min-width: 0;
+          box-sizing: border-box;
+          -webkit-overflow-scrolling: touch;
         }
         dc-download .download-link {
           color: var(--sky);
@@ -116,6 +122,7 @@ export class DcDownload extends LitElement {
           font-weight: 600;
           text-decoration: none;
           margin-top: auto;
+          word-break: break-word;
         }
         dc-download .download-link:hover { color: var(--blue2); }
         dc-download .download-link::after { content: ' →'; }
