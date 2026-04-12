@@ -45,13 +45,13 @@ export class DcShare extends LitElement {
           align-items: center;
           justify-content: center;
         }
-        dc-share .flow-arrow::before { content: "\2192"; }
+        dc-share .flow-arrow::before { content: "→"; }
         @media (max-width: 900px) {
           dc-share .flow-diagram {
             flex-direction: column;
             gap: var(--space-md);
           }
-          dc-share .flow-arrow::before { content: "\2193"; }
+          dc-share .flow-arrow::before { content: "↓"; }
           dc-share .flow-box {
             width: 100%;
             max-width: 100%;

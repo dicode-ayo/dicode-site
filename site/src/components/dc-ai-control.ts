@@ -26,10 +26,10 @@ export class DcAiControl extends LitElement {
           line-height: 1;
           display: flex; align-items: center; justify-content: center;
         }
-        dc-ai-control .flow-arrow::before { content: "\2192"; }
+        dc-ai-control .flow-arrow::before { content: "→"; }
         @media (max-width: 900px) {
           dc-ai-control .flow-diagram { flex-direction: column; gap: var(--space-md); }
-          dc-ai-control .flow-arrow::before { content: "\2193"; }
+          dc-ai-control .flow-arrow::before { content: "↓"; }
           dc-ai-control .flow-box { min-width: 140px; padding: .8rem 1rem; width: 100%; max-width: 100%; }
         }
       </style>

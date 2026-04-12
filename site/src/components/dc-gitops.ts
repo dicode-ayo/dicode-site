@@ -50,13 +50,13 @@ export class DcGitops extends LitElement {
           align-items: center;
           justify-content: center;
         }
-        dc-gitops .gitops-arrow::before { content: "\2192"; }
+        dc-gitops .gitops-arrow::before { content: "→"; }
         @media (max-width: 900px) {
           dc-gitops .gitops-visual {
             flex-direction: column;
             gap: var(--space-md);
           }
-          dc-gitops .gitops-arrow::before { content: "\2193"; }
+          dc-gitops .gitops-arrow::before { content: "↓"; }
           dc-gitops .gitops-node {
             max-width: 100%;
             width: 100%;
