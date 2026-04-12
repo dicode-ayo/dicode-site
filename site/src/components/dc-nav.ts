@@ -33,19 +33,19 @@ export class DcNav extends LitElement {
   }
 
   private _toggleMenu() {
-    const links = this.querySelector(".nav-links");
+    const menu = this.querySelector(".nav-mobile-menu");
     const hamburger = this.querySelector(".nav-hamburger");
-    if (!links || !hamburger) return;
-    const isOpen = links.classList.toggle("open");
+    if (!menu || !hamburger) return;
+    const isOpen = menu.classList.toggle("open");
     hamburger.classList.toggle("open", isOpen);
     document.body.style.overflow = isOpen ? "hidden" : "";
   }
 
   private _closeMenu() {
-    const links = this.querySelector(".nav-links");
+    const menu = this.querySelector(".nav-mobile-menu");
     const hamburger = this.querySelector(".nav-hamburger");
-    if (!links || !hamburger) return;
-    links.classList.remove("open");
+    if (!menu || !hamburger) return;
+    menu.classList.remove("open");
     hamburger.classList.remove("open");
     document.body.style.overflow = "";
   }
@@ -62,9 +62,61 @@ export class DcNav extends LitElement {
         }
         dc-nav .nav-logo { font-size: 1.2rem; font-weight: 700; color: var(--heading); text-decoration: none; display: flex; align-items: center; gap: .5rem; }
         dc-nav .nav-logo span { color: var(--blue); }
-        dc-nav .nav-links { display: flex; gap: 1.4rem; list-style: none; }
-        dc-nav .nav-links a { color: var(--muted); text-decoration: none; font-size: .85rem; transition: color .2s; white-space: nowrap; }
-        dc-nav .nav-links a:hover { color: var(--sky); }
+        dc-nav .nav-links-desktop {
+          display: flex;
+          flex-direction: row;
+          gap: 1.4rem;
+          list-style: none;
+          align-items: center;
+        }
+        dc-nav .nav-links-desktop a {
+          color: var(--muted);
+          text-decoration: none;
+          font-size: .85rem;
+          transition: color .2s;
+          white-space: nowrap;
+        }
+        dc-nav .nav-links-desktop a:hover { color: var(--sky); }
+
+        /* Mobile menu overlay — hidden by default, shown via .open class */
+        dc-nav .nav-mobile-menu {
+          display: none;
+          position: fixed;
+          top: 60px;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: var(--bg);
+          flex-direction: column;
+          align-items: center;
+          justify-content: flex-start;
+          gap: var(--space-md);
+          padding: var(--space-xl) var(--space-md);
+          z-index: var(--z-nav);
+          overflow-y: auto;
+          border-top: 1px solid var(--border);
+        }
+        dc-nav .nav-mobile-menu.open { display: flex; }
+        dc-nav .nav-mobile-menu a {
+          font-size: var(--text-lg);
+          color: var(--text);
+          text-decoration: none;
+          padding: var(--space-md) var(--space-lg);
+          width: 100%;
+          max-width: 420px;
+          text-align: center;
+          border-radius: var(--radius-md);
+          border: 1px solid var(--border);
+          background: var(--card-bg);
+          transition: background var(--duration-fast) var(--ease),
+                      border-color var(--duration-fast) var(--ease),
+                      color var(--duration-fast) var(--ease);
+        }
+        dc-nav .nav-mobile-menu a:hover,
+        dc-nav .nav-mobile-menu a:active {
+          border-color: var(--sky);
+          color: var(--sky);
+        }
         dc-nav .nav-github {
           display: flex; align-items: center; justify-content: center;
           width: 36px; height: 36px;
@@ -95,44 +147,21 @@ export class DcNav extends LitElement {
         dc-nav .nav-hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
         @media (max-width: 900px) {
           dc-nav .nav-hamburger { display: flex; }
-          dc-nav .nav-links {
-            display: none; position: fixed; top: 60px; left: 0; right: 0; bottom: 0;
-            background: var(--bg);
-            flex-direction: column; align-items: center; justify-content: flex-start;
-            gap: var(--space-md); padding: var(--space-xl) var(--space-md);
-            z-index: var(--z-nav);
-            overflow-y: auto;
-            border-top: 1px solid var(--border);
-          }
-          dc-nav .nav-links.open { display: flex; }
-          dc-nav .nav-links a {
-            font-size: var(--text-lg);
-            color: var(--text);
-            padding: var(--space-sm) var(--space-md);
-            width: 100%;
-            max-width: 320px;
-            text-align: center;
-            border-radius: var(--radius-md);
-            transition: background var(--duration-fast) var(--ease);
-          }
-          dc-nav .nav-links a:hover, dc-nav .nav-links a:active {
-            background: var(--card-bg);
-            color: var(--sky);
-          }
+          dc-nav .nav-links-desktop { display: none; }
         }
         @media (max-width: 640px) { dc-nav nav { padding: 0 1rem; } }
       </style>
       <nav>
         <a class="nav-logo" href="/">&#9889; <span>di</span>code</a>
-        <div class="nav-links">
-          <a href="/dicode-site/docs/" @click=${() => this._closeMenu()}>Docs</a>
-          <a href="#how" @click=${() => this._closeMenu()}>How it works</a>
-          <a href="#gitops" @click=${() => this._closeMenu()}>GitOps</a>
-          <a href="#code" @click=${() => this._closeMenu()}>Code</a>
-          <a href="#runtimes" @click=${() => this._closeMenu()}>Runtimes</a>
-          <a href="#security" @click=${() => this._closeMenu()}>Security</a>
-          <a href="#download" @click=${() => this._closeMenu()}>Download</a>
-          <a href="#deploy" @click=${() => this._closeMenu()}>Pricing</a>
+        <div class="nav-links nav-links-desktop">
+          <a href="/dicode-site/docs/">Docs</a>
+          <a href="#how">How it works</a>
+          <a href="#gitops">GitOps</a>
+          <a href="#code">Code</a>
+          <a href="#runtimes">Runtimes</a>
+          <a href="#security">Security</a>
+          <a href="#download">Download</a>
+          <a href="#deploy">Pricing</a>
         </div>
         <div class="nav-right">
           <dc-theme-toggle></dc-theme-toggle>
@@ -153,6 +182,18 @@ export class DcNav extends LitElement {
           <span></span>
         </button>
       </nav>
+      <!-- Mobile menu overlay — sibling of <nav>, not child, to escape
+           the fixed-nav's containing block created by backdrop-filter. -->
+      <div class="nav-mobile-menu">
+        <a href="/dicode-site/docs/" @click=${() => this._closeMenu()}>Docs</a>
+        <a href="#how" @click=${() => this._closeMenu()}>How it works</a>
+        <a href="#gitops" @click=${() => this._closeMenu()}>GitOps</a>
+        <a href="#code" @click=${() => this._closeMenu()}>Code</a>
+        <a href="#runtimes" @click=${() => this._closeMenu()}>Runtimes</a>
+        <a href="#security" @click=${() => this._closeMenu()}>Security</a>
+        <a href="#download" @click=${() => this._closeMenu()}>Download</a>
+        <a href="#deploy" @click=${() => this._closeMenu()}>Pricing</a>
+      </div>
     `;
   }
 }
