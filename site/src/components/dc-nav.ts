@@ -100,10 +100,11 @@ export class DcNav extends LitElement {
           <a href="#how" @click=${() => this._closeMenu()}>How it works</a>
           <a href="#gitops" @click=${() => this._closeMenu()}>GitOps</a>
           <a href="#code" @click=${() => this._closeMenu()}>Code</a>
+          <a href="#download" @click=${() => this._closeMenu()}>Download</a>
           <a href="#deploy" @click=${() => this._closeMenu()}>Pricing</a>
           <a href="#opensource" @click=${() => this._closeMenu()}>GitHub</a>
         </div>
-        <a class="nav-cta nav-cta-desktop" href="https://github.com/dr14/dicode" target="_blank" rel="noopener">View on GitHub &rarr;</a>
+        <a class="nav-cta nav-cta-desktop" href="https://github.com/dicode-ayo/dicode-core" target="_blank" rel="noopener">View on GitHub &rarr;</a>
         <button class="nav-hamburger" aria-label="Toggle menu" @click=${() => this._toggleMenu()}>
           <span></span>
           <span></span>

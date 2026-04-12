@@ -12,6 +12,7 @@ import "./components/dc-connect.js";
 import "./components/dc-runs-anywhere.js";
 import "./components/dc-dx.js";
 import "./components/dc-ai-control.js";
+import "./components/dc-download.js";
 import "./components/dc-pricing.js";
 import "./components/dc-compare.js";
 import "./components/dc-opensource.js";

@@ -70,8 +70,8 @@ export class DcHero extends LitElement {
           Describe what you want. AI generates validated automation code. Run it locally, sync via GitOps, iterate in real time.
         </p>
         <div class="hero-actions">
-          <a class="btn-primary" href="/dicode-site/docs/">Get Started</a>
-          <a class="btn-ghost" href="#how">See how it works</a>
+          <a class="btn-primary" href="#download">Download free</a>
+          <a class="btn-ghost" href="/dicode-site/docs/">Read the docs</a>
         </div>
         <div class="hero-prompt">
           <div class="prompt-line">
