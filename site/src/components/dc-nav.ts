@@ -1,6 +1,9 @@
 import { LitElement, html } from "lit";
 import { customElement } from "lit/decorators.js";
 
+import githubIcon from "@iconify-icons/logos/github-icon.js";
+import { renderIcon } from "../utils/icon.js";
+
 @customElement("dc-nav")
 export class DcNav extends LitElement {
   private _scrollHandler = this._onScroll.bind(this);
@@ -62,13 +65,23 @@ export class DcNav extends LitElement {
         dc-nav .nav-links { display: flex; gap: 1.4rem; list-style: none; }
         dc-nav .nav-links a { color: var(--muted); text-decoration: none; font-size: .85rem; transition: color .2s; white-space: nowrap; }
         dc-nav .nav-links a:hover { color: var(--sky); }
-        dc-nav .nav-cta {
-          background: var(--blue); color: #fff; padding: .45rem 1.2rem;
-          border-radius: 8px; text-decoration: none; font-size: .875rem; font-weight: 600;
-          transition: background .2s, transform .15s;
+        dc-nav .nav-github {
+          display: flex; align-items: center; justify-content: center;
+          width: 36px; height: 36px;
+          border-radius: var(--radius-md);
+          border: 1px solid var(--border);
+          color: var(--text);
+          transition: background var(--duration-fast) var(--ease),
+                      border-color var(--duration-fast) var(--ease),
+                      transform var(--duration-fast) var(--ease);
         }
-        dc-nav .nav-cta:hover { background: var(--blue2); transform: translateY(-1px); }
-        dc-nav .nav-right { display: flex; align-items: center; gap: .8rem; }
+        dc-nav .nav-github:hover {
+          background: var(--card-bg);
+          border-color: var(--sky);
+          transform: translateY(-1px);
+        }
+        dc-nav .nav-github svg { width: 18px; height: 18px; display: block; }
+        dc-nav .nav-right { display: flex; align-items: center; gap: var(--space-sm); }
         dc-nav .nav-hamburger {
           display: none; background: none; border: none; cursor: pointer;
           flex-direction: column; gap: 5px; padding: 4px; z-index: 110;
@@ -82,15 +95,30 @@ export class DcNav extends LitElement {
         dc-nav .nav-hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
         @media (max-width: 900px) {
           dc-nav .nav-hamburger { display: flex; }
-          dc-nav .nav-cta-desktop { display: none; }
           dc-nav .nav-links {
             display: none; position: fixed; top: 60px; left: 0; right: 0; bottom: 0;
-            background: var(--nav-bg-scrolled); backdrop-filter: blur(20px);
-            flex-direction: column; align-items: center; justify-content: center;
-            gap: 2rem; padding: 2rem; z-index: 100;
+            background: var(--bg);
+            flex-direction: column; align-items: center; justify-content: flex-start;
+            gap: var(--space-md); padding: var(--space-xl) var(--space-md);
+            z-index: var(--z-nav);
+            overflow-y: auto;
+            border-top: 1px solid var(--border);
           }
           dc-nav .nav-links.open { display: flex; }
-          dc-nav .nav-links a { font-size: 1.2rem; color: var(--text); }
+          dc-nav .nav-links a {
+            font-size: var(--text-lg);
+            color: var(--text);
+            padding: var(--space-sm) var(--space-md);
+            width: 100%;
+            max-width: 320px;
+            text-align: center;
+            border-radius: var(--radius-md);
+            transition: background var(--duration-fast) var(--ease);
+          }
+          dc-nav .nav-links a:hover, dc-nav .nav-links a:active {
+            background: var(--card-bg);
+            color: var(--sky);
+          }
         }
         @media (max-width: 640px) { dc-nav nav { padding: 0 1rem; } }
       </style>
@@ -105,11 +133,19 @@ export class DcNav extends LitElement {
           <a href="#security" @click=${() => this._closeMenu()}>Security</a>
           <a href="#download" @click=${() => this._closeMenu()}>Download</a>
           <a href="#deploy" @click=${() => this._closeMenu()}>Pricing</a>
-          <a href="#opensource" @click=${() => this._closeMenu()}>GitHub</a>
         </div>
         <div class="nav-right">
           <dc-theme-toggle></dc-theme-toggle>
-          <a class="nav-cta nav-cta-desktop" href="https://github.com/dicode-ayo/dicode-core" target="_blank" rel="noopener">View on GitHub &rarr;</a>
+          <a
+            class="nav-github"
+            href="https://github.com/dicode-ayo/dicode-core"
+            target="_blank"
+            rel="noopener"
+            aria-label="View on GitHub"
+            title="View on GitHub"
+          >
+            ${renderIcon(githubIcon)}
+          </a>
         </div>
         <button class="nav-hamburger" aria-label="Toggle menu" @click=${() => this._toggleMenu()}>
           <span></span>
