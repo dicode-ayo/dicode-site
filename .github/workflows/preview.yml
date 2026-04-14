@@ -95,54 +95,16 @@ jobs:
           command: pages deploy docs --project-name=dicode-site --branch=${{ steps.slug.outputs.safe }} --commit-dirty=true
 
       - name: Comment preview URL on PR
-        uses: actions/github-script@v7
-        env:
-          # Per-commit immutable URL (pinned to this specific build)
-          COMMIT_URL: ${{ steps.deploy.outputs.deployment-url }}
-          # Per-branch alias URL (stable, updates on each push to this branch).
-          # Computed from the sanitized slug — Cloudflare uses the same shape.
-          BRANCH_ALIAS: https://${{ steps.slug.outputs.safe }}.dicode-site.pages.dev
-          COMMIT_SHA: ${{ github.sha }}
+        # Sticky comment that updates in place on every push instead of spamming.
+        # The `header` field is how the action identifies the comment to update;
+        # any value works as long as it's unique per workflow.
+        uses: marocchino/sticky-pull-request-comment@v2
         with:
-          script: |
-            const commitUrl = process.env.COMMIT_URL || '(none)';
-            const branchAlias = process.env.BRANCH_ALIAS || '(none)';
-            const sha = (process.env.COMMIT_SHA || '').slice(0, 7);
-            const body = [
-              '### 🔍 Preview deployed',
-              '',
-              `**Branch (always latest):** ${branchAlias}`,
-              `**This commit (pinned):** ${commitUrl}`,
-              '',
-              `_Deployed commit: ${sha} · Branch URL updates automatically on each push._`,
-            ].join('\n');
+          header: cloudflare-pages-preview
+          message: |
+            ### 🔍 Preview deployed
 
-            // Find an existing preview comment from this bot and update it
-            // in place, rather than spamming the PR with one comment per push.
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              per_page: 100,
-            });
-            const existing = comments.find(
-              (c) => c.user && c.user.type === 'Bot' &&
-                     typeof c.body === 'string' &&
-                     c.body.startsWith('### 🔍 Preview deployed'),
-            );
+            **Branch (always latest):** https://${{ steps.slug.outputs.safe }}.dicode-site.pages.dev
+            **This commit (pinned):** ${{ steps.deploy.outputs.deployment-url }}
 
-            if (existing) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: existing.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body,
-              });
-            }
+            _Deployed commit: `${{ github.sha }}` · Branch URL updates automatically on each push._
