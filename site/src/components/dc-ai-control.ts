@@ -36,8 +36,8 @@ export class DcAiControl extends LitElement {
       <section id="ai-control" style="background: var(--bg);">
         <div class="container">
           <p class="section-label reveal">AI In Control</p>
-          <h2 class="section-title reveal">AI writes code. You approve it.</h2>
-          <p class="section-sub reveal">Build as many AI-powered tasks as you want. Each one is just a task with dicode.run_task(). Use dicode to bind AI tools together through chaining and webhooks.</p>
+          <h2 class="section-title reveal">Chat with an agent that runs your tasks.</h2>
+          <p class="section-sub reveal">A built-in chat page where the model can call every task you've written as a tool. Ask a question, get an answer backed by real data — not a hallucination. Works with any OpenAI-compatible provider you choose.</p>
 
           <div class="reveal" style="background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; margin-bottom: 2.5rem;">
             <h3 style="color: var(--heading); font-size: 1.15rem; font-weight: 700; margin-bottom: .75rem;">Real example: AI-Powered PR Review Bot</h3>
@@ -63,9 +63,24 @@ export class DcAiControl extends LitElement {
 
           <div class="features-grid stagger">
             <div class="feature-card">
+              <div class="feature-icon">&#x1F4AC;</div>
+              <h3>Built-In AI Agent</h3>
+              <p>Ships with an ai-agent task you open like any other webhook UI. Persistent sessions, lazy history compaction, and a tool-use loop that invokes your tasks automatically. Zero setup beyond picking a provider.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">&#x1F50C;</div>
+              <h3>Every Task Is A Tool</h3>
+              <p>The agent discovers your registered tasks and exposes them as callable tools using each task's declared params as the schema. Ask "list my failed runs from last week" and the agent calls the right task — no glue code.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">&#x1F4DA;</div>
+              <h3>Skills As Markdown</h3>
+              <p>Drop markdown files into tasks/skills/ and the agent loads them into its system prompt on demand. Teach it your domain, your runbooks, your conventions — durable context that survives across sessions.</p>
+            </div>
+            <div class="feature-card">
               <div class="feature-icon">&#x1F916;</div>
-              <h3>AI Generates, You Approve</h3>
-              <p>AI writes code, you review and approve. Or have another AI review it — use dicode's MCP server to wire up an AI reviewer that checks quality before tasks go live.</p>
+              <h3>Bring Your Own Provider</h3>
+              <p>Works with OpenAI, Anthropic, Ollama, Groq, OpenRouter, LM Studio, Together — anything that speaks the OpenAI API. Switch providers by editing one line of task config. Free local models work the same as paid cloud ones.</p>
             </div>
             <div class="feature-card">
               <div class="feature-icon">&#x1F9E9;</div>
@@ -73,14 +88,9 @@ export class DcAiControl extends LitElement {
               <p>Expose dicode as an MCP server. AI agents can list tasks, read code, trigger runs, and control dev mode today. Write, validate, test, and deploy tasks autonomously — coming soon. Works with Claude Code, Cursor, and any MCP-compatible agent.</p>
             </div>
             <div class="feature-card">
-              <div class="feature-icon">&#x1F50C;</div>
-              <h3>Turn Tasks Into MCP Tools</h3>
-              <p>Any task — or combination of tasks — becomes an MCP tool that other agents can discover and call. A Slack notifier task becomes a Slack tool. A deploy pipeline becomes a deploy tool. Build once, expose to every AI agent in your organization.</p>
-            </div>
-            <div class="feature-card">
-              <div class="feature-icon">&#x1F517;</div>
-              <h3>Chain AI With Everything</h3>
-              <p>Use dicode to bind AI tools together through chaining and webhooks. Build complex AI workflows from simple, composable tasks — each one inspectable, testable, and replaceable.</p>
+              <div class="feature-icon">&#x2728;</div>
+              <h3>AI Generates Tasks Too</h3>
+              <p>Separate from the agent: describe what you want to automate in plain English and dicode writes the task, commits it to git, and reloads it live. The two features complement each other — one authors, one operates.</p>
             </div>
           </div>
         </div>

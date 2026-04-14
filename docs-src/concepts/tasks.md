@@ -244,3 +244,40 @@ See [Secrets](./secrets.md) for details on `permissions.env` and secret injectio
 ::: tip
 For Deno tasks, permissions map directly to Deno's `--allow-*` flags. Python and Docker tasks use env injection only (`permissions.env`).
 :::
+
+## Template variables
+
+A tight allowlist of fields in `task.yaml` support `${VAR}` substitution, resolved at task-load time. Use them for paths and indirection keys that depend on where the task is loaded from.
+
+**Supported fields:** `permissions.fs[].path`, `trigger.webhook_secret`, and `permissions.env[].from | .secret | .value`. Everything else is taken literally.
+
+**Built-in variables:**
+
+| Variable | Value |
+| --- | --- |
+| `${TASK_DIR}` | Absolute path to this task's own directory |
+| `${HOME}` | User home directory |
+| `${SOURCE_ROOT}` | Absolute path to the source root (injected by the source loader) |
+| `${SKILLS_DIR}` | Auto-derived as `${SOURCE_ROOT}/skills` |
+
+Resolution order: built-ins → process env → **leave literal** (unknown `${VAR}` references stay in place so bugs surface loudly rather than silently collapsing to an empty string).
+
+**Example: reference the shared skills directory regardless of source type:**
+
+```yaml
+permissions:
+  fs:
+    - path: "${SKILLS_DIR}"
+      permission: r
+```
+
+**Example: reference a webhook secret from the process environment:**
+
+```yaml
+trigger:
+  webhook: /hooks/github
+  webhook_secret: "${GITHUB_WEBHOOK_SECRET}"
+permissions:
+  env:
+    - GITHUB_WEBHOOK_SECRET
+```
