@@ -154,7 +154,7 @@ export class DcNav extends LitElement {
       <nav>
         <a class="nav-logo" href="/">&#9889; <span>di</span>code</a>
         <div class="nav-links nav-links-desktop">
-          <a href="/dicode-site/docs/getting-started/">Docs</a>
+          <a href="/docs/getting-started/">Docs</a>
           <a href="#how">How it works</a>
           <a href="#gitops">GitOps</a>
           <a href="#code">Code</a>
@@ -185,7 +185,7 @@ export class DcNav extends LitElement {
       <!-- Mobile menu overlay — sibling of <nav>, not child, to escape
            the fixed-nav's containing block created by backdrop-filter. -->
       <div class="nav-mobile-menu">
-        <a href="/dicode-site/docs/getting-started/" @click=${() => this._closeMenu()}>Docs</a>
+        <a href="/docs/getting-started/" @click=${() => this._closeMenu()}>Docs</a>
         <a href="#how" @click=${() => this._closeMenu()}>How it works</a>
         <a href="#gitops" @click=${() => this._closeMenu()}>GitOps</a>
         <a href="#code" @click=${() => this._closeMenu()}>Code</a>

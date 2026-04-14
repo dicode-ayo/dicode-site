@@ -20,7 +20,7 @@ function copyThemeCss(): Plugin {
 
 export default defineConfig({
   root: resolve(__dirname),
-  base: "/dicode-site/",
+  base: "/",
   build: {
     outDir: resolve(__dirname, "../docs"),
     emptyOutDir: false,

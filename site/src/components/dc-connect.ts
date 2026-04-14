@@ -198,7 +198,7 @@ export class DcConnect extends LitElement {
           <p class="connect-footer reveal">
             No app registration needed with dicode.app Pro. Missing a provider? Write your own OAuth flow —
             dicode gives you the building blocks. Or
-            <a href="/dicode-site/docs/concepts/relay.html#oauth-broker-dicode-app-pro">request a new provider</a>.
+            <a href="/docs/concepts/relay.html#oauth-broker-dicode-app-pro">request a new provider</a>.
           </p>
         </div>
       </section>

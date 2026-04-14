@@ -337,8 +337,8 @@ export class DcThemeShowcase extends LitElement {
           project and everything stays consistent.
         </p>
         <div class="ts-actions">
-          <a class="btn-primary" href="/dicode-site/theme.css" download>Download theme.css</a>
-          <a class="btn-ghost" href="/dicode-site/">Back to landing</a>
+          <a class="btn-primary" href="/theme.css" download>Download theme.css</a>
+          <a class="btn-ghost" href="/">Back to landing</a>
         </div>
       </div>
 
