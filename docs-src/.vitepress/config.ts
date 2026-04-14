@@ -42,6 +42,7 @@ export default defineConfig({
           { text: "Secrets", link: "/concepts/secrets" },
           { text: "Sources & TaskSets", link: "/concepts/sources" },
           { text: "Webhook Relay", link: "/concepts/relay" },
+          { text: "AI Agent", link: "/concepts/ai-agent" },
         ],
       },
       {
