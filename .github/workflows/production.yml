@@ -1,0 +1,74 @@
+name: Deploy Production (Cloudflare Pages)
+
+# Builds the site + docs on every push to main and deploys to the production
+# branch of the dicode-site Cloudflare Pages project. Lives at
+# https://dicode-site.pages.dev (and, after the dashboard custom-domain step,
+# at https://dicode.app).
+#
+# This workflow runs in parallel with .github/workflows/pages.yml during the
+# migration window. Both produce the same output; only the destination differs.
+# Once dicode.app DNS is repointed to Cloudflare and confirmed serving, the
+# legacy pages.yml + the CNAME files in site/public/ and docs/ should be
+# removed in a follow-up PR.
+#
+# This workflow takes no input from PR metadata or commit messages — every
+# interpolation is a secret or a hardcoded literal — so there is no command
+# injection surface.
+#
+# Required repo secrets (already configured for preview.yml):
+#   - CLOUDFLARE_API_TOKEN
+#   - CLOUDFLARE_ACCOUNT_ID
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - "docs-src/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/production.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Production deploys are mutually exclusive — never run two at once. New
+# pushes wait for the in-flight deploy rather than cancelling it.
+concurrency:
+  group: cloudflare-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build & Deploy to Cloudflare
+    runs-on: ubuntu-latest
+    environment:
+      name: cloudflare-production
+      url: https://dicode-site.pages.dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build landing page (Vite + Lit)
+        run: npm run build:site
+
+      - name: Build docs (VitePress)
+        run: npm run build:docs
+
+      - name: Deploy to Cloudflare Pages (production)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # --branch=main makes this the production deployment for the
+          # dicode-site project. Without --branch it would deploy as a
+          # preview at a per-commit URL only.
+          command: pages deploy docs --project-name=dicode-site --branch=main --commit-dirty=true
