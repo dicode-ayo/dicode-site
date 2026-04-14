@@ -1,0 +1,142 @@
+name: PR Preview (Cloudflare Pages)
+
+# Builds the site + docs for every pull request and deploys the output to a
+# branch-scoped preview on Cloudflare Pages. The production site on main
+# continues to go to GitHub Pages via pages.yml — this workflow only handles
+# per-PR previews, not production.
+#
+# Each PR gets a branch-scoped URL shaped like:
+#   https://<sanitized-branch>.dicode-site.pages.dev
+# plus an immutable per-commit URL returned by wrangler. Both are posted as a
+# PR comment that is updated in place on each push (not a fresh comment).
+#
+# Required repo secrets (Settings → Secrets and variables → Actions):
+#   - CLOUDFLARE_API_TOKEN  — token with "Account → Cloudflare Pages → Edit"
+#                             on the account that owns the dicode-site project
+#   - CLOUDFLARE_ACCOUNT_ID — the account id (visible in the Cloudflare
+#                             dashboard URL or under Workers & Pages overview)
+#
+# Prereq: the Pages project must already exist. Create it once via the
+# dashboard (Workers & Pages → Create → Pages → Direct Upload → name it
+# "dicode-site") or via `wrangler pages project create dicode-site
+# --production-branch main`.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "site/**"
+      - "docs-src/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/preview.yml"
+
+permissions:
+  contents: read
+  pull-requests: write  # for the preview-URL comment
+
+concurrency:
+  group: preview-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-preview:
+    name: Build & Deploy Preview
+    runs-on: ubuntu-latest
+    # Forks don't have access to repo secrets — skip silently rather than
+    # failing the PR. Single-maintainer repos where all PRs come from
+    # branches in the same repo will always hit this.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build landing page (Vite + Lit)
+        run: npm run build:site
+
+      - name: Build docs (VitePress)
+        run: npm run build:docs
+
+      # Sanitize github.head_ref before handing it to wrangler. The head ref
+      # is attacker-controllable (PR author chooses the branch name) and is
+      # interpolated into a command string, so we strip it to the safe
+      # subset [a-z0-9-] in a dedicated step that reads it from env — never
+      # interpolates it into a shell command — and publishes the result as
+      # a step output. Cloudflare Pages branch names have the same
+      # constraints anyway, so nothing is lost.
+      - name: Sanitize branch slug
+        id: slug
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          SAFE="$(printf '%s' "$HEAD_REF" \
+            | tr '[:upper:]' '[:lower:]' \
+            | tr -c 'a-z0-9-' '-' \
+            | sed -e 's/-\{2,\}/-/g' -e 's/^-//' -e 's/-$//' \
+            | cut -c1-28)"
+          if [ -z "$SAFE" ]; then SAFE="pr-${{ github.event.pull_request.number }}"; fi
+          echo "safe=$SAFE" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # steps.slug.outputs.safe is constrained to [a-z0-9-] by the
+          # sanitize step above, so interpolation here is safe by construction.
+          command: pages deploy docs --project-name=dicode-site --branch=${{ steps.slug.outputs.safe }} --commit-dirty=true
+
+      - name: Comment preview URL on PR
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.deployment-url }}
+          COMMIT_SHA: ${{ github.sha }}
+        with:
+          script: |
+            const url = process.env.PREVIEW_URL || '(deploy step did not produce a URL)';
+            const sha = (process.env.COMMIT_SHA || '').slice(0, 7);
+            const body = [
+              '### 🔍 Preview deployed',
+              '',
+              `**Latest:** ${url}`,
+              '',
+              `_Deployed commit: ${sha} · Updates automatically on each push._`,
+            ].join('\n');
+
+            // Find an existing preview comment from this bot and update it
+            // in place, rather than spamming the PR with one comment per push.
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              per_page: 100,
+            });
+            const existing = comments.find(
+              (c) => c.user && c.user.type === 'Bot' &&
+                     typeof c.body === 'string' &&
+                     c.body.startsWith('### 🔍 Preview deployed'),
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
