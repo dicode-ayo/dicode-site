@@ -117,6 +117,16 @@ The hosted relay at `relay.dicode.app` includes an **OAuth broker** that elimina
 
 ### How it works
 
+::: info Prerequisite
+The broker flow requires the relay to be enabled in your `dicode.yaml`:
+```yaml
+relay:
+  enabled: true
+  server_url: wss://relay.dicode.app
+```
+If the relay is not configured, `buildin/auth-start` will return an `oauth broker not configured on this daemon` error.
+:::
+
 Two built-in tasks ship with dicode and handle the full flow:
 
 ```sh
@@ -144,9 +154,9 @@ Under the hood:
 5. Broker exchanges the code for an access token
 6. Token is **encrypted to the daemon's public key** (ECIES: P-256 ECDH + HKDF + AES-256-GCM, with the message type tag bound as GCM authenticated data)
 7. Encrypted envelope is forwarded over the existing relay WebSocket to a reserved `/hooks/oauth-complete` path
-8. `buildin/auth-relay` receives the envelope, calls `dicode.oauth.store_token(input)`, and the daemon decrypts + parses + writes credentials to the secrets store — **all in Go-process memory**. Plaintext tokens never reach the JS runtime, so a careless `console.log` in any downstream task cannot leak the token.
+8. `buildin/auth-relay` receives the envelope and calls the daemon's `store_token` IPC primitive, which decrypts, parses, and writes credentials to the secrets store — **all in Go-process memory**. The decrypted buffer is best-effort zeroed after the write (Go cannot guarantee memory erasure). Tokens then live on as normal dicode secrets, encrypted at rest via ChaCha20-Poly1305.
 
-The token never appears in a browser URL, never touches the relay in plaintext, and never leaves your machine unencrypted.
+The token never appears in a browser URL and never touches the relay in plaintext. Tasks that declare the token as an `env` secret receive it in their process environment variables at runtime.
 
 ### Consuming the token
 
@@ -199,7 +209,7 @@ Tasks can override scopes per request. New providers can be added to the broker 
 - **Type-as-AAD domain separation** — the envelope's message-type tag is bound into AES-GCM's authenticated data on both ends. A ciphertext produced under any other type label (a future or malicious message type reusing the same ECIES scheme) will fail to decrypt through this path.
 - **Pending-session validation** — the daemon tracks outstanding flows by session id and rejects deliveries whose session was never issued (or has expired). This closes a chosen-salt oracle against the identity key.
 - **Reserved delivery path** — the trigger engine refuses to bind `/hooks/oauth-complete` to any task other than `buildin/auth-relay`, so an unrelated user task cannot become a drop-in exfiltration sink for decrypted credentials.
-- **Plaintext never crosses JS** — decrypt, parse, and `secrets_set` all happen in Go-process memory. `buildin/auth-relay` only ever sees the secret *names* that were written; token values are zeroed from Go memory immediately after the store.
+- **Plaintext never crosses JS** — decrypt, parse, and writes to the secrets store all happen in Go-process memory. `buildin/auth-relay` only ever sees the secret *names* that were written; the decrypted buffer is best-effort zeroed after `store_token` returns (Go cannot guarantee memory erasure). Tokens then live on as normal dicode secrets (encrypted at rest via ChaCha20-Poly1305).
 - **Metadata-only audit log** — every delivery emits a structured log entry with task id, run id, provider, session id, and the list of secret names written. No plaintext, no ciphertext, no pubkeys — just enough for incident response.
 - **Single-use sessions** — broker sessions expire after 5 minutes and are deleted immediately after token delivery. Retries require a fresh flow.
 - **No token storage on the broker** — the broker never persists tokens. They're encrypted and forwarded in one step.
