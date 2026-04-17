@@ -155,11 +155,8 @@ export class DcNav extends LitElement {
         <a class="nav-logo" href="/">&#9889; <span>di</span>code</a>
         <div class="nav-links nav-links-desktop">
           <a href="/docs/getting-started/">Docs</a>
-          <a href="#everything-task">Philosophy</a>
-          <a href="#ai-loop">AI Loop</a>
-          <a href="#gitops">GitOps</a>
+          <a href="#ai-loop">How it works</a>
           <a href="#mcp-factory">MCP</a>
-          <a href="#runtimes">Runtimes</a>
           <a href="#download">Download</a>
           <a href="#deploy">Pricing</a>
         </div>
@@ -186,11 +183,8 @@ export class DcNav extends LitElement {
            the fixed-nav's containing block created by backdrop-filter. -->
       <div class="nav-mobile-menu">
         <a href="/docs/getting-started/" @click=${() => this._closeMenu()}>Docs</a>
-        <a href="#everything-task" @click=${() => this._closeMenu()}>Philosophy</a>
-        <a href="#ai-loop" @click=${() => this._closeMenu()}>AI Loop</a>
-        <a href="#gitops" @click=${() => this._closeMenu()}>GitOps</a>
+        <a href="#ai-loop" @click=${() => this._closeMenu()}>How it works</a>
         <a href="#mcp-factory" @click=${() => this._closeMenu()}>MCP</a>
-        <a href="#runtimes" @click=${() => this._closeMenu()}>Runtimes</a>
         <a href="#download" @click=${() => this._closeMenu()}>Download</a>
         <a href="#deploy" @click=${() => this._closeMenu()}>Pricing</a>
       </div>

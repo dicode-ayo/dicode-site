@@ -50,15 +50,7 @@ const AVAILABLE: Provider[] = [
   { name: "Confluence", icon: confluenceIcon },
 ];
 
-const COMING_SOON: Provider[] = [
-  { name: "LinkedIn", icon: linkedinIcon, comingSoon: true },
-  { name: "WhatsApp", icon: whatsappIcon, comingSoon: true },
-  { name: "HubSpot", icon: hubspotIcon, comingSoon: true },
-  { name: "Telegram", icon: telegramIcon, comingSoon: true },
-  { name: "Jira", icon: jiraIcon, comingSoon: true },
-  { name: "Dropbox", icon: dropboxIcon, comingSoon: true },
-  { name: "Pinterest", icon: pinterestIcon, comingSoon: true },
-];
+const COMING_SOON: Provider[] = [];
 
 @customElement("dc-connect")
 export class DcConnect extends LitElement {

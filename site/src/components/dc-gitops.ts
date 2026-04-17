@@ -113,7 +113,8 @@ export class DcGitops extends LitElement {
               <h4>dicode</h4>
               <ul>
                 <li>task.yaml in git (declarative, reviewed, versioned)</li>
-                <li>git push &mdash; live in 30 seconds</li>
+                <li>Save a file &mdash; live in 100ms (fsnotify)</li>
+                <li>git push &mdash; live in under 1 second (webhook)</li>
                 <li>New server? Clone + ./dicoded &mdash; identical setup</li>
                 <li>Server dies &mdash; clone repo anywhere, same result</li>
                 <li>git log &mdash; full history of what ran and when</li>

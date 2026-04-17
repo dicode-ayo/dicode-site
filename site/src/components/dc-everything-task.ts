@@ -31,6 +31,11 @@ export class DcEverythingTask extends LitElement {
           background: var(--blue-tint);
           border-color: rgba(13,110,253,.3);
           border-style: dashed;
+          animation: layer-pulse 4s ease-in-out infinite;
+        }
+        @keyframes layer-pulse {
+          0%, 100% { border-color: rgba(13,110,253,.3); box-shadow: none; }
+          50% { border-color: rgba(13,110,253,.6); box-shadow: 0 0 20px rgba(13,110,253,.1); }
         }
         dc-everything-task .kernel-layer:last-child {
           border-radius: 0 0 var(--radius) var(--radius);

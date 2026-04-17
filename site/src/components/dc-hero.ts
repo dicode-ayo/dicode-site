@@ -59,6 +59,39 @@ export class DcHero extends LitElement {
         dc-hero .tl-fail { color: #ef4444; }
         dc-hero .tl-ai { color: var(--sky); }
         dc-hero .tl-notify { color: var(--yellow); }
+        /* Staggered row entrance */
+        dc-hero .tl-row {
+          opacity: 0;
+          transform: translateY(8px);
+          animation: tl-row-in .5s ease forwards;
+        }
+        dc-hero .tl-row:nth-child(1)  { animation-delay: .4s; }
+        dc-hero .tl-row:nth-child(2)  { animation-delay: 1.2s; }
+        dc-hero .tl-row:nth-child(3)  { animation-delay: 1.8s; }
+        /* after separator */
+        dc-hero .tl-row:nth-child(5)  { animation-delay: 2.8s; }
+        dc-hero .tl-row:nth-child(6)  { animation-delay: 3.8s; }
+        dc-hero .tl-row:nth-child(7)  { animation-delay: 4.4s; }
+        dc-hero .tl-row:nth-child(8)  { animation-delay: 5.0s; }
+        dc-hero .tl-row:nth-child(9)  { animation-delay: 5.6s; }
+        dc-hero .tl-row:nth-child(10) { animation-delay: 6.2s; }
+        dc-hero .tl-sep {
+          opacity: 0;
+          animation: tl-row-in .4s ease forwards 2.4s;
+        }
+        @keyframes tl-row-in {
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Fail row flash */
+        dc-hero .tl-fail {
+          animation: tl-row-in .5s ease forwards 3.8s, tl-flash .6s ease 4.0s;
+        }
+        @keyframes tl-flash {
+          0%, 100% { background: transparent; }
+          30% { background: rgba(239, 68, 68, .12); }
+        }
+
         dc-hero .cursor { display: inline-block; width: 8px; height: 1em; background: var(--blue); animation: blink 1s step-end infinite; vertical-align: text-bottom; }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
@@ -76,10 +109,8 @@ export class DcHero extends LitElement {
         <div class="hero-badge"><span class="dot"></span> Free &amp; open source</div>
         <h1>You describe it. <em>AI builds, ships, and fixes it.</em></h1>
         <p class="hero-sub">
-          A task kernel where AI creates your automations, git versions them,
-          and a single binary runs them. No infrastructure. No deploy steps.
-          Every task is replaceable, every change is auditable, and AI
-          monitors and fixes failures while you sleep.
+          AI creates your automations from plain English, versions them in git,
+          and fixes them when they break. One binary, zero infrastructure.
         </p>
         <div class="hero-actions">
           <a class="btn-primary" href="#download">Download free</a>
