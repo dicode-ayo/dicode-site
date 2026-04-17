@@ -158,6 +158,36 @@ permissions:
 
 ---
 
+## External secret providers
+
+The built-in encrypted store is the default, but dicode's provider chain is designed to be extensible. The roadmap includes first-class integrations for:
+
+| Provider | Status | How it will work |
+|----------|--------|-----------------|
+| **Built-in store** | Available now | ChaCha20-Poly1305 encrypted SQLite, Argon2id key derivation |
+| **Environment variables** | Available now | Fallback when a secret isn't in the store — reads from `$ENV_VAR` |
+| **Doppler** | Planned | Sync secrets from Doppler projects via their API |
+| **1Password** | Planned | Resolve secrets from 1Password vaults via Connect or CLI |
+| **HashiCorp Vault** | Planned | Read secrets from Vault KV v2 engine with token or AppRole auth |
+
+The provider chain tries each provider in order. If the built-in store has the secret, it's used. If not, the next provider is tried. This means you can migrate incrementally — start with the local store, add Vault for production secrets later, and existing tasks don't change.
+
+Configuration will look like:
+
+```yaml
+# dicode.yaml
+secrets:
+  providers:
+    - type: local          # built-in encrypted store (always first)
+    - type: env            # fallback to environment variables
+    - type: vault          # HashiCorp Vault
+      address: https://vault.mycompany.com
+      auth: approle
+      mount: secret/dicode
+```
+
+Tasks don't know or care which provider resolves their secrets — they just declare `secret: my_key` in `permissions.env` and the provider chain handles the rest.
+
 ## Security considerations
 
 - Secrets are encrypted at rest using ChaCha20-Poly1305 with a unique nonce per value.

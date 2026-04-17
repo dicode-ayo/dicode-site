@@ -2,8 +2,8 @@
 layout: home
 hero:
   name: dicode
-  text: Automate anything. In plain English.
-  tagline: GitOps-native task orchestrator with AI generation. Single binary, runs everywhere, free forever.
+  text: You describe it. AI builds, ships, and fixes it.
+  tagline: A task kernel with AI at every stage. Single binary, zero infrastructure, everything versioned in git. Open source, free forever.
   actions:
     - theme: brand
       text: Get Started
@@ -13,32 +13,75 @@ hero:
       link: https://github.com/dicode-ayo/dicode-core
 features:
   - icon: "\U0001F504"
-    title: GitOps-Native Reconciliation
-    details: Tasks live in git. dicode watches for changes, computes content hashes, and reconciles automatically — add, update, or delete tasks without restarting.
-  - icon: "\U0001F916"
-    title: AI Task Generation
-    details: Describe your automation in plain English. dicode generates validated TypeScript or Python, commits it, and starts running immediately.
-  - icon: "\U000023F0"
-    title: Flexible Triggers
-    details: Cron schedules, HTTP webhooks, manual execution, task chaining, and persistent daemon mode. Every trigger pattern you'll ever need.
+    title: AI at Every Stage
+    details: "AI creates tasks from plain English, validates before deploy, monitors runs, and auto-fixes failures. A continuous loop — create, validate, deploy, monitor, fix. Every step is a git commit you can review. BYO any OpenAI-compatible LLM."
+    link: /concepts/ai-agent
+    linkText: AI Agent & MCP docs
+  - icon: "\U0001F4C1"
+    title: Everything Is a Task
+    details: "The AI engine, web dashboard, notifications, MCP servers — all replaceable tasks. dicode is a task kernel: a minimal Go binary that handles scheduling, runtimes, git sync, and security. Everything above that layer is a task you can swap out. Don't like something? Replace the task."
+    link: /concepts/tasks
+    linkText: Task format docs
+  - icon: "\U0001F5C3"
+    title: GitOps-Native — ArgoCD Without the Cluster
+    details: "What's in git is what's running. Always. The reconciler watches your repo, computes content hashes, and auto-syncs. Save a file — live in 100ms via fsnotify. Push to git — live in under 1 second via webhook. No restart, no deploy step. The same declarative model as ArgoCD/Flux, but for automation tasks on any machine."
+    link: /concepts/hot-reload
+    linkText: Hot reload & dev workflow
+  - icon: "\U0001F9E9"
+    title: MCP Tool Factory
+    details: "Every task you write becomes an AI tool. Agents (Claude Code, Cursor, GPT) connect via MCP, discover your tasks, and call them with typed params. Your code, your git, your control — unlike tool marketplaces where you consume someone else's black box. Want different tool sets? Multiple MCP server tasks with different permissions."
+    link: /concepts/ai-agent
+    linkText: MCP server docs
+  - icon: "\U0001F310"
+    title: Public URLs Without ngrok
+    details: "Built-in webhook relay gives every task a stable public endpoint behind any NAT or firewall. Your IoT sensor, GitHub webhook, or Stripe event reaches your laptop instantly. ECDSA P-256 cryptographic identity, ECIES end-to-end encryption, challenge-response auth. No accounts, no config, no monthly bill."
+    link: /concepts/relay
+    linkText: Webhook relay docs
+  - icon: "\U0001F511"
+    title: One-Click OAuth (14 Providers)
+    details: "Click Connect in the UI, authenticate with the provider, token appears in your daemon — encrypted end-to-end. No app registration, no client secrets, no callback URLs. GitHub, Slack, Google, Discord, GitLab, Spotify, Linear, Notion, Stripe, Salesforce, Office 365, Azure AD, Airtable, Confluence."
+    link: /concepts/relay
+    linkText: OAuth broker docs
+  - icon: "\U0001F6E1"
+    title: Zero Infrastructure — Works Offline
+    details: "Single binary, zero external dependencies. No Postgres, no Redis, no Docker required. Embedded SQLite, local encrypted secrets (ChaCha20-Poly1305, Argon2id). Works fully offline and air-gapped. Runs on a Raspberry Pi with 50MB RAM. Cross-compiled for Linux, macOS, Windows on amd64 and arm64."
+    link: /getting-started/
+    linkText: Installation guide
   - icon: "\U0001F4BB"
     title: Four Runtimes
-    details: "Deno (TypeScript), Python (uv), Docker, and Podman. Auto-installed, no setup. Pick the runtime that fits your task."
+    details: "Deno (TypeScript/JavaScript) with npm: imports, Python via uv with PEP 723 inline deps, Docker with live log streaming, and Podman for rootless containers. All auto-installed and version-pinnable per task. SDK globals (params, kv, output, dicode) injected automatically."
+    link: /concepts/runtimes
+    linkText: Runtime docs
+  - icon: "\U0001F510"
+    title: Encrypted Secrets & Permissions Sandbox
+    details: "ChaCha20-Poly1305 encrypted local store with Argon2id key derivation. Pluggable provider chain for Doppler, 1Password, HashiCorp Vault. Every task declares exactly which files, networks, env vars, and APIs it can access. Zero ambient access — undeclared capabilities fail loudly."
+    link: /concepts/secrets
+    linkText: Secrets & permissions docs
+  - icon: "\U0001F5A5"
+    title: Throwaway UIs — Frontends Without Frameworks
+    details: "Daemon tasks serve HTTP. Build webhook visualizers, team polls, approval gates, status dashboards, and simulation runners — 20 lines of code, no React, no build step. Git-versioned, disposable. Delete the folder and the UI is gone. Combine with KV store for persistent state and webhook relay for public access."
+    link: /examples/throwaway-ui
+    linkText: Throwaway UI examples
+  - icon: "\U000023F0"
+    title: Flexible Triggers & Task Chaining
+    details: "Five trigger types: cron schedules, HTTP webhooks (with optional HMAC auth), manual execution, task chaining (on success/failure/always), and persistent daemon mode. Chain tasks into multi-step workflows — one task's return value becomes the next task's input. Or call tasks programmatically with dicode.run_task()."
+    link: /concepts/triggers
+    linkText: Trigger docs
+  - icon: "\U0001F4E6"
+    title: Task Sharing & Community Registry
+    details: "Community tasks are git repos. Reference any task via a TaskSet git URL, override params for your environment, fork and customize. The registry is itself a TaskSet — no new format, no separate system. dicode task search and dicode task install from the CLI. Git is the package manager."
+    link: /concepts/sharing
+    linkText: Task sharing docs
+  - icon: "\U0001F4E1"
+    title: Multi-Machine Fleet
+    details: "Same git repo, multiple dicode daemons on different machines. Home server runs monitoring, laptop runs dev tasks, VPS handles public webhooks, Raspberry Pi collects sensor data. Git push — all update within 30 seconds. No orchestration layer, no service mesh. Just git + multiple binaries."
+    link: /concepts/sharing
+    linkText: Multi-machine deployment
   - icon: "\U0001F50D"
     title: Rich Web Dashboard
-    details: Monitor runs, view live logs, trigger tasks, manage sources, and edit config — all from a browser. The dashboard itself is a webhook task.
-  - icon: "\U0001F517"
-    title: Task Chaining
-    details: Chain tasks together with typed outputs. One task's return value becomes the next task's input. Build multi-step workflows declaratively.
-  - icon: "\U0001F510"
-    title: Encrypted Secrets
-    details: ChaCha20-Poly1305 encrypted local store with Argon2id key derivation. Provider chain falls back to env vars. Secrets never leave your machine.
-  - icon: "\U0001F310"
-    title: Webhook Relay + OAuth Broker
-    details: Receive webhooks behind NAT via a persistent WebSocket tunnel. Zero-setup OAuth with 14 providers — GitHub, Slack, Google, and more. Tokens encrypted end-to-end.
-  - icon: "\U0001F9E9"
-    title: MCP Server
-    details: Expose dicode as an MCP server so AI agents (Claude Code, Cursor) can list tasks, trigger runs, and control dev mode autonomously.
+    details: "Full-featured UI: create tasks from prompts, manage TaskSets and sources, edit code with Monaco editor (with inline AI chat), view live logs via WebSocket, manage secrets, configure settings. Desktop tray app on macOS, Linux, Windows with failure notifications. Or go CLI-only — your choice."
+    link: /getting-started/
+    linkText: Getting started
 ---
 
 <style>
@@ -137,14 +180,18 @@ return { prCount: prs.length };
 | [**Triggers**](/concepts/triggers) | Cron, webhook (with HTML UIs), manual, chain, daemon |
 | [**SDK Globals**](/concepts/sdk) | params, kv, input, output, dicode, mcp — Deno & Python |
 | [**Secrets**](/concepts/secrets) | Encrypted store, provider chain, CLI management |
-| [**Sources**](/concepts/sources) | TaskSets, git sources, local sources, dev mode |
-| [**Webhook Relay & OAuth**](/concepts/relay) | NAT traversal, ECDSA identity, zero-setup OAuth, self-hosted options |
+| [**Sources & TaskSets**](/concepts/sources) | Git sources, local sources, TaskSet composition, dev mode |
+| [**Task Sharing**](/concepts/sharing) | Community registry, overrides, multi-machine deployment |
+| [**Hot Reload**](/concepts/hot-reload) | 100ms local reload, git webhook sync, dev mode |
+| [**Webhook Relay & OAuth**](/concepts/relay) | NAT traversal, ECDSA identity, zero-setup OAuth |
+| [**AI Agent**](/concepts/ai-agent) | Built-in AI chat, MCP server, skills, BYO provider |
+| [**Throwaway UIs**](/examples/throwaway-ui) | Webhook visualizers, polls, approval gates, dashboards |
 | [**Examples**](/examples/cron-task) | Cron task, webhook form, Docker container |
 
 </div>
 
 ## Open source
 
-dicode is open source and free to self-host — no feature gates, no trial limits. The full engine (reconciler, runtimes, scheduler, secrets, relay, MCP) is yours to run forever.
+dicode is AGPL-3.0 licensed and free to self-host — no feature gates, no trial limits. The full engine (reconciler, runtimes, scheduler, secrets, relay, MCP) is yours to run forever. The copyleft license ensures the code stays open.
 
 [View on GitHub](https://github.com/dicode-ayo/dicode-core) · [Landing Page](https://dicode-ayo.github.io/dicode-site/)

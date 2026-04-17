@@ -10,131 +10,156 @@ export class DcGitops extends LitElement {
   render() {
     return html`
       <style>
-        dc-gitops .gitops-visual {
-          display: flex;
-          align-items: center;
-          justify-content: center;
+        dc-gitops .gitops-compare {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
           gap: var(--space-lg);
-          margin-top: var(--space-xl);
+          margin-bottom: var(--space-2xl);
         }
-        dc-gitops .gitops-node {
+        dc-gitops .gitops-side {
           background: var(--card-bg);
           border: 1px solid var(--border);
           border-radius: var(--radius);
           padding: var(--space-lg);
-          text-align: center;
-          min-width: 180px;
-          flex: 1;
-          max-width: 240px;
         }
-        dc-gitops .gitops-node .node-icon {
-          font-size: 2rem;
-          margin-bottom: var(--space-sm);
+        dc-gitops .gitops-side.bad { opacity: .8; }
+        dc-gitops .gitops-side.good { border-color: var(--border-dashed); }
+        dc-gitops .gitops-side h4 {
+          font-size: .8rem;
+          font-weight: var(--font-bold);
+          text-transform: uppercase;
+          letter-spacing: var(--tracking-wide);
+          margin-bottom: var(--space-md);
         }
-        dc-gitops .gitops-node h4 {
-          margin: 0 0 var(--space-sm);
-          color: var(--heading);
-        }
-        dc-gitops .gitops-node p {
-          margin: 0;
-          color: var(--muted);
-          font-size: var(--text-base);
-        }
-        dc-gitops .gitops-arrow {
-          font-size: 2rem;
-          line-height: 1;
-          color: var(--sky);
-          font-weight: bold;
-          flex-shrink: 0;
+        dc-gitops .gitops-side.bad h4 { color: var(--muted); }
+        dc-gitops .gitops-side.good h4 { color: var(--sky); }
+        dc-gitops .gitops-side ul {
+          list-style: none;
           display: flex;
-          align-items: center;
-          justify-content: center;
+          flex-direction: column;
+          gap: var(--space-sm);
         }
-        dc-gitops .gitops-arrow::before { content: "→"; }
-        @media (max-width: 900px) {
-          dc-gitops .gitops-visual {
-            flex-direction: column;
-            gap: var(--space-md);
-          }
-          dc-gitops .gitops-arrow::before { content: "↓"; }
-          dc-gitops .gitops-node {
-            max-width: 100%;
-            width: 100%;
-          }
+        dc-gitops .gitops-side li {
+          font-size: .85rem;
+          color: var(--text);
+          line-height: 1.5;
+          padding-left: var(--space-lg);
+          position: relative;
+        }
+        dc-gitops .gitops-side li::before {
+          position: absolute;
+          left: 0;
+          font-family: 'Fira Code', 'Cascadia Code', monospace;
+          font-size: .75rem;
+        }
+        dc-gitops .gitops-side.bad li::before { content: '\u251C\u2500'; color: var(--muted); }
+        dc-gitops .gitops-side.bad li:last-child::before { content: '\u2514\u2500'; }
+        dc-gitops .gitops-side.good li::before { content: '\u251C\u2500'; color: var(--green); }
+        dc-gitops .gitops-side.good li:last-child::before { content: '\u2514\u2500'; }
+
+        dc-gitops .argo-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: var(--text-sm);
+        }
+        dc-gitops .argo-table th {
+          padding: .7rem .8rem;
+          color: var(--muted);
+          font-weight: var(--font-semibold);
+          font-size: .75rem;
+          text-transform: uppercase;
+          letter-spacing: .05em;
+          text-align: left;
+        }
+        dc-gitops .argo-table th:last-child { color: var(--sky); }
+        dc-gitops .argo-table thead tr { border-bottom: 2px solid var(--border); }
+        dc-gitops .argo-table tbody tr { border-bottom: 1px solid var(--border); }
+        dc-gitops .argo-table tbody tr:last-child { border-bottom: none; }
+        dc-gitops .argo-table td {
+          padding: .5rem .8rem;
+          color: var(--text);
+          font-size: var(--text-sm);
+        }
+        @media (max-width: 640px) {
+          dc-gitops .gitops-compare { grid-template-columns: 1fr; }
+          dc-gitops .argo-table { font-size: var(--text-xs); }
+          dc-gitops .argo-table th, dc-gitops .argo-table td { padding: .4rem .5rem; }
         }
       </style>
       <section id="gitops" style="background: var(--bg);">
         <div class="container">
-          <p class="section-label reveal">True GitOps</p>
-          <h2 class="section-title reveal">Everything lives in git</h2>
-          <p class="section-sub reveal">A <strong style="color:var(--sky)">TaskSet</strong> manifest maps tasks from anywhere — your own repo, a community store, shared team repos — into one unified automation surface. Push a change, it's live in seconds. The same pattern as ArgoCD and Flux — but for automation tasks.</p>
+          <p class="section-label reveal">Declarative DevOps</p>
+          <h2 class="section-title reveal">What's in git is what's running</h2>
+          <p class="section-sub reveal">
+            No drift. No mystery. No "where did that script go?"
+            Your git repo IS the desired state. dicode reconciles it automatically &mdash;
+            the same model as ArgoCD, without the cluster.
+          </p>
 
-          <div class="code-block reveal" style="max-width: 600px; margin: 0 auto 3rem;">
-            <div class="code-header">
-              <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-              <span class="filename">taskset.yaml</span>
+          <div class="gitops-compare stagger">
+            <div class="gitops-side bad">
+              <h4>Traditional automation</h4>
+              <ul>
+                <li>SSH into server</li>
+                <li>Edit crontab (hope you remember the syntax)</li>
+                <li>Create a script somewhere (/opt? ~/scripts? /tmp?)</li>
+                <li>Set env vars in .bashrc? .env? systemd?</li>
+                <li>Forget about it for 6 months</li>
+                <li>Server dies &mdash; "What was running on that box?"</li>
+                <li>Rebuild from memory and tears</li>
+              </ul>
             </div>
-            <pre><code><span class="kw">apiVersion</span>: dicode/v1
-<span class="kw">kind</span>: TaskSet
-<span class="kw">metadata</span>:
-  <span class="prop">name</span>: <span class="str">my-infra</span>
-
-<span class="kw">spec</span>:
-  <span class="prop">entries</span>:
-    <span class="cmt"># Your own tasks</span>
-    <span class="prop">pr-digest</span>:
-      <span class="kw">ref</span>: { <span class="prop">path</span>: <span class="str">./tasks/pr-digest</span> }
-
-    <span class="cmt"># Community store task</span>
-    <span class="prop">slack-alerts</span>:
-      <span class="kw">ref</span>: { <span class="prop">url</span>: <span class="str">github.com/dicode-community/tasks</span>, <span class="prop">path</span>: <span class="str">slack-alerts</span> }
-
-    <span class="cmt"># Shared team repo</span>
-    <span class="prop">deploy</span>:
-      <span class="kw">ref</span>: { <span class="prop">url</span>: <span class="str">github.com/my-org/shared-ops</span>, <span class="prop">path</span>: <span class="str">deploy</span> }
-
-    <span class="cmt"># Nested TaskSet — compose hierarchies</span>
-    <span class="prop">monitoring</span>:
-      <span class="kw">ref</span>: { <span class="prop">path</span>: <span class="str">./monitoring/taskset.yaml</span> }</code></pre>
-          </div>
-
-          <div class="gitops-visual stagger">
-            <div class="gitops-node">
-              <div class="node-icon">💻</div>
-              <h4>Your Laptop</h4>
-              <p>Edit locally, instant reload<br>via fsnotify (~100ms)</p>
-            </div>
-            <div class="gitops-arrow"></div>
-            <div class="gitops-node">
-              <div class="node-icon">🖥️</div>
-              <h4>Self-Hosted</h4>
-              <p>Docker, Kubernetes,<br>bare metal — same code</p>
-            </div>
-            <div class="gitops-arrow"></div>
-            <div class="gitops-node">
-              <div class="node-icon">☁️</div>
-              <h4>dicode.app Cloud</h4>
-              <p>Managed, zero changes<br>needed to migrate</p>
+            <div class="gitops-side good">
+              <h4>dicode</h4>
+              <ul>
+                <li>task.yaml in git (declarative, reviewed, versioned)</li>
+                <li>Save a file &mdash; live in 100ms (fsnotify)</li>
+                <li>git push &mdash; live in under 1 second (webhook)</li>
+                <li>New server? Clone + ./dicoded &mdash; identical setup</li>
+                <li>Server dies &mdash; clone repo anywhere, same result</li>
+                <li>git log &mdash; full history of what ran and when</li>
+                <li>Permissions, secrets, triggers &mdash; all in the manifest</li>
+                <li>Zero drift, zero surprises</li>
+              </ul>
             </div>
           </div>
 
-          <div class="features-grid stagger" style="margin-top: 3rem;">
-            <div class="feature-card">
-              <div class="feature-icon">🔄</div>
-              <h3>Auto-Reconciliation</h3>
-              <p>dicode watches all sources, computes content hashes, and reconciles. Add, update, or remove tasks without restarting anything.</p>
-            </div>
-            <div class="feature-card">
-              <div class="feature-icon">🗂️</div>
-              <h3>TaskSet Composition</h3>
-              <p>Map tasks from multiple git repos, local directories, and community stores into one namespace. Nested TaskSets, override inheritance, namespace-scoped IDs like <code style="color:var(--sky)">infra/deploy</code>.</p>
-            </div>
-            <div class="feature-card">
-              <div class="feature-icon">🔁</div>
-              <h3>Fully Portable</h3>
-              <p>Works on your laptop, same code on Docker/Kubernetes, same code on cloud. Zero config changes between environments. Git permissions control access.</p>
-            </div>
+          <div class="reveal" style="overflow-x: auto;">
+            <table class="argo-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>ArgoCD (Kubernetes)</th>
+                  <th>dicode (everywhere else)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Watches</td>
+                  <td>Git for K8s manifests</td>
+                  <td>Git for task.yaml files</td>
+                </tr>
+                <tr>
+                  <td>Reconciles</td>
+                  <td>Desired vs actual cluster state</td>
+                  <td>Desired vs actual task registry</td>
+                </tr>
+                <tr>
+                  <td>Drift detection</td>
+                  <td>Continuous sync</td>
+                  <td>Hash-based change detection + auto-reload</td>
+                </tr>
+                <tr>
+                  <td>Requires</td>
+                  <td>Kubernetes cluster</td>
+                  <td>One binary</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
+          <p class="reveal" style="text-align:center; margin-top:var(--space-xl);">
+            <a href="/docs/concepts/sources" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:var(--font-semibold);">Read more &rarr;</a>
+          </p>
         </div>
       </section>
     `;

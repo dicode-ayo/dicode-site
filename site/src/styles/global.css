@@ -14,10 +14,11 @@ body {
 }
 
 /* ── CUSTOM ELEMENTS ── */
-dc-nav, dc-hero, dc-how-it-works, dc-gitops, dc-code-demo,
-dc-control, dc-runtimes, dc-security, dc-share, dc-connect,
-dc-runs-anywhere, dc-dx, dc-ai-control, dc-download, dc-pricing,
-dc-compare, dc-opensource, dc-footer {
+dc-nav, dc-hero, dc-ai-loop, dc-ai-how, dc-ai-examples, dc-everything-task, dc-gitops,
+dc-hot-reload, dc-runs-anywhere, dc-mcp-factory, dc-throwaway-ui,
+dc-connect, dc-multi-machine, dc-code-demo, dc-share, dc-runtimes,
+dc-security, dc-download, dc-pricing, dc-compare, dc-opensource,
+dc-footer, dc-how-it-works, dc-control, dc-dx, dc-ai-control {
   display: block;
 }
 
