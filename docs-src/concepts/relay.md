@@ -117,17 +117,68 @@ The hosted relay at `relay.dicode.app` includes an **OAuth broker** that elimina
 
 ### How it works
 
-1. Your task calls `dicode.openAuth("github", { scopes: ["repo", "user"] })`
-2. The daemon signs the request with its ECDSA identity key and opens the user's browser
-3. The browser hits the relay's `/auth/github` endpoint — the broker verifies the signature
-4. The broker redirects to GitHub's OAuth consent screen (using dicode's registered app)
-5. User approves → GitHub redirects back to the broker with an authorization code
-6. The broker exchanges the code for an access token
-7. The token is **encrypted to the daemon's public key** (ECIES: P-256 ECDH + HKDF + AES-256-GCM)
-8. The encrypted payload is forwarded over the existing relay WebSocket
-9. The daemon decrypts and stores the token in its local secrets store
+::: info Prerequisite
+The broker flow requires the relay to be enabled in your `dicode.yaml`:
+```yaml
+relay:
+  enabled: true
+  server_url: wss://relay.dicode.app
+```
+If the relay is not configured, `buildin/auth-start` will return an `oauth broker not configured on this daemon` error.
+:::
 
-The token never appears in a browser URL, never touches the relay in plaintext, and never leaves your machine unencrypted.
+Two built-in tasks ship with dicode and handle the full flow:
+
+```sh
+# 1. Ask the daemon to build a signed /auth/:provider URL
+dicode run buildin/auth-start provider=slack
+
+# Prints the URL — open it in your browser and approve. After consent,
+# the broker delivers the encrypted token to your daemon automatically.
+
+# 2. Once the flow completes, the token is in your secrets store:
+dicode secrets list | grep SLACK
+# → SLACK_ACCESS_TOKEN
+# → SLACK_REFRESH_TOKEN      (if Slack returned one)
+# → SLACK_EXPIRES_AT         (if expires_in was set)
+# → SLACK_SCOPE
+# → SLACK_TOKEN_TYPE
+```
+
+Under the hood:
+
+1. `buildin/auth-start` calls `dicode.oauth.build_auth_url(provider, scope)` — the daemon signs a `/auth/:provider?…&sig=…` URL with its ECDSA identity key and tracks the session id in memory
+2. The user opens that URL in a browser — the broker verifies the signature against the pubkey it knows for that UUID from the live WSS registry
+3. Broker redirects to the provider's OAuth consent screen (using dicode's registered app)
+4. User approves → provider redirects back to the broker with an authorization code
+5. Broker exchanges the code for an access token
+6. Token is **encrypted to the daemon's public key** (ECIES: P-256 ECDH + HKDF + AES-256-GCM, with the message type tag bound as GCM authenticated data)
+7. Encrypted envelope is forwarded over the existing relay WebSocket to a reserved `/hooks/oauth-complete` path
+8. `buildin/auth-relay` receives the envelope and calls the daemon's `store_token` IPC primitive, which decrypts, parses, and writes credentials to the secrets store — **all in Go-process memory**. The decrypted buffer is best-effort zeroed after the write (Go cannot guarantee memory erasure). Tokens then live on as normal dicode secrets, encrypted at rest via ChaCha20-Poly1305.
+
+The token never appears in a browser URL and never touches the relay in plaintext. Tasks that declare the token as an `env` secret receive it in their process environment variables at runtime.
+
+### Consuming the token
+
+Once the flow completes, tokens are regular dicode secrets. Inject them into any task via the usual `env` declaration:
+
+```yaml
+# tasks/my-slack-bot/task.yaml
+trigger:
+  manual: true
+permissions:
+  env:
+    - name: SLACK_TOKEN
+      secret: SLACK_ACCESS_TOKEN
+```
+
+```ts
+// tasks/my-slack-bot/task.ts
+const token = Deno.env.get("SLACK_TOKEN")!;
+const res = await fetch("https://slack.com/api/auth.test", {
+  headers: { Authorization: `Bearer ${token}` },
+});
+```
 
 ### Supported providers
 
@@ -152,11 +203,16 @@ Tasks can override scopes per request. New providers can be added to the broker 
 
 ### Security
 
-- **ECDSA-signed auth requests** — the broker verifies the caller controls the relay UUID before starting the OAuth flow
-- **ECIES token encryption** — tokens are encrypted to the daemon's P-256 public key before entering the relay. Even a compromised relay server cannot read tokens.
-- **PKCE binding** — the PKCE challenge is signed into the broker request and cross-verified on delivery
-- **Single-use sessions** — broker sessions expire after 5 minutes and are deleted immediately after token delivery
-- **No token storage** — the broker never stores tokens. They're encrypted and forwarded in one step.
+- **ECDSA-signed auth requests** — the broker verifies the caller controls the relay UUID before starting the OAuth flow. The signed payload layout is hardcoded in Go, so task code can never coax the daemon identity key into signing a payload of the wrong shape (e.g. a WSS handshake digest).
+- **PKCE binding** — the PKCE challenge is bound into the signed payload and cross-verified on delivery, preventing an attacker who intercepts the URL from swapping in their own challenge.
+- **ECIES token encryption** — tokens are encrypted to the daemon's P-256 public key before entering the relay. Even a compromised relay server — or a CDN sitting in front of it — cannot read tokens.
+- **Type-as-AAD domain separation** — the envelope's message-type tag is bound into AES-GCM's authenticated data on both ends. A ciphertext produced under any other type label (a future or malicious message type reusing the same ECIES scheme) will fail to decrypt through this path.
+- **Pending-session validation** — the daemon tracks outstanding flows by session id and rejects deliveries whose session was never issued (or has expired). This closes a chosen-salt oracle against the identity key.
+- **Reserved delivery path** — the trigger engine refuses to bind `/hooks/oauth-complete` to any task other than `buildin/auth-relay`, so an unrelated user task cannot become a drop-in exfiltration sink for decrypted credentials.
+- **Plaintext never crosses JS** — decrypt, parse, and writes to the secrets store all happen in Go-process memory. `buildin/auth-relay` only ever sees the secret *names* that were written; the decrypted buffer is best-effort zeroed after `store_token` returns (Go cannot guarantee memory erasure). Tokens then live on as normal dicode secrets (encrypted at rest via ChaCha20-Poly1305).
+- **Metadata-only audit log** — every delivery emits a structured log entry with task id, run id, provider, session id, and the list of secret names written. No plaintext, no ciphertext, no pubkeys — just enough for incident response.
+- **Single-use sessions** — broker sessions expire after 5 minutes and are deleted immediately after token delivery. Retries require a fresh flow.
+- **No token storage on the broker** — the broker never persists tokens. They're encrypted and forwarded in one step.
 
 ### Self-hosted vs Pro
 
