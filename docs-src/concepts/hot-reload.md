@@ -55,3 +55,17 @@ In dev mode, the local path is watched with fsnotify (100ms), giving you the spe
 4. **Reconcile** — registry re-registers the task, trigger engine reschedules
 
 For TaskSet sources, the hash is computed from the fully-resolved spec (after override cascade), so changing an override in a parent TaskSet also triggers a reload.
+
+## ArgoCD for everything outside Kubernetes
+
+If you've used ArgoCD or Flux for Kubernetes, dicode's model will feel familiar:
+
+| | ArgoCD | dicode |
+|---|---|---|
+| **Watches** | Git repos for K8s manifests | Git repos for task.yaml files |
+| **Reconciles** | Desired vs actual cluster state | Desired vs actual task registry |
+| **Drift detection** | Continuous sync | Content-hash comparison + auto-reload |
+| **Deploy** | Apply manifests to K8s API | Re-register task, reschedule triggers |
+| **Requires** | Kubernetes cluster | One binary |
+
+The same declarative, git-driven, reconciliation-based model — without the cluster. Your git repo IS the desired state. What's in git is what's running. Always.

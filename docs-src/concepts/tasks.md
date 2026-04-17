@@ -2,6 +2,20 @@
 
 A **task** is the fundamental unit of work in dicode. Each task is a directory containing a `task.yaml` manifest and (for script-based runtimes) a script file. Tasks are the building blocks of all automation -- from cron jobs and webhooks to long-running daemons and chained workflows.
 
+## Everything is a task
+
+dicode is a **task kernel** — a minimal Go binary that handles scheduling, runtime execution, git reconciliation, and security boundaries. Everything above that layer is a task:
+
+| Platform feature | How it's implemented | Can you replace it? |
+|-----------------|---------------------|-------------------|
+| **AI task generator** | Daemon task using OpenAI-compatible API | Yes — swap the model, provider, or the entire task |
+| **Web dashboard** | Daemon task serving HTML on port 8080 | Yes — write your own UI as a daemon task |
+| **AI chat agent** | Webhook task at `/hooks/ai` | Yes — customize skills, tools, provider |
+| **Notification alerts** | Task triggered on failure via chain | Yes — write your own Telegram/email/PagerDuty notifier |
+| **MCP server** | Daemon task speaking JSON-RPC 2.0 | Yes — write your own MCP server task with custom tool selection |
+
+The defaults are sensible and work out of the box. But if you need different behavior — a different AI model, a custom dashboard, a different notification channel — you replace the task, not the binary. Everything is versioned in git, reviewable, and revertable.
+
 ## Directory structure
 
 Every task lives in its own directory. The directory name becomes the task's ID.

@@ -39,15 +39,46 @@ That's it. `dicode` clones the repo, loads the task, and starts running it. No i
 
 The community task registry is itself a TaskSet — the same format that powers everything else:
 
-```bash
-# Search for community tasks
-dicode task search monitoring
+### Searching for tasks
 
-# Install a task into your taskset.yaml
-dicode task install monitoring/uptime-ping
+```bash
+$ dicode task search monitoring
+
+  monitoring/uptime-ping     HTTP health checks with Slack alerting    github.com/dicode-ayo/task-uptime
+  monitoring/ssl-expiry      SSL certificate expiration checker        github.com/user/task-ssl-check
+  monitoring/dns-resolve     DNS resolution monitoring                 github.com/user/task-dns
+
+  3 tasks found. Install with: dicode task install <name>
 ```
 
-Under the hood, `install` just adds a git ref entry to your local `taskset.yaml`. The reconciler picks it up within seconds.
+The search command fetches the registry TaskSet, walks its entries, and matches against names, descriptions, and tags.
+
+### Installing a task
+
+```bash
+$ dicode task install monitoring/uptime-ping
+
+Added monitoring/uptime-ping to taskset.yaml
+  → github.com/dicode-ayo/task-uptime@main
+
+Task registered. Next run: in 5 minutes (cron: */5 * * * *).
+```
+
+Under the hood, `install` adds a git ref entry to your local `taskset.yaml`:
+
+```yaml
+# What install added to your taskset.yaml
+monitoring/uptime-ping:
+  ref:
+    url: https://github.com/dicode-ayo/task-uptime
+    branch: main
+```
+
+The reconciler picks it up within seconds. You can then customize with overrides:
+
+```bash
+$ dicode task install monitoring/uptime-ping --set params.check_url=https://api.myapp.com/health
+```
 
 ## Overrides and customization
 

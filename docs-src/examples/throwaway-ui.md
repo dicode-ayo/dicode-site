@@ -138,6 +138,56 @@ Deno.serve({ port: 3003 }, async (req) => {
 });
 ```
 
+## Status dashboard
+
+A daemon task that aggregates results from other tasks into a custom status page:
+
+```typescript
+// status-dashboard/task.ts
+Deno.serve({ port: 3004 }, async () => {
+  const tasks = await dicode.list_tasks();
+  const rows = [];
+
+  for (const t of tasks.slice(0, 20)) {
+    const runs = await dicode.get_runs(t.id, { limit: 1 });
+    const last = runs[0];
+    const status = !last ? "no runs" : last.success ? "ok" : "failed";
+    const color = status === "ok" ? "#22c55e" : status === "failed" ? "#ef4444" : "#666";
+    rows.push(`
+      <tr>
+        <td>${t.name}</td>
+        <td style="color:${color}; font-weight:600;">${status}</td>
+        <td>${last?.finished_at ?? "—"}</td>
+        <td>${last?.duration_ms ? last.duration_ms + "ms" : "—"}</td>
+      </tr>
+    `);
+  }
+
+  return new Response(`
+    <!DOCTYPE html>
+    <html>
+    <body style="font-family: system-ui; max-width: 900px; margin: 2rem auto;">
+      <h1>Task Status Dashboard</h1>
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:2px solid #333; text-align:left;">
+            <th>Task</th><th>Status</th><th>Last Run</th><th>Duration</th>
+          </tr>
+        </thead>
+        <tbody>${rows.join("")}</tbody>
+      </table>
+      <p style="color:#666; margin-top:1rem; font-size:.85rem;">
+        Auto-refreshes every 30 seconds.
+      </p>
+      <script>setTimeout(() => location.reload(), 30000)</script>
+    </body>
+    </html>
+  `, { headers: { "content-type": "text/html" } });
+});
+```
+
+This dashboard calls `dicode.list_tasks()` and `dicode.get_runs()` to build a real-time status table. Add `permissions.dicode.list_tasks: true` and `permissions.dicode.get_runs: true` to the task.yaml.
+
 ## Key points
 
 - Throwaway UIs are **just daemon tasks** — they get git versioning, permissions, secrets, KV store, and run history for free

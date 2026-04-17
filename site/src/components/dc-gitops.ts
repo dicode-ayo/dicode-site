@@ -13,23 +13,23 @@ export class DcGitops extends LitElement {
         dc-gitops .gitops-compare {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 1.5rem;
-          margin-bottom: 3rem;
+          gap: var(--space-lg);
+          margin-bottom: var(--space-2xl);
         }
         dc-gitops .gitops-side {
           background: var(--card-bg);
           border: 1px solid var(--border);
           border-radius: var(--radius);
-          padding: 1.6rem;
+          padding: var(--space-lg);
         }
         dc-gitops .gitops-side.bad { opacity: .8; }
-        dc-gitops .gitops-side.good { border-color: rgba(13,110,253,.4); }
+        dc-gitops .gitops-side.good { border-color: var(--border-dashed); }
         dc-gitops .gitops-side h4 {
           font-size: .8rem;
-          font-weight: 700;
+          font-weight: var(--font-bold);
           text-transform: uppercase;
-          letter-spacing: .06em;
-          margin-bottom: 1rem;
+          letter-spacing: var(--tracking-wide);
+          margin-bottom: var(--space-md);
         }
         dc-gitops .gitops-side.bad h4 { color: var(--muted); }
         dc-gitops .gitops-side.good h4 { color: var(--sky); }
@@ -37,13 +37,13 @@ export class DcGitops extends LitElement {
           list-style: none;
           display: flex;
           flex-direction: column;
-          gap: .5rem;
+          gap: var(--space-sm);
         }
         dc-gitops .gitops-side li {
           font-size: .85rem;
           color: var(--text);
           line-height: 1.5;
-          padding-left: 1.6rem;
+          padding-left: var(--space-lg);
           position: relative;
         }
         dc-gitops .gitops-side li::before {
@@ -60,12 +60,12 @@ export class DcGitops extends LitElement {
         dc-gitops .argo-table {
           width: 100%;
           border-collapse: collapse;
-          font-size: .82rem;
+          font-size: var(--text-sm);
         }
         dc-gitops .argo-table th {
           padding: .7rem .8rem;
           color: var(--muted);
-          font-weight: 600;
+          font-weight: var(--font-semibold);
           font-size: .75rem;
           text-transform: uppercase;
           letter-spacing: .05em;
@@ -78,11 +78,11 @@ export class DcGitops extends LitElement {
         dc-gitops .argo-table td {
           padding: .5rem .8rem;
           color: var(--text);
-          font-size: .82rem;
+          font-size: var(--text-sm);
         }
         @media (max-width: 640px) {
           dc-gitops .gitops-compare { grid-template-columns: 1fr; }
-          dc-gitops .argo-table { font-size: .72rem; }
+          dc-gitops .argo-table { font-size: var(--text-xs); }
           dc-gitops .argo-table th, dc-gitops .argo-table td { padding: .4rem .5rem; }
         }
       </style>
@@ -157,10 +157,8 @@ export class DcGitops extends LitElement {
               </tbody>
             </table>
           </div>
-          <p class="reveal" style="text-align:center; margin-top:2rem;">
-            <a href="/docs/concepts/sources" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:600;">Sources & TaskSets docs &rarr;</a>
-            &nbsp;&middot;&nbsp;
-            <a href="/docs/concepts/sharing" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:600;">Task Sharing &rarr;</a>
+          <p class="reveal" style="text-align:center; margin-top:var(--space-xl);">
+            <a href="/docs/concepts/sources" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:var(--font-semibold);">Read more &rarr;</a>
           </p>
         </div>
       </section>

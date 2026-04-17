@@ -12,13 +12,13 @@ export class DcEverythingTask extends LitElement {
       <style>
         dc-everything-task .kernel-diagram {
           max-width: 600px;
-          margin: 0 auto 3rem;
+          margin: 0 auto var(--space-2xl);
           display: flex;
           flex-direction: column;
           gap: 0;
         }
         dc-everything-task .kernel-layer {
-          padding: 1.4rem 2rem;
+          padding: var(--space-lg) var(--space-xl);
           text-align: center;
           border: 1px solid var(--border);
           position: relative;
@@ -44,15 +44,15 @@ export class DcEverythingTask extends LitElement {
         }
         dc-everything-task .kernel-layer h4 {
           font-size: .85rem;
-          font-weight: 700;
+          font-weight: var(--font-bold);
           color: var(--heading);
           margin-bottom: .3rem;
           text-transform: uppercase;
-          letter-spacing: .06em;
+          letter-spacing: var(--tracking-wide);
         }
         dc-everything-task .kernel-layer p {
           color: var(--muted);
-          font-size: .82rem;
+          font-size: var(--text-sm);
           line-height: 1.5;
         }
         dc-everything-task .kernel-layer .replace-badge {
@@ -60,18 +60,18 @@ export class DcEverythingTask extends LitElement {
           top: .6rem;
           right: .8rem;
           font-size: .6rem;
-          font-weight: 700;
+          font-weight: var(--font-bold);
           text-transform: uppercase;
           letter-spacing: .05em;
           color: var(--sky);
           background: var(--blue-tint-strong);
-          padding: .15rem .5rem;
+          padding: .15rem var(--space-sm);
           border-radius: 4px;
         }
         dc-everything-task .versus-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 1.5rem;
+          gap: var(--space-lg);
           max-width: 700px;
           margin: 0 auto;
         }
@@ -79,18 +79,18 @@ export class DcEverythingTask extends LitElement {
           background: var(--card-bg);
           border: 1px solid var(--border);
           border-radius: var(--radius);
-          padding: 1.6rem;
+          padding: var(--space-lg);
         }
         dc-everything-task .versus-card.highlight {
-          border-color: rgba(13,110,253,.4);
+          border-color: var(--border-dashed);
         }
         dc-everything-task .versus-card h4 {
           font-size: .85rem;
-          font-weight: 700;
+          font-weight: var(--font-bold);
           color: var(--muted);
           text-transform: uppercase;
-          letter-spacing: .06em;
-          margin-bottom: 1rem;
+          letter-spacing: var(--tracking-wide);
+          margin-bottom: var(--space-md);
         }
         dc-everything-task .versus-card.highlight h4 {
           color: var(--sky);
@@ -99,19 +99,19 @@ export class DcEverythingTask extends LitElement {
           list-style: none;
           display: flex;
           flex-direction: column;
-          gap: .5rem;
+          gap: var(--space-sm);
         }
         dc-everything-task .versus-card li {
           font-size: .85rem;
           color: var(--text);
-          padding-left: 1.4rem;
+          padding-left: var(--space-lg);
           position: relative;
           line-height: 1.5;
         }
         dc-everything-task .versus-card li::before {
           position: absolute;
           left: 0;
-          font-weight: 700;
+          font-weight: var(--font-bold);
         }
         dc-everything-task .versus-card:not(.highlight) li::before {
           content: '\u2014';
@@ -124,9 +124,9 @@ export class DcEverythingTask extends LitElement {
         dc-everything-task .hook-text {
           text-align: center;
           color: var(--muted);
-          font-size: 1rem;
+          font-size: var(--text-md);
           font-style: italic;
-          margin-top: 2.5rem;
+          margin-top: var(--space-xl);
         }
         dc-everything-task .hook-text strong {
           color: var(--sky);
@@ -137,7 +137,7 @@ export class DcEverythingTask extends LitElement {
             grid-template-columns: 1fr;
           }
           dc-everything-task .kernel-layer {
-            padding: 1rem 1.2rem;
+            padding: var(--space-md) 1.2rem;
           }
         }
       </style>
@@ -190,10 +190,8 @@ export class DcEverythingTask extends LitElement {
           <p class="hook-text reveal">
             Don't like something? Don't file a feature request. <strong>Replace the task.</strong>
           </p>
-          <p class="reveal" style="text-align:center; margin-top:1rem;">
-            <a href="/docs/concepts/tasks" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:600;">Tasks docs &rarr;</a>
-            &nbsp;&middot;&nbsp;
-            <a href="/docs/concepts/sources" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:600;">Sources & TaskSets &rarr;</a>
+          <p class="reveal" style="text-align:center; margin-top:var(--space-md);">
+            <a href="/docs/concepts/tasks" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:var(--font-semibold);">Read more &rarr;</a>
           </p>
         </div>
       </section>

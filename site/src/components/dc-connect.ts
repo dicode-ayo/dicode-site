@@ -64,8 +64,8 @@ export class DcConnect extends LitElement {
         dc-connect .provider-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-          gap: 1rem;
-          margin-top: 2rem;
+          gap: var(--space-md);
+          margin-top: var(--space-xl);
         }
         dc-connect .provider-item {
           display: flex;
@@ -75,13 +75,13 @@ export class DcConnect extends LitElement {
           padding: 1.4rem 1rem;
           background: var(--card-bg);
           border: 1px solid var(--border);
-          border-radius: 12px;
-          transition: transform .2s, border-color .2s, background .2s;
+          border-radius: var(--radius);
+          transition: transform var(--duration-fast), border-color var(--duration-fast), background var(--duration-fast);
           text-align: center;
         }
         dc-connect .provider-item:hover {
           transform: translateY(-4px);
-          border-color: rgba(160, 196, 255, .35);
+          border-color: var(--border-strong);
           background: rgba(255, 255, 255, .06);
         }
         dc-connect .provider-logo {
@@ -92,7 +92,7 @@ export class DcConnect extends LitElement {
         dc-connect .provider-name {
           color: var(--heading);
           font-size: .85rem;
-          font-weight: 500;
+          font-weight: var(--font-medium);
           line-height: 1.2;
         }
         dc-connect .provider-item.coming-soon { opacity: .55; }
@@ -108,7 +108,7 @@ export class DcConnect extends LitElement {
         }
         dc-connect .provider-item.special {
           border-style: dashed;
-          border-color: rgba(13, 110, 253, .5);
+          border-color: var(--border-dashed);
           background: rgba(13, 110, 253, .06);
         }
         dc-connect .provider-item.special .provider-logo {
@@ -116,13 +116,13 @@ export class DcConnect extends LitElement {
         }
         dc-connect .provider-item.special .provider-name {
           color: var(--blue2);
-          font-weight: 600;
+          font-weight: var(--font-semibold);
         }
         dc-connect .connect-footer {
           text-align: center;
           color: var(--muted);
-          margin-top: 2rem;
-          font-size: .9rem;
+          margin-top: var(--space-xl);
+          font-size: var(--text-base);
         }
         dc-connect .connect-footer a {
           color: var(--sky);
@@ -189,9 +189,9 @@ export class DcConnect extends LitElement {
             </div>
           </div>
           <p class="connect-footer reveal">
-            No app registration needed with dicode.app Pro. Missing a provider? Write your own OAuth flow —
+            No app registration needed. Missing a provider? Write your own OAuth flow —
             dicode gives you the building blocks.
-            <a href="/docs/concepts/relay">Webhook Relay & OAuth docs &rarr;</a>
+            <a href="/docs/concepts/relay" style="color:var(--sky); text-decoration:none; font-weight:var(--font-semibold);">Read more &rarr;</a>
           </p>
         </div>
       </section>

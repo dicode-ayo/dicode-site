@@ -39,17 +39,17 @@ export class DcOpensource extends LitElement {
           background: linear-gradient(135deg, var(--bg-alt) 0%, var(--bg-accent) 100%);
           text-align: center;
         }
-        dc-opensource h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; color: var(--heading); margin-bottom: 1rem; }
-        dc-opensource .os-sub { color: var(--muted); max-width: 540px; margin: 0 auto 1.5rem; line-height: 1.7; font-size: 1rem; }
+        dc-opensource h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: var(--font-extrabold); color: var(--heading); margin-bottom: var(--space-md); }
+        dc-opensource .os-sub { color: var(--muted); max-width: 540px; margin: 0 auto var(--space-lg); line-height: 1.7; font-size: var(--text-md); }
         dc-opensource .os-links {
           display: flex; align-items: center; justify-content: center;
-          gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;
+          gap: var(--space-md); flex-wrap: wrap; margin-bottom: var(--space-lg);
         }
         dc-opensource .github-btn {
           display: inline-flex; align-items: center; gap: .6rem;
-          background: #fff; color: #0d0d1a; padding: .8rem 2rem;
-          border-radius: 10px; font-weight: 700; text-decoration: none; font-size: 1rem;
-          transition: transform .2s, box-shadow .2s;
+          background: #fff; color: #0d0d1a; padding: .8rem var(--space-xl);
+          border-radius: var(--radius-md); font-weight: var(--font-bold); text-decoration: none; font-size: var(--text-md);
+          transition: transform var(--duration-fast), box-shadow var(--duration-fast);
           box-shadow: 0 4px 20px rgba(0,0,0,.3);
         }
         dc-opensource .github-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,.4); }
@@ -58,17 +58,17 @@ export class DcOpensource extends LitElement {
           background: rgba(13,110,253,.15);
           color: var(--sky);
           font-size: .75rem;
-          font-weight: 700;
-          padding: .15rem .5rem;
-          border-radius: 6px;
+          font-weight: var(--font-bold);
+          padding: .15rem var(--space-sm);
+          border-radius: var(--radius-sm);
           margin-left: .2rem;
         }
         dc-opensource .discord-btn {
-          display: inline-flex; align-items: center; gap: .5rem;
+          display: inline-flex; align-items: center; gap: var(--space-sm);
           background: transparent; color: var(--sky);
-          border: 1px solid var(--border); padding: .8rem 1.6rem;
-          border-radius: 10px; font-weight: 600; text-decoration: none; font-size: .95rem;
-          transition: border-color .2s, transform .2s;
+          border: 1px solid var(--border); padding: .8rem var(--space-lg);
+          border-radius: var(--radius-md); font-weight: var(--font-semibold); text-decoration: none; font-size: .95rem;
+          transition: border-color var(--duration-fast), transform var(--duration-fast);
         }
         dc-opensource .discord-btn:hover { border-color: var(--sky); transform: translateY(-2px); }
         dc-opensource .os-who {
@@ -76,23 +76,24 @@ export class DcOpensource extends LitElement {
           font-size: .85rem;
           max-width: 500px;
           margin: 0 auto;
-          line-height: 1.6;
+          line-height: var(--leading-normal);
         }
         dc-opensource .os-who a { color: var(--sky); text-decoration: none; }
         dc-opensource .os-who a:hover { text-decoration: underline; }
         @media (max-width: 640px) {
           dc-opensource h2 { font-size: 1.5rem; }
-          dc-opensource .os-sub { font-size: .9rem; }
-          dc-opensource .github-btn { font-size: .9rem; padding: .7rem 1.6rem; }
+          dc-opensource .os-sub { font-size: var(--text-base); }
+          dc-opensource .github-btn { font-size: var(--text-base); padding: .7rem 1.6rem; }
           dc-opensource .os-links { flex-direction: column; }
         }
       </style>
       <section id="opensource">
         <div class="container">
-          <h2 class="reveal">Open source at the core</h2>
+          <h2 class="reveal">Open source. Protected.</h2>
           <p class="os-sub reveal">
-            Apache 2.0 licensed. The full engine &mdash; reconciler, runtimes, scheduler, secrets,
-            notifications &mdash; is free forever. No feature gates, no trial limits, no vendor lock-in.
+            AGPL-3.0 licensed &mdash; the full engine is open source and free to self-host forever.
+            The copyleft license ensures the code stays open: anyone can use, modify, and deploy dicode,
+            but cloud providers can't strip-mine the code into a proprietary service.
           </p>
           <div class="os-links reveal">
             <a href="https://github.com/${REPO}" class="github-btn" target="_blank" rel="noopener">

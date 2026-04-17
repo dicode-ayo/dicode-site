@@ -25,15 +25,15 @@ export class DcRunsAnywhere extends LitElement {
         dc-runs-anywhere .device-item {
           background: var(--card-bg); border: 1px solid var(--border);
           border-radius: var(--radius); padding: 1.8rem 1.2rem;
-          text-align: center; transition: border-color .25s, transform .2s;
+          text-align: center; transition: border-color var(--duration), transform var(--duration-fast);
         }
         dc-runs-anywhere .device-item:hover { border-color: rgba(160,196,255,.3); transform: translateY(-2px); }
         dc-runs-anywhere .device-icons {
           display: flex; align-items: center; justify-content: center;
-          gap: .5rem; margin-bottom: .8rem;
+          gap: var(--space-sm); margin-bottom: .8rem;
         }
         dc-runs-anywhere .device-icons svg { width: 32px; height: 32px; }
-        dc-runs-anywhere .device-item h4 { font-size: .9rem; font-weight: 700; color: var(--heading); margin-bottom: .25rem; }
+        dc-runs-anywhere .device-item h4 { font-size: var(--text-base); font-weight: var(--font-bold); color: var(--heading); margin-bottom: var(--space-xs); }
         dc-runs-anywhere .device-item p { font-size: .78rem; color: var(--muted); line-height: 1.4; }
 
         /* ── Grow paths ── */
@@ -43,31 +43,31 @@ export class DcRunsAnywhere extends LitElement {
         dc-runs-anywhere .grow-title {
           text-align: center;
           font-size: .75rem;
-          font-weight: 700;
+          font-weight: var(--font-bold);
           text-transform: uppercase;
-          letter-spacing: .1em;
+          letter-spacing: var(--tracking-wider);
           color: var(--blue);
-          margin-bottom: 1.5rem;
+          margin-bottom: var(--space-lg);
         }
         dc-runs-anywhere .grow-paths {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 1.5rem;
+          gap: var(--space-lg);
         }
         dc-runs-anywhere .grow-path {
           background: var(--card-bg);
           border: 1px solid var(--border);
           border-radius: var(--radius);
-          padding: 1.6rem;
+          padding: var(--space-lg);
         }
         dc-runs-anywhere .grow-path h4 {
           font-size: .85rem;
-          font-weight: 700;
+          font-weight: var(--font-bold);
           color: var(--heading);
-          margin-bottom: 1rem;
+          margin-bottom: var(--space-md);
           display: flex;
           align-items: center;
-          gap: .5rem;
+          gap: var(--space-sm);
         }
         dc-runs-anywhere .grow-path h4 span { font-size: 1.2rem; }
         dc-runs-anywhere .grow-steps {
@@ -82,7 +82,7 @@ export class DcRunsAnywhere extends LitElement {
           gap: .4rem;
           background: var(--bg);
           border: 1px solid var(--border);
-          border-radius: 8px;
+          border-radius: var(--radius-md);
           padding: .4rem .7rem;
           font-size: .75rem;
           color: var(--text);
@@ -91,13 +91,13 @@ export class DcRunsAnywhere extends LitElement {
         dc-runs-anywhere .grow-step.active {
           border-color: var(--blue);
           color: var(--sky);
-          font-weight: 600;
+          font-weight: var(--font-semibold);
         }
         dc-runs-anywhere .grow-step.coming {
           opacity: .5;
           border-style: dashed;
         }
-        dc-runs-anywhere .grow-step .gs-icon { font-size: .9rem; }
+        dc-runs-anywhere .grow-step .gs-icon { font-size: var(--text-base); }
         dc-runs-anywhere .grow-arrow {
           color: var(--muted);
           font-size: .75rem;
@@ -113,14 +113,14 @@ export class DcRunsAnywhere extends LitElement {
         dc-runs-anywhere .fleet-note {
           text-align: center;
           margin-top: 2.5rem;
-          padding: 1.4rem;
+          padding: var(--space-lg);
           background: var(--card-bg);
           border: 1px solid var(--border);
           border-radius: var(--radius);
         }
         dc-runs-anywhere .fleet-note h4 {
           font-size: .85rem;
-          font-weight: 700;
+          font-weight: var(--font-bold);
           color: var(--heading);
           margin-bottom: .3rem;
         }
@@ -230,10 +230,8 @@ export class DcRunsAnywhere extends LitElement {
               No orchestration layer, no service mesh.
             </p>
           </div>
-          <p class="reveal" style="text-align:center; margin-top:1.5rem;">
-            <a href="/docs/" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:600;">Getting started &rarr;</a>
-            &nbsp;&middot;&nbsp;
-            <a href="/docs/concepts/sharing" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:600;">Multi-machine &amp; sharing &rarr;</a>
+          <p class="reveal" style="text-align:center; margin-top:var(--space-lg);">
+            <a href="/docs/concepts/sharing" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:var(--font-semibold);">Read more &rarr;</a>
           </p>
         </div>
       </section>

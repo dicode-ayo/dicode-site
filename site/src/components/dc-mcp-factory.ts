@@ -14,9 +14,9 @@ export class DcMcpFactory extends LitElement {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 1rem;
+          gap: var(--space-md);
           flex-wrap: wrap;
-          margin-bottom: 3rem;
+          margin-bottom: var(--space-2xl);
         }
         dc-mcp-factory .mcp-box {
           background: var(--card-bg);
@@ -28,7 +28,7 @@ export class DcMcpFactory extends LitElement {
         }
         dc-mcp-factory .mcp-box h4 {
           font-size: .85rem;
-          font-weight: 700;
+          font-weight: var(--font-bold);
           color: var(--heading);
           margin-bottom: .2rem;
         }
@@ -40,14 +40,14 @@ export class DcMcpFactory extends LitElement {
         dc-mcp-factory .mcp-arrow {
           color: var(--sky);
           font-size: 1.5rem;
-          font-weight: 700;
+          font-weight: var(--font-bold);
           flex-shrink: 0;
         }
         dc-mcp-factory .mcp-arrow::before { content: "\u2192"; }
         dc-mcp-factory .mcp-compare {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 1.5rem;
+          gap: var(--space-lg);
           max-width: 700px;
           margin: 0 auto;
         }
@@ -55,17 +55,17 @@ export class DcMcpFactory extends LitElement {
           background: var(--card-bg);
           border: 1px solid var(--border);
           border-radius: var(--radius);
-          padding: 1.6rem;
+          padding: var(--space-lg);
         }
         dc-mcp-factory .mcp-card.highlight {
-          border-color: rgba(13,110,253,.4);
+          border-color: var(--border-dashed);
         }
         dc-mcp-factory .mcp-card h4 {
           font-size: .8rem;
-          font-weight: 700;
+          font-weight: var(--font-bold);
           color: var(--muted);
           text-transform: uppercase;
-          letter-spacing: .06em;
+          letter-spacing: var(--tracking-wide);
           margin-bottom: .8rem;
         }
         dc-mcp-factory .mcp-card.highlight h4 { color: var(--sky); }
@@ -78,14 +78,14 @@ export class DcMcpFactory extends LitElement {
         dc-mcp-factory .mcp-card li {
           font-size: .85rem;
           color: var(--text);
-          padding-left: 1.4rem;
+          padding-left: var(--space-lg);
           position: relative;
           line-height: 1.5;
         }
         dc-mcp-factory .mcp-card li::before {
           position: absolute;
           left: 0;
-          font-weight: 700;
+          font-weight: var(--font-bold);
         }
         dc-mcp-factory .mcp-card:not(.highlight) li::before {
           content: '\u2014'; color: var(--muted);
@@ -155,8 +155,8 @@ export class DcMcpFactory extends LitElement {
               </ul>
             </div>
           </div>
-          <p class="reveal" style="text-align:center; margin-top:2rem;">
-            <a href="/docs/concepts/ai-agent" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:600;">MCP & AI Agent docs &rarr;</a>
+          <p class="reveal" style="text-align:center; margin-top:var(--space-xl);">
+            <a href="/docs/concepts/ai-agent" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:var(--font-semibold);">Read more &rarr;</a>
           </p>
         </div>
       </section>

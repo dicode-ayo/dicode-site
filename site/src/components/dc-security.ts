@@ -205,9 +205,7 @@ export class DcSecurity extends LitElement {
             </ul>
           </div>
           <p class="reveal" style="text-align:center; margin-top:2rem;">
-            <a href="/docs/concepts/tasks" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:600;">Permissions docs &rarr;</a>
-            &nbsp;&middot;&nbsp;
-            <a href="/docs/concepts/secrets" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:600;">Secrets docs &rarr;</a>
+            <a href="/docs/concepts/secrets" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:600;">Read more &rarr;</a>
           </p>
         </div>
       </section>

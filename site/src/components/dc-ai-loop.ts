@@ -434,11 +434,7 @@ export class DcAiLoop extends LitElement {
           </div>
 
           <p class="reveal" style="text-align:center; margin-top:2rem;">
-            <a href="/docs/concepts/ai-agent" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:600;">AI Agent docs &rarr;</a>
-            &nbsp;&middot;&nbsp;
-            <a href="/docs/concepts/relay" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:600;">Webhook Relay docs &rarr;</a>
-            &nbsp;&middot;&nbsp;
-            <a href="/docs/concepts/hot-reload" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:600;">Hot Reload docs &rarr;</a>
+            <a href="/docs/concepts/ai-agent" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:600;">Read more &rarr;</a>
           </p>
         </div>
       </section>

@@ -4,6 +4,41 @@ Dicode ships a built-in **ai-agent** task that provides a full chat interface wh
 
 This is a complement to dicode's [AI task generation](./sdk) feature. AI generation helps you *author* tasks; the agent helps you *operate* them.
 
+## AI at every stage
+
+Most automation tools stop at "AI helps you write code." dicode puts AI at every stage of the task lifecycle:
+
+| Stage | What AI does | How it works |
+|-------|-------------|--------------|
+| **Create** | Generates task.yaml + task.ts from plain English | `dicode generate "monitor my API every 5 min"` — AI writes validated code, commits to git |
+| **Validate** | Checks cron syntax, permissions, error handling | AI reviews generated code before it goes live — catches missing env vars, wrong trigger config, common anti-patterns |
+| **Deploy** | Commits to git, reconciler auto-deploys | No human deploy step — git commit triggers the reconciler, task is live in seconds |
+| **Monitor** | Watches runs, detects failure patterns | AI agent can query run history, detect repeated failures, response time changes, error rate spikes |
+| **Fix** | Diagnoses errors, generates patch, commits fix | Task fails → AI reads error + logs + source → generates a fix → commits to git → reconciler redeploys |
+
+Every AI action is a **git commit** you can review, revert, or override. The AI agents that perform these stages are **themselves tasks** — replaceable, customizable, versioned in git like everything else.
+
+### BYO any LLM
+
+All AI features work with any OpenAI-compatible API:
+
+- **OpenAI** (GPT-4o, o1)
+- **Anthropic** (Claude, via OpenAI-compat proxy)
+- **Ollama, LM Studio** (free, runs locally, no API key)
+- **Groq, Together, OpenRouter, DeepSeek**
+
+Set `base_url` and `api_key_env` in your config. Use a free local model for development, a cloud model for production. Switch in one line.
+
+### What happens when AI is wrong?
+
+The fix is a git commit. If the fix breaks things, the next run fails, and the monitoring loop catches it — same as a human mistake. `git revert` is always one command away. You can configure:
+
+- **Review before deploy** — AI generates a PR instead of committing directly
+- **Auto-revert on failure** — if the patched task fails, revert to the previous version
+- **Full autonomous mode** — AI commits and deploys without human intervention
+
+The dial between human control and AI autonomy is yours to set.
+
 ## What you get
 
 - **A chat page** at `/hooks/ai`, with per-provider presets at `/hooks/ai/ollama`, `/hooks/ai/openai`, and `/hooks/ai/groq`.

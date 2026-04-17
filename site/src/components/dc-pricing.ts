@@ -10,92 +10,155 @@ export class DcPricing extends LitElement {
   render() {
     return html`
       <style>
-        dc-pricing .deploy-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 2rem; }
-        dc-pricing .deploy-card {
-          background: var(--card-bg); border: 1px solid var(--border);
-          border-radius: var(--radius); padding: 2rem;
-          transition: transform .25s, box-shadow .25s;
+        dc-pricing .pricing-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: var(--space-lg);
+          max-width: 960px;
+          margin: 0 auto;
+        }
+        dc-pricing .pricing-card {
+          background: var(--card-bg);
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          padding: var(--space-xl) var(--space-lg);
           position: relative;
+          display: flex;
+          flex-direction: column;
         }
-        dc-pricing .deploy-card.featured {
-          border-color: rgba(13,110,253,.5);
-          box-shadow: 0 0 0 1px rgba(13,110,253,.3), 0 16px 48px rgba(13,110,253,.15);
+        dc-pricing .pricing-card.featured {
+          border-color: var(--border-dashed);
+          box-shadow: 0 0 0 1px rgba(13,110,253,.3), var(--shadow-card);
         }
-        dc-pricing .featured-badge {
-          position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-          background: var(--blue); color: #fff; font-size: .72rem; font-weight: 700;
-          letter-spacing: .05em; text-transform: uppercase; padding: .25rem .75rem; border-radius: 100px;
-          white-space: nowrap;
+        dc-pricing .pricing-card:hover {
+          transform: translateY(-4px);
+          box-shadow: var(--shadow-strong);
+          transition: transform var(--duration), box-shadow var(--duration);
         }
-        dc-pricing .deploy-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-strong); }
-        dc-pricing .deploy-icon { font-size: 2rem; margin-bottom: 1rem; }
-        dc-pricing .deploy-card h3 { font-size: 1.1rem; font-weight: 700; color: var(--heading); margin-bottom: .4rem; }
-        dc-pricing .deploy-card .price { font-size: 1.6rem; font-weight: 800; color: var(--sky); margin: .75rem 0; }
-        dc-pricing .deploy-card .price span { font-size: .9rem; font-weight: 400; color: var(--muted); }
-        dc-pricing .deploy-card ul { list-style: none; margin-top: 1rem; }
-        dc-pricing .deploy-card li {
-          color: var(--text); font-size: .875rem; padding: .35rem 0;
+        dc-pricing .pricing-badge {
+          position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+          background: var(--blue); color: #fff; font-size: var(--text-xs); font-weight: var(--font-bold);
+          letter-spacing: .05em; text-transform: uppercase; padding: var(--space-xs) .75rem;
+          border-radius: var(--radius-pill); white-space: nowrap;
+        }
+        dc-pricing .pricing-card h3 {
+          font-size: var(--text-lg); font-weight: var(--font-bold); color: var(--heading);
+          margin-bottom: var(--space-xs); text-align: center;
+        }
+        dc-pricing .pricing-price {
+          font-size: 2rem; font-weight: var(--font-extrabold); color: var(--sky);
+          text-align: center; margin: var(--space-sm) 0;
+        }
+        dc-pricing .pricing-price span {
+          font-size: var(--text-base); font-weight: var(--font-normal); color: var(--muted);
+        }
+        dc-pricing .pricing-desc {
+          color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-normal);
+          text-align: center; margin-bottom: var(--space-md);
+        }
+        dc-pricing .pricing-card ul {
+          list-style: none;
+          margin-top: auto;
+        }
+        dc-pricing .pricing-card li {
+          color: var(--text); font-size: var(--text-sm); padding: .35rem 0;
           border-bottom: 1px solid var(--border);
-          display: flex; gap: .5rem; align-items: flex-start;
+          display: flex; gap: var(--space-sm); align-items: flex-start;
         }
-        dc-pricing .deploy-card li:last-child { border-bottom: none; }
-        dc-pricing .deploy-card li::before { content: '\u2713'; color: var(--green); flex-shrink: 0; margin-top: 1px; }
-        @media (max-width: 768px) {
-          dc-pricing .deploy-cards { grid-template-columns: 1fr; }
+        dc-pricing .pricing-card li:last-child { border-bottom: none; }
+        dc-pricing .pricing-card li::before {
+          content: '\u2713'; color: var(--green); flex-shrink: 0; margin-top: 1px;
         }
+        dc-pricing .pricing-footer {
+          text-align: center; margin-top: var(--space-xl); color: var(--muted);
+          font-size: var(--text-sm); line-height: var(--leading-normal);
+        }
+        dc-pricing .pricing-footer strong { color: var(--heading); }
         @media (max-width: 640px) {
-          dc-pricing .deploy-cards { grid-template-columns: 1fr; gap: 1.2rem; }
-          dc-pricing .deploy-card { padding: 1.5rem; }
-          dc-pricing .featured-badge { font-size: .65rem; }
+          dc-pricing .pricing-grid { grid-template-columns: 1fr; gap: var(--space-md); }
+          dc-pricing .pricing-card { padding: var(--space-lg); }
         }
       </style>
       <section id="deploy" style="background: var(--bg-alt);">
         <div class="container">
           <p class="section-label reveal">Pricing</p>
-          <h2 class="section-title reveal">No feature gates. No compute units. Free forever.</h2>
-          <p class="section-sub reveal">Every feature, self-hosted, forever free. No trial limits, no enterprise upsell for core features. The Pro plan adds managed OAuth and relay &mdash; the engine is always complete.</p>
-          <div class="deploy-cards stagger">
-            <div class="deploy-card">
-              <div class="deploy-icon">&#x1F5A5;&#xFE0F;</div>
+          <h2 class="section-title reveal">Every feature, self-hosted, free forever</h2>
+          <p class="section-sub reveal">
+            The full engine is always free. Cloud tiers gate execution volume and seats &mdash;
+            never capabilities.
+          </p>
+
+          <div class="pricing-grid stagger">
+            <div class="pricing-card">
               <h3>Self-Hosted</h3>
-              <div class="price">Free</div>
+              <div class="pricing-price">Free</div>
+              <p class="pricing-desc">
+                The full engine. No gates.
+              </p>
               <ul>
-                <li>Full engine — no feature gates</li>
-                <li>All 4 runtimes included</li>
+                <li>All features, all runtimes</li>
+                <li>AI generation &amp; MCP server</li>
+                <li>Web dashboard &amp; tray app</li>
                 <li>Webhook relay (self-hosted)</li>
-                <li>BYO OAuth apps</li>
-                <li>Local SQLite database</li>
-                <li>System tray + web dashboard</li>
+                <li>BYO OAuth &amp; LLM provider</li>
+                <li>AGPL-3.0 open source</li>
               </ul>
             </div>
-            <div class="deploy-card featured">
-              <div class="featured-badge">Recommended</div>
-              <div class="deploy-icon">&#x2601;&#xFE0F;</div>
-              <h3>dicode.app Pro</h3>
-              <div class="price">$12<span>/mo</span></div>
+
+            <div class="pricing-card featured">
+              <span class="pricing-badge">Most popular</span>
+              <h3>Starter</h3>
+              <div class="pricing-price">$19<span>/mo</span></div>
+              <p class="pricing-desc">
+                For solo devs who want it to just work.
+              </p>
               <ul>
-                <li>Unlimited webhook relay</li>
-                <li style="color: var(--sky); font-weight: 600;">&#x1F511; Zero-setup OAuth (14 providers)</li>
-                <li>GitHub, Slack, Google, Spotify, Linear, Discord, GitLab, Notion, Stripe &amp; more</li>
-                <li>Private git repos</li>
+                <li>Managed relay (5 endpoints)</li>
+                <li>OAuth broker (5 providers)</li>
+                <li>10K task executions/mo</li>
+                <li>Managed database &amp; backups</li>
+                <li>1 user</li>
+              </ul>
+            </div>
+
+            <div class="pricing-card">
+              <h3>Pro</h3>
+              <div class="pricing-price">$49<span>/mo</span></div>
+              <p class="pricing-desc">
+                For power users and small teams.
+              </p>
+              <ul>
+                <li>Unlimited relay endpoints</li>
+                <li>All 14 OAuth providers</li>
+                <li>100K executions/mo</li>
+                <li>5 users</li>
                 <li>Custom relay domain</li>
                 <li>Priority support</li>
               </ul>
             </div>
-            <div class="deploy-card">
-              <div class="deploy-icon">&#x1F3E2;</div>
-              <h3>Team / Enterprise</h3>
-              <div class="price">$20<span>/seat/mo</span></div>
+
+            <div class="pricing-card">
+              <h3>Team</h3>
+              <div class="pricing-price">$149<span>/mo</span></div>
+              <p class="pricing-desc">
+                For teams that automate seriously.
+              </p>
               <ul>
-                <li>Everything in Pro</li>
-                <li>Multi-user RBAC</li>
-                <li>SSO / SAML</li>
-                <li>Audit logs</li>
-                <li>Managed Postgres/MySQL</li>
+                <li>500K executions/mo</li>
+                <li>20 users</li>
+                <li>Team collaboration features</li>
+                <li>Deployment approvals</li>
+                <li>Basic RBAC</li>
                 <li>SLA &amp; dedicated support</li>
               </ul>
             </div>
           </div>
+
+          <p class="pricing-footer reveal">
+            <strong>Our principle:</strong> cloud tiers gate volume and seats, never features.
+            Everything the engine can do is free, self-hosted, forever.
+            Need enterprise (SSO/SAML, audit logs, custom infrastructure)? <a href="mailto:hello@dicode.app" style="color:var(--sky); text-decoration:none;">Get in touch</a>.
+          </p>
         </div>
       </section>
     `;
