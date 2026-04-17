@@ -24,7 +24,7 @@ export class DcFooter extends LitElement {
       <footer>
         <p>&#9889; dicode — GitOps-native task orchestrator with AI generation &nbsp;&middot;&nbsp;
           <a href="https://github.com/dicode-ayo/dicode-core">GitHub</a> &nbsp;&middot;&nbsp;
-          <a href="/docs/getting-started/">Docs</a> &nbsp;&middot;&nbsp;
+          <a href="/docs/">Docs</a> &nbsp;&middot;&nbsp;
           <a href="/theme.html">Design System</a> &nbsp;&middot;&nbsp;
           Apache 2.0 License
         </p>

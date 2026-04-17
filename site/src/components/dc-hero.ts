@@ -114,7 +114,7 @@ export class DcHero extends LitElement {
         </p>
         <div class="hero-actions">
           <a class="btn-primary" href="#download">Download free</a>
-          <a class="btn-ghost" href="/docs/getting-started/">Read the docs</a>
+          <a class="btn-ghost" href="/docs/">Read the docs</a>
         </div>
         <div class="hero-timeline">
           <div class="tl-row">

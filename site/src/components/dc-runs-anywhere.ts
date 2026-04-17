@@ -230,6 +230,11 @@ export class DcRunsAnywhere extends LitElement {
               No orchestration layer, no service mesh.
             </p>
           </div>
+          <p class="reveal" style="text-align:center; margin-top:1.5rem;">
+            <a href="/docs/" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:600;">Getting started &rarr;</a>
+            &nbsp;&middot;&nbsp;
+            <a href="/docs/concepts/sharing" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:600;">Multi-machine &amp; sharing &rarr;</a>
+          </p>
         </div>
       </section>
     `;

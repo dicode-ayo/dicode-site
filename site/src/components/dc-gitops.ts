@@ -157,6 +157,11 @@ export class DcGitops extends LitElement {
               </tbody>
             </table>
           </div>
+          <p class="reveal" style="text-align:center; margin-top:2rem;">
+            <a href="/docs/concepts/sources" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:600;">Sources & TaskSets docs &rarr;</a>
+            &nbsp;&middot;&nbsp;
+            <a href="/docs/concepts/sharing" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:600;">Task Sharing &rarr;</a>
+          </p>
         </div>
       </section>
     `;

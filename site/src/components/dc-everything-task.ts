@@ -190,6 +190,11 @@ export class DcEverythingTask extends LitElement {
           <p class="hook-text reveal">
             Don't like something? Don't file a feature request. <strong>Replace the task.</strong>
           </p>
+          <p class="reveal" style="text-align:center; margin-top:1rem;">
+            <a href="/docs/concepts/tasks" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:600;">Tasks docs &rarr;</a>
+            &nbsp;&middot;&nbsp;
+            <a href="/docs/concepts/sources" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:600;">Sources & TaskSets &rarr;</a>
+          </p>
         </div>
       </section>
     `;

@@ -155,6 +155,9 @@ export class DcMcpFactory extends LitElement {
               </ul>
             </div>
           </div>
+          <p class="reveal" style="text-align:center; margin-top:2rem;">
+            <a href="/docs/concepts/ai-agent" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:600;">MCP & AI Agent docs &rarr;</a>
+          </p>
         </div>
       </section>
     `;
