@@ -98,7 +98,7 @@ jobs:
         # Sticky comment that updates in place on every push instead of spamming.
         # The `header` field is how the action identifies the comment to update;
         # any value works as long as it's unique per workflow.
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: cloudflare-pages-preview
           message: |
