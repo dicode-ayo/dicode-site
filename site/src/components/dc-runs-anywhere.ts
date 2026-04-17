@@ -49,11 +49,12 @@ export class DcRunsAnywhere extends LitElement {
       </style>
       <section id="runs-anywhere" style="background: var(--bg-alt);">
         <div class="container">
-          <p class="section-label reveal">Runs Anywhere</p>
-          <h2 class="section-title reveal">You own everything</h2>
+          <p class="section-label reveal">Zero Infrastructure</p>
+          <h2 class="section-title reveal">No internet? No problem.</h2>
           <p class="section-sub reveal">
-            Single binary, no dependencies. Runs on any OS. Local encrypted secrets that never leave your machine.
-            Full dashboard, full API, full MCP server — wherever it runs.
+            Single binary, zero external dependencies. No Postgres, no Redis, no Docker required.
+            Works fully offline and air-gapped. Encrypted secrets in local SQLite.
+            Runs on a Raspberry Pi with 50MB RAM.
           </p>
           <div class="device-grid stagger">
             <div class="device-item">

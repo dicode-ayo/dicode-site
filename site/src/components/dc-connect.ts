@@ -155,11 +155,12 @@ export class DcConnect extends LitElement {
       </style>
       <section id="connect" style="background: var(--bg);">
         <div class="container">
-          <p class="section-label reveal">Connect Everything</p>
-          <h2 class="section-title reveal">OAuth to every major SaaS</h2>
+          <p class="section-label reveal">One-Click OAuth</p>
+          <h2 class="section-title reveal">Click. Authenticate. Done.</h2>
           <p class="section-sub reveal">
-            OAuth connectors to major SaaS products — built in. Use the relay's broker for zero-setup,
-            or write your own OAuth flow from scratch. More providers added regularly.
+            No client IDs. No app registration. No ngrok for callbacks. Click "Connect" in the UI,
+            authenticate with the provider, and the token appears in your daemon &mdash; encrypted
+            end-to-end with ECIES. 14 providers, zero setup.
           </p>
           <div class="provider-grid stagger">
             ${AVAILABLE.map(

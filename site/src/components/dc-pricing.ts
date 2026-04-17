@@ -51,9 +51,9 @@ export class DcPricing extends LitElement {
       </style>
       <section id="deploy" style="background: var(--bg-alt);">
         <div class="container">
-          <p class="section-label reveal">Deployment</p>
-          <h2 class="section-title reveal">From laptop to enterprise</h2>
-          <p class="section-sub reveal">One binary, three ways to run it. Always free to self-host.</p>
+          <p class="section-label reveal">Pricing</p>
+          <h2 class="section-title reveal">No feature gates. No compute units. Free forever.</h2>
+          <p class="section-sub reveal">Every feature, self-hosted, forever free. No trial limits, no enterprise upsell for core features. The Pro plan adds managed OAuth and relay &mdash; the engine is always complete.</p>
           <div class="deploy-cards stagger">
             <div class="deploy-card">
               <div class="deploy-icon">&#x1F5A5;&#xFE0F;</div>

@@ -29,58 +29,59 @@ export class DcCompare extends LitElement {
       </style>
       <section id="compare" style="background: var(--bg);">
         <div class="container">
-          <p class="section-label reveal">Comparison</p>
-          <h2 class="section-title reveal">How dicode compares</h2>
-          <p class="section-sub reveal">Honest feature comparison with the tools you might already know.</p>
+          <p class="section-label reveal">Before &amp; After</p>
+          <h2 class="section-title reveal">What you're replacing</h2>
+          <p class="section-sub reveal">dicode doesn't compete with enterprise workflow platforms. It replaces the cron jobs, bash scripts, and YAML pipelines you're already managing.</p>
           <div class="reveal" style="overflow-x: auto;">
             <table>
               <thead>
                 <tr>
                   <th></th>
                   <th class="dicode-col">dicode</th>
-                  <th>Zapier</th>
+                  <th>cron + bash</th>
+                  <th>GitHub Actions</th>
                   <th>n8n</th>
-                  <th>Windmill</th>
-                  <th>Airflow</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td>Single binary, no infra</td>
+                  <td>Setup time</td>
+                  <td class="check">60 seconds</td>
+                  <td class="partial">varies</td>
+                  <td class="partial">~10 min</td>
+                  <td class="partial">~15 min</td>
+                </tr>
+                <tr>
+                  <td>AI creates tasks from English</td>
                   <td class="check">&check;</td>
-                  <td class="dash">&mdash;</td>
                   <td class="dash">&mdash;</td>
                   <td class="dash">&mdash;</td>
                   <td class="dash">&mdash;</td>
                 </tr>
                 <tr>
-                  <td>Git as source of truth</td>
+                  <td>AI monitors &amp; fixes failures</td>
                   <td class="check">&check;</td>
                   <td class="dash">&mdash;</td>
                   <td class="dash">&mdash;</td>
-                  <td class="partial">partial</td>
                   <td class="dash">&mdash;</td>
                 </tr>
                 <tr>
-                  <td>Auto-sync from git</td>
+                  <td>Git-versioned &amp; auditable</td>
                   <td class="check">&check;</td>
                   <td class="dash">&mdash;</td>
-                  <td class="dash">&mdash;</td>
-                  <td class="partial">manual</td>
+                  <td class="check">&check;</td>
                   <td class="dash">&mdash;</td>
                 </tr>
                 <tr>
-                  <td>AI task generation</td>
+                  <td>Auto-reconciles from git</td>
                   <td class="check">&check;</td>
                   <td class="dash">&mdash;</td>
-                  <td class="dash">&mdash;</td>
-                  <td class="check">&check;</td>
+                  <td class="partial">push only</td>
                   <td class="dash">&mdash;</td>
                 </tr>
                 <tr>
                   <td>MCP server for AI agents</td>
                   <td class="check">&check;</td>
-                  <td class="dash">&mdash;</td>
                   <td class="dash">&mdash;</td>
                   <td class="dash">&mdash;</td>
                   <td class="dash">&mdash;</td>
@@ -91,38 +92,26 @@ export class DcCompare extends LitElement {
                   <td class="dash">&mdash;</td>
                   <td class="dash">&mdash;</td>
                   <td class="dash">&mdash;</td>
-                  <td class="dash">&mdash;</td>
                 </tr>
                 <tr>
-                  <td>Desktop tray app</td>
-                  <td class="check">&check;</td>
-                  <td class="dash">&mdash;</td>
-                  <td class="dash">&mdash;</td>
-                  <td class="dash">&mdash;</td>
-                  <td class="dash">&mdash;</td>
-                </tr>
-                <tr>
-                  <td>Code you own &amp; review</td>
-                  <td class="check">&check;</td>
-                  <td class="dash">&mdash;</td>
-                  <td class="partial">partial</td>
-                  <td class="check">&check;</td>
-                  <td class="check">&check;</td>
-                </tr>
-                <tr>
-                  <td>Zero-setup OAuth (14+)</td>
-                  <td class="check">&check;</td>
+                  <td>Works offline / air-gapped</td>
                   <td class="check">&check;</td>
                   <td class="check">&check;</td>
                   <td class="dash">&mdash;</td>
                   <td class="dash">&mdash;</td>
                 </tr>
                 <tr>
-                  <td>Free self-hosted (all features)</td>
+                  <td>Zero-setup OAuth (14+)</td>
                   <td class="check">&check;</td>
                   <td class="dash">&mdash;</td>
+                  <td class="dash">&mdash;</td>
+                  <td class="check">&check;</td>
+                </tr>
+                <tr>
+                  <td>Free self-hosted, all features</td>
                   <td class="check">&check;</td>
                   <td class="check">&check;</td>
+                  <td class="partial">limits</td>
                   <td class="check">&check;</td>
                 </tr>
               </tbody>
