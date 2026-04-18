@@ -297,21 +297,89 @@ export class DcAiLoop extends LitElement {
 
         @media (max-width: 900px) {
           dc-ai-loop .ai-examples { grid-template-columns: 1fr; }
+          dc-ai-loop .example-flow { gap: var(--space-xs); }
+          dc-ai-loop .ex-step { font-size: var(--text-xs); }
+          dc-ai-loop .ex-step strong { font-size: .7rem; }
         }
 
-        /* ── Responsive — scale the whole ring down on small screens ── */
+        /* ── Mobile: hide the pentagon ring, show vertical stack instead ── */
+        dc-ai-loop .loop-stack { display: none; }
+
         @media (max-width: 680px) {
-          dc-ai-loop .loop-ring {
-            transform: scale(0.52);
-            transform-origin: top center;
-            height: ${Math.round(RING_H * 0.52)}px;
-            margin-bottom: 1rem;
+          dc-ai-loop .loop-ring { display: none; }
+          dc-ai-loop .loop-stack {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+            margin: 0 auto var(--space-xl);
+            max-width: 360px;
           }
-        }
-        @media (max-width: 380px) {
-          dc-ai-loop .loop-ring {
-            transform: scale(0.44);
-            height: ${Math.round(RING_H * 0.44)}px;
+          dc-ai-loop .stack-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: var(--space-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            position: relative;
+          }
+          dc-ai-loop .stack-item:not(:last-child)::after {
+            content: '\u2193';
+            position: absolute;
+            bottom: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--sky);
+            font-size: 1.1rem;
+            z-index: 1;
+          }
+          dc-ai-loop .stack-bubble {
+            width: 44px; height: 44px;
+            border-radius: var(--radius-full);
+            background: var(--bg);
+            border: 2px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            position: relative;
+          }
+          dc-ai-loop .stack-num {
+            position: absolute;
+            top: -4px; right: -4px;
+            width: 18px; height: 18px;
+            border-radius: var(--radius-full);
+            background: var(--blue);
+            color: #fff;
+            font-size: .6rem;
+            font-weight: var(--font-extrabold);
+            display: flex; align-items: center; justify-content: center;
+          }
+          dc-ai-loop .stack-text h4 {
+            font-size: var(--text-sm);
+            font-weight: var(--font-bold);
+            color: var(--heading);
+            margin-bottom: 2px;
+          }
+          dc-ai-loop .stack-text p {
+            font-size: var(--text-xs);
+            color: var(--muted);
+            line-height: var(--leading-snug);
+          }
+          dc-ai-loop .stack-item.active .stack-bubble {
+            animation: al-stack-glow 10s ease-in-out infinite;
+          }
+          dc-ai-loop .stack-item:nth-child(1) .stack-bubble { animation: al-stack-glow 10s ease-in-out infinite 0s; }
+          dc-ai-loop .stack-item:nth-child(2) .stack-bubble { animation: al-stack-glow 10s ease-in-out infinite 2s; }
+          dc-ai-loop .stack-item:nth-child(3) .stack-bubble { animation: al-stack-glow 10s ease-in-out infinite 4s; }
+          dc-ai-loop .stack-item:nth-child(4) .stack-bubble { animation: al-stack-glow 10s ease-in-out infinite 6s; }
+          dc-ai-loop .stack-item:nth-child(5) .stack-bubble { animation: al-stack-glow 10s ease-in-out infinite 8s; }
+          @keyframes al-stack-glow {
+            0%, 16%, 100% { border-color: var(--border); }
+            6%, 12% {
+              border-color: var(--blue);
+              box-shadow: 0 0 12px rgba(13,110,253,.4);
+            }
           }
         }
       </style>
@@ -351,6 +419,24 @@ export class DcAiLoop extends LitElement {
                 </div>
               `;
             })}
+          </div>
+
+          <!-- Mobile-only vertical stack -->
+          <div class="loop-stack reveal">
+            ${STAGES.map(
+              (s) => html`
+                <div class="stack-item">
+                  <div class="stack-bubble">
+                    <span class="stack-num">${s.num}</span>
+                    ${s.icon}
+                  </div>
+                  <div class="stack-text">
+                    <h4>${s.label}</h4>
+                    <p>${s.line1} ${s.line2}</p>
+                  </div>
+                </div>
+              `,
+            )}
           </div>
 
           <div class="ai-details stagger">
