@@ -93,6 +93,10 @@ permissions:
       secret: db_password
     - name: LOG_LEVEL            # literal value
       value: info
+    - name: OAUTH_KEY            # inject from store, run a prereq task if absent
+      secret: OAUTH_KEY
+      if_missing:
+        task: auth/some-oauth    # see Secrets page for details
   fs:                            # Deno only: filesystem access
     - path: /tmp
       permission: rw
