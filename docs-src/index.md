@@ -73,10 +73,10 @@ features:
     link: /concepts/sharing
     linkText: Task sharing docs
   - icon: "\U0001F4E1"
-    title: Multi-Machine Fleet
-    details: "Same git repo, multiple dicode daemons on different machines. Home server runs monitoring, laptop runs dev tasks, VPS handles public webhooks, Raspberry Pi collects sensor data. Git push — all update within 30 seconds. No orchestration layer, no service mesh. Just git + multiple binaries."
+    title: Runs on Many Machines
+    details: "One git repo, independent daemons on whatever machines you like. Home server runs monitoring, laptop runs dev tasks, VPS handles public webhooks, Raspberry Pi collects sensor data. Each daemon reconciles the repo on its own — no orchestration layer, no service mesh, no shared cluster state. Git push reaches every machine within its poll interval (30s default, instant via webhook)."
     link: /concepts/sharing
-    linkText: Multi-machine deployment
+    linkText: Running on multiple machines
   - icon: "\U0001F50D"
     title: Rich Web Dashboard
     details: "Full-featured UI: create tasks from prompts, manage TaskSets and sources, edit code with Monaco editor (with inline AI chat), view live logs via WebSocket, manage secrets, configure settings. Desktop tray app on macOS, Linux, Windows with failure notifications. Or go CLI-only — your choice."

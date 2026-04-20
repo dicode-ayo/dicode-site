@@ -109,13 +109,13 @@ To share a task with the community:
 2. Open a PR to add your repo URL to the community registry TaskSet
 3. That's it — no packaging, no publishing step
 
-## Multi-machine deployment
+## Running on multiple machines
 
-Point multiple dicode daemons at the same git repo:
+Point multiple dicode daemons at the same git repo. Each daemon is independent — it reconciles the repo on its own, with no cross-daemon coordination, no shared cluster state, and no orchestration layer:
 
 - **Home server** — runs monitoring, backups, media processing (24/7 tasks)
 - **Laptop** — runs dev tasks, webhook receivers, interactive UIs
 - **VPS** — runs public webhook endpoints, scheduled jobs
 - **Raspberry Pi** — runs IoT data collection, sensor polling
 
-All from one git repo. Git push — all machines update within 30 seconds. Use separate TaskSet entry points or env-based overrides to control which tasks run where.
+Each daemon picks up a `git push` within its poll interval (30s default, or instantly via git webhook). Use separate TaskSet entry points or env-based overrides to control which tasks run where.
