@@ -68,7 +68,32 @@ trigger:
   auth: true
 ```
 
-When `auth: true` is set, both GET (UI) and POST (run) requests require a valid dicode session. Unauthenticated requests are redirected to the login page.
+When `auth: true` is set, both GET (UI) and POST (run) requests require a valid dicode session. Any webhook task can opt in — the built-in dashboard at `/hooks/webui` and the `ai-agent` task both ship with `auth: true` by default.
+
+#### Login flow
+
+Unauthenticated browser GETs to a protected webhook path are redirected with `303 See Other` to `/login?next=<original-path>`:
+
+```
+GET /hooks/dashboard
+  ↓ 303
+/login?next=%2Fhooks%2Fdashboard
+  ↓ user enters passphrase, form POSTs to /api/auth/login
+  ↓ 303 (session cookie set)
+/hooks/dashboard          ← original target
+```
+
+The login page resolves the task's `name` and `description` from the registry when `next=/hooks/<id>` is a known webhook, so users see *which* task they're signing in to access (e.g. "Sign in to access AI Agent") rather than a generic prompt.
+
+**API clients** (requests without `Accept: text/html`) receive `401 JSON` instead of a redirect, preserving machine-readable behaviour for curl, fetch, and SDK callers.
+
+#### Safety
+
+The `next` parameter is validated as a same-origin path. Values that don't start with `/`, contain protocol-relative prefixes (`//`, `/\`), include backslashes or CR/LF, or parse to anything with a scheme/host/opaque component are rejected. Unsafe values fall back to `/hooks/webui` (form POST) or are dropped from the response (JSON POST). Open-redirect abuse attempts like `?next=//evil.com`, `?next=https://evil.com`, or `?next=javascript:…` cannot escape the same origin.
+
+#### Setting up the passphrase
+
+See [Auth passphrase](/getting-started/configuration#auth-passphrase) in the configuration guide for how the passphrase is generated on first boot, where it's stored, and how to rotate or recover it.
 
 ### Webhook task UIs
 
