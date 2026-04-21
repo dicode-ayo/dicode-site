@@ -137,6 +137,33 @@ Skills are loaded eagerly — every name you pass is read and concatenated into 
 
 A starter skill ships at `tasks/skills/dicode-basics.md` covering core dicode concepts an agent should know to be useful.
 
+## Picking the task the WebUI and CLI use
+
+The WebUI's in-task AI chat panel and the `dicode ai` CLI both forward to a single configurable task, named by `ai.task` in `dicode.yaml`:
+
+```yaml
+ai:
+  task: buildin/dicodai   # default — change to any ai-agent preset
+```
+
+When omitted the default is `buildin/dicodai`, a preset of `buildin/ai-agent` preloaded with the `dicode-task-dev` skill. Point `ai.task` at any preset (e.g. `examples/ai-agent-ollama`) to swap providers, skills, or model without changing code.
+
+Two surfaces read this setting:
+
+- **`POST /api/ai/chat`** — used by the WebUI chat panel when you're editing a task. Forwards the JSON body to the configured task's webhook and returns its response. Requires a valid dicode session (gated by `requireAuth` when `server.auth: true`).
+- **`dicode ai "<prompt>" [--session-id ID] [--task TASK_ID]`** — fires the configured task through the engine over the CLI control socket. Use `--task` to override for a single invocation; use `--session-id` to continue an existing conversation. The first turn's generated session id is printed to stderr as `session: <id>` so it doesn't pollute reply-consuming pipes.
+
+```sh
+# First turn — session id goes to stderr, reply to stdout.
+dicode ai "what tasks failed last night?"
+
+# Continue the conversation.
+dicode ai --session-id 7f3a... "dig into the github-stars one"
+
+# One-off override: hit a specific provider preset for this call only.
+dicode ai --task examples/ai-agent-ollama "quick question for the local model"
+```
+
 ## Session model
 
 The task uses a hybrid session-id scheme:
