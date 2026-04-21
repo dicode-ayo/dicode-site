@@ -122,7 +122,7 @@ The override system can patch these fields without modifying the original task.y
 - `timeout`
 - `runtime`
 - `notify` (on_success, on_failure)
-- `dicode` permissions (tasks, mcp, list_tasks, get_runs, get_config, secrets_write)
+- `dicode` permissions (tasks, mcp, list_tasks, get_runs, secrets_write)
 
 ### Nested entry overrides
 

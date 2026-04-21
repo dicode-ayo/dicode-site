@@ -107,7 +107,6 @@ permissions:
     mcp: ["my-mcp-daemon"]       # mcp.list_tools() / mcp.call() targets
     list_tasks: true             # dicode.list_tasks()
     get_runs: true               # dicode.get_runs()
-    get_config: true             # dicode.get_config()
     secrets_write: true          # dicode.secrets_set() / secrets_delete()
 
 docker:                          # docker/podman runtime only

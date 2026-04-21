@@ -205,9 +205,6 @@ export default async function main({ dicode }: DicodeSdk) {
   // Get recent runs for a task (requires permissions.dicode.get_runs)
   const runs = await dicode.get_runs("other-task", { limit: 5 });
 
-  // Read config section (requires permissions.dicode.get_config)
-  const aiConfig = await dicode.get_config("ai");
-
   // Manage secrets (requires permissions.dicode.secrets_write)
   await dicode.secrets_set("MY_API_KEY", "sk-abc123");
   await dicode.secrets_delete("OLD_KEY");
@@ -223,9 +220,6 @@ tasks = dicode.list_tasks()
 
 # Get recent runs for a task (requires permissions.dicode.get_runs)
 runs = dicode.get_runs("other-task", limit=5)
-
-# Read config section (requires permissions.dicode.get_config)
-ai_config = dicode.get_config("ai")
 ```
 
 :::
@@ -237,7 +231,6 @@ async def main():
     result = await dicode.run_task_async("other-task", {"key": "value"})
     tasks = await dicode.list_tasks_async()
     runs = await dicode.get_runs_async("other-task", limit=5)
-    config = await dicode.get_config_async("ai")
 ```
 
 ### API
@@ -247,7 +240,6 @@ async def main():
 | Run task | `await dicode.run_task(id, params?)` | `dicode.run_task(id, params=None)` | `await dicode.run_task_async(id, params=None)` |
 | List tasks | `await dicode.list_tasks()` | `dicode.list_tasks()` | `await dicode.list_tasks_async()` |
 | Get runs | `await dicode.get_runs(id, opts?)` | `dicode.get_runs(id, limit=10)` | `await dicode.get_runs_async(id, limit=10)` |
-| Get config | `await dicode.get_config(section)` | `dicode.get_config(section)` | `await dicode.get_config_async(section)` |
 | Set secret | `await dicode.secrets_set(key, value)` | -- | -- |
 | Delete secret | `await dicode.secrets_delete(key)` | -- | -- |
 
@@ -263,7 +255,6 @@ permissions:
     tasks: ["target-task-id"]    # or ["*"] for all
     list_tasks: true
     get_runs: true
-    get_config: true
     secrets_write: true
     mcp: ["mcp-daemon-id"]
 ```
