@@ -137,6 +137,38 @@ Skills are loaded eagerly — every name you pass is read and concatenated into 
 
 A starter skill ships at `tasks/skills/dicode-basics.md` covering core dicode concepts an agent should know to be useful.
 
+## Picking the task the WebUI and CLI use
+
+The WebUI's in-task AI chat panel and the `dicode ai` CLI both forward to a single configurable task, named by `ai.task` in `dicode.yaml`:
+
+```yaml
+ai:
+  task: buildin/dicodai   # default — change to any ai-agent preset
+```
+
+When omitted the default is `buildin/dicodai`, a preset of `buildin/ai-agent` preloaded with the `dicode-task-dev` skill. Point `ai.task` at any preset (e.g. `examples/ai-agent-ollama`) to swap providers, skills, or model without changing code.
+
+The target task **must have a webhook trigger under `/hooks/`** — anything else is rejected at forward time with `500 ai task webhook must be under /hooks/`. This keeps `/api/ai/chat` from being used as an authenticated proxy to arbitrary infrastructure routes and closes a self-dispatch loop.
+
+Two surfaces read this setting:
+
+- **`POST /api/ai/chat`** — used by the WebUI chat panel when you're editing a task. Forwards the JSON body to the configured task's webhook and returns its response. The outer request is gated by `requireAuth` when `server.auth: true`; additionally, the forward re-enters the router and passes through `webhookAuthGuard`, so a configured task with `trigger.auth: true` enforces a valid session on every call regardless of `server.auth`. The default `buildin/dicodai` has `auth: true`, so this endpoint always requires a dicode session in practice.
+- **`dicode ai "<prompt>" [--session-id ID] [--task TASK_ID]`** — fires the configured task through the engine over the CLI control socket. `--task` overrides `ai.task` for this call only; `--session-id` (alias `-s`) continues an existing conversation. Both flags also accept `=VALUE` single-token forms, and a `--` sentinel terminates flag parsing so prompts that start with `--task` or `--session-id` can be passed verbatim. The first turn's generated session id is printed to stderr as `session: <id>` so it doesn't pollute reply-consuming pipes.
+
+```sh
+# First turn — session id goes to stderr, reply to stdout.
+dicode ai "what tasks failed last night?"
+
+# Continue the conversation — -s is short for --session-id.
+dicode ai -s 7f3a... "dig into the github-stars one"
+
+# Override ai.task for this call only.
+dicode ai --task examples/ai-agent-ollama "quick question for the local model"
+
+# Prompt that literally starts with a flag name — use -- to terminate parsing.
+dicode ai -- --task is not a flag here
+```
+
 ## Session model
 
 The task uses a hybrid session-id scheme:
