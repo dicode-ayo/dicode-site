@@ -68,7 +68,7 @@ trigger:
   auth: true
 ```
 
-When `auth: true` is set, both GET (UI) and POST (run) requests require a valid dicode session. Any webhook task can opt in — the built-in dashboard at `/hooks/webui` and the `ai-agent` task both ship with `auth: true` by default.
+When `auth: true` is set, both GET (UI) and POST (run) requests require a valid dicode session. Any webhook task can opt in — for example, the built-in dashboard at `/hooks/webui` and the `dicodai` preset at `/hooks/ai/dicodai` both ship with `auth: true` because they're only ever called from within an authenticated dicode session.
 
 #### Login flow
 
