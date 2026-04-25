@@ -47,7 +47,7 @@ jobs:
       name: cloudflare-production
       url: https://dicode-site.pages.dev
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: actions/setup-node@v4
         with:
