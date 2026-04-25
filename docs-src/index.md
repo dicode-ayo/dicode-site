@@ -30,7 +30,7 @@ features:
   - icon: "\U0001F9E9"
     title: MCP Tool Factory
     details: "Every task you write becomes an AI tool. Agents (Claude Code, Cursor, GPT) connect via MCP, discover your tasks, and call them with typed params. Your code, your git, your control — unlike tool marketplaces where you consume someone else's black box. Want different tool sets? Multiple MCP server tasks with different permissions."
-    link: /concepts/ai-agent
+    link: /concepts/mcp-server
     linkText: MCP server docs
   - icon: "\U0001F310"
     title: Public URLs Without ngrok

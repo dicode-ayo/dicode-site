@@ -263,7 +263,7 @@ permissions:
 
 ## mcp
 
-Call tools on MCP (Model Context Protocol) servers exposed by daemon tasks.
+Call tools on **external** MCP (Model Context Protocol) servers exposed by daemon tasks. To go the other direction — let an external MCP client (Claude Desktop, Cursor, Claude Code) call into dicode — see [MCP Server](./mcp-server).
 
 ::: code-group
 
