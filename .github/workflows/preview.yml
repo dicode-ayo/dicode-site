@@ -43,10 +43,16 @@ jobs:
   deploy-preview:
     name: Build & Deploy Preview
     runs-on: ubuntu-latest
-    # Forks don't have access to repo secrets — skip silently rather than
-    # failing the PR. Single-maintainer repos where all PRs come from
-    # branches in the same repo will always hit this.
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    # Skip when the run won't have access to the Cloudflare secrets:
+    #   1. PRs from forks — repo secrets aren't exposed to fork runs.
+    #   2. Dependabot PRs — although they live in this repo (passing the
+    #      fork guard), GitHub isolates them from Actions secrets under a
+    #      separate "Dependabot secrets" namespace, so wrangler would fail
+    #      with an empty CLOUDFLARE_API_TOKEN. Previews of dep bumps have
+    #      essentially no review value anyway. If we ever want them, mirror
+    #      the CF secrets into Settings → Secrets → Dependabot and drop the
+    #      actor check.
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'
     steps:
       - uses: actions/checkout@v4
 
