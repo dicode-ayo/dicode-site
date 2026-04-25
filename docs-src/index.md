@@ -38,8 +38,8 @@ features:
     link: /concepts/relay
     linkText: Webhook relay docs
   - icon: "\U0001F511"
-    title: One-Click OAuth (14 Providers)
-    details: "Click Connect in the UI, authenticate with the provider, token appears in your daemon — encrypted end-to-end. No app registration, no client secrets, no callback URLs. GitHub, Slack, Google, Discord, GitLab, Spotify, Linear, Notion, Stripe, Salesforce, Office 365, Azure AD, Airtable, Confluence."
+    title: OAuth Flows for 14 Providers
+    details: "Click Connect in the UI, authenticate with the provider, token appears in your daemon — encrypted end-to-end with ECIES. PKCE flows where the provider supports it (no client secret to wire up); a one-time CLIENT_ID/SECRET registration for the rest. GitHub, Slack, Google, Discord, GitLab, Spotify, Linear, Notion, Stripe, Salesforce, Office 365, Azure AD, Airtable, Confluence."
     link: /concepts/relay
     linkText: OAuth broker docs
   - icon: "\U0001F6E1"

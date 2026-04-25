@@ -147,12 +147,13 @@ export class DcConnect extends LitElement {
       </style>
       <section id="connect" style="background: var(--bg);">
         <div class="container">
-          <p class="section-label reveal">One-Click OAuth</p>
+          <p class="section-label reveal">OAuth Broker</p>
           <h2 class="section-title reveal">Click. Authenticate. Done.</h2>
           <p class="section-sub reveal">
-            No client IDs. No app registration. No ngrok for callbacks. Click "Connect" in the UI,
-            authenticate with the provider, and the token appears in your daemon &mdash; encrypted
-            end-to-end with ECIES. 14 providers, zero setup.
+            No ngrok for callbacks. Click "Connect" in the UI, authenticate with the provider,
+            and the token appears in your daemon &mdash; encrypted end-to-end with ECIES.
+            PKCE for providers that support it; a one-time client-id/secret registration for the rest.
+            14 providers, no callback URLs to wire up.
           </p>
           <div class="provider-grid stagger">
             ${AVAILABLE.map(
