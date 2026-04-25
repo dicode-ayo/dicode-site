@@ -41,6 +41,27 @@ permissions:
       value: info
 ```
 
+### Running a prereq task when a secret is missing
+
+Secret-backed entries accept an `if_missing:` directive that names a task to run *before* the main task dispatches when the secret isn't present in the store. This is the hook that turns a first-time OAuth flow into zero-paste onboarding: the user triggers the real task, the engine notices the key is absent, fires the OAuth task in chain mode, and only runs the real task once the key is stored.
+
+```yaml
+permissions:
+  env:
+    - name: OPENROUTER_API_KEY
+      secret: OPENROUTER_API_KEY
+      if_missing:
+        task: auth/openrouter-oauth
+        # params: { ... }    # optional, forwarded to the prereq task
+```
+
+Behavior:
+
+- Secret present → `if_missing` is a no-op; task runs immediately.
+- Secret missing → engine synchronously fires the named task in chain mode. If it succeeds and the secret is now resolvable, the main task runs. If it fails — for example an OAuth flow throwing *"Open this URL to authorize: …"* — that error becomes the main task's failure, giving the UI a clickable setup link to show the user.
+
+Only `secret:`-backed entries honor `if_missing:`. On `from:`, `value:`, or bare entries the directive is silently ignored — there's no secret to check for in the first place.
+
 ---
 
 ## Provider chain

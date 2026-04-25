@@ -211,4 +211,7 @@ The v1 buildin is deliberately minimal. Tracked follow-ups:
 - **Streaming tokens** — the dashboard already WebSocket-broadcasts run logs; a streaming chat UI is an additive change.
 - **History rehydration on reload** — needs a way for the browser to read the task's KV.
 - **CLI chat** — `dicode chat [preset]` as a REPL, `session_id` persisted in a dotfile.
-- **Zero-paste OAuth onboarding** via OpenRouter PKCE through the dicode-relay broker.
+
+### Zero-paste onboarding with `if_missing`
+
+The `ai-agent-openrouter` preset chains a local PKCE OAuth task via the `if_missing` directive on its API-key env entry: the first time a user hits the chat with no `OPENROUTER_API_KEY` stored, the engine runs [`auth/openrouter-oauth`](../getting-started/configuration) before the real task, which surfaces an authorize URL. One browser click stores the key; every subsequent message skips the prereq and runs normally. No relay, no broker, no app registration — OpenRouter's flow accepts an arbitrary `callback_url` as a request parameter. See the [Secrets concepts page](./secrets#running-a-prereq-task-when-a-secret-is-missing) for the general mechanism.
