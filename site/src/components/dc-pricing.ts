@@ -12,9 +12,9 @@ export class DcPricing extends LitElement {
       <style>
         dc-pricing .pricing-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
           gap: var(--space-lg);
-          max-width: 960px;
+          max-width: 760px;
           margin: 0 auto;
         }
         dc-pricing .pricing-card {
@@ -58,7 +58,7 @@ export class DcPricing extends LitElement {
         }
         dc-pricing .pricing-card ul {
           list-style: none;
-          margin-top: auto;
+          margin: 0 0 var(--space-md) 0;
         }
         dc-pricing .pricing-card li {
           color: var(--text); font-size: var(--text-sm); padding: .35rem 0;
@@ -67,7 +67,15 @@ export class DcPricing extends LitElement {
         }
         dc-pricing .pricing-card li:last-child { border-bottom: none; }
         dc-pricing .pricing-card li::before {
-          content: '\u2713'; color: var(--green); flex-shrink: 0; margin-top: 1px;
+          content: '✓'; color: var(--green); flex-shrink: 0; margin-top: 1px;
+        }
+        dc-pricing .pricing-cta {
+          margin-top: auto;
+          padding-top: var(--space-md);
+          text-align: center;
+        }
+        dc-pricing .pricing-cta a {
+          display: inline-block;
         }
         dc-pricing .pricing-footer {
           text-align: center; margin-top: var(--space-xl); color: var(--muted);
@@ -84,16 +92,17 @@ export class DcPricing extends LitElement {
           <p class="section-label reveal">Pricing</p>
           <h2 class="section-title reveal">Every feature, self-hosted, free forever</h2>
           <p class="section-sub reveal">
-            The full engine is always free. Cloud tiers gate execution volume and seats &mdash;
-            never capabilities.
+            The full engine is always free and open source. A managed cloud tier is
+            in development &mdash; join the waitlist below.
           </p>
 
           <div class="pricing-grid stagger">
-            <div class="pricing-card">
+            <div class="pricing-card featured">
+              <span class="pricing-badge">Available now</span>
               <h3>Self-Hosted</h3>
-              <div class="pricing-price">Free</div>
+              <div class="pricing-price">Free<span> forever</span></div>
               <p class="pricing-desc">
-                The full engine. No gates.
+                The full engine. No gates. AGPL-3.0.
               </p>
               <ul>
                 <li>All features, all runtimes</li>
@@ -103,60 +112,33 @@ export class DcPricing extends LitElement {
                 <li>BYO OAuth &amp; LLM provider</li>
                 <li>AGPL-3.0 open source</li>
               </ul>
+              <div class="pricing-cta">
+                <a class="btn-primary" href="#download">Download free</a>
+              </div>
             </div>
 
-            <div class="pricing-card featured">
-              <span class="pricing-badge">Most popular</span>
-              <h3>Starter</h3>
-              <div class="pricing-price">$19<span>/mo</span></div>
+            <div class="pricing-card">
+              <h3>Cloud (managed)</h3>
+              <div class="pricing-price">Coming soon</div>
               <p class="pricing-desc">
-                For solo devs who want it to just work.
+                Managed relay + OAuth broker. Join the waitlist to be the first to know.
               </p>
               <ul>
-                <li>Managed relay (5 endpoints)</li>
-                <li>OAuth broker (5 providers)</li>
-                <li>10K task executions/mo</li>
+                <li>Managed webhook relay, no DNS setup</li>
+                <li>OAuth broker for 14 providers, zero app registration</li>
+                <li>Built-in metrics &amp; quotas</li>
                 <li>Managed database &amp; backups</li>
-                <li>1 user</li>
+                <li>Same engine, zero ops</li>
               </ul>
-            </div>
-
-            <div class="pricing-card">
-              <h3>Pro</h3>
-              <div class="pricing-price">$49<span>/mo</span></div>
-              <p class="pricing-desc">
-                For power users and small teams.
-              </p>
-              <ul>
-                <li>Unlimited relay endpoints</li>
-                <li>All 14 OAuth providers</li>
-                <li>100K executions/mo</li>
-                <li>5 users</li>
-                <li>Custom relay domain</li>
-                <li>Priority support</li>
-              </ul>
-            </div>
-
-            <div class="pricing-card">
-              <h3>Team</h3>
-              <div class="pricing-price">$149<span>/mo</span></div>
-              <p class="pricing-desc">
-                For teams that automate seriously.
-              </p>
-              <ul>
-                <li>500K executions/mo</li>
-                <li>20 users</li>
-                <li>Team collaboration features</li>
-                <li>Deployment approvals</li>
-                <li>Basic RBAC</li>
-                <li>SLA &amp; dedicated support</li>
-              </ul>
+              <div class="pricing-cta">
+                <a class="btn-ghost" href="mailto:hello@dicode.app?subject=Cloud%20waitlist">Join waitlist</a>
+              </div>
             </div>
           </div>
 
           <p class="pricing-footer reveal">
-            <strong>Our principle:</strong> cloud tiers gate volume and seats, never features.
-            Everything the engine can do is free, self-hosted, forever.
+            <strong>Our principle:</strong> self-host the full engine for free, forever.
+            The Cloud tier is in development &mdash; sign up above to be the first to know.
             Need enterprise (SSO/SAML, audit logs, custom infrastructure)? <a href="mailto:hello@dicode.app" style="color:var(--sky); text-decoration:none;">Get in touch</a>.
           </p>
         </div>
