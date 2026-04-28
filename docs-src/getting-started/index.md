@@ -40,10 +40,14 @@ The published image runs as a non-root user and exposes the dashboard on port 80
 
 ```sh
 docker run -d --name dicode \
-  -p 8080:8080 \
+  -p 127.0.0.1:8080:8080 \
   -v dicode-data:/data \
   dicodeayo/dicode-core:latest
 ```
+
+The dashboard binds to localhost only — drop the `127.0.0.1:` prefix
+if you want it reachable from your LAN, but be aware the dashboard
+authenticates with a single shared passphrase.
 
 ### docker-compose
 
@@ -53,12 +57,12 @@ services:
     image: dicodeayo/dicode-core:latest
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     volumes:
       - dicode-data:/data
-    environment:
-      # Inject any DICODE_* env vars (e.g. AI provider keys) here.
-      # See the secrets reference in the dashboard for required names.
+    # Keep secrets out of the compose file and out of version control.
+    # Put DICODE_* vars (AI provider keys, etc.) in a sibling .env file.
+    env_file: .env
 
 volumes:
   dicode-data:
