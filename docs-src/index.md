@@ -54,7 +54,7 @@ features:
     linkText: Runtime docs
   - icon: "\U0001F510"
     title: Encrypted Secrets & Permissions Sandbox
-    details: "ChaCha20-Poly1305 encrypted local store with Argon2id key derivation. Pluggable provider chain for Doppler, 1Password, HashiCorp Vault. Every task declares exactly which files, networks, env vars, and APIs it can access. Zero ambient access — undeclared capabilities fail loudly."
+    details: "ChaCha20-Poly1305 encrypted local store with Argon2id key derivation. Resolve secrets through provider tasks for Doppler / 1Password / HashiCorp Vault — author your own provider in a few lines, no daemon release needed. Every task declares exactly which files, networks, env vars, and APIs it can access. Zero ambient access — undeclared capabilities fail loudly."
     link: /concepts/secrets
     linkText: Secrets & permissions docs
   - icon: "\U0001F5A5"
