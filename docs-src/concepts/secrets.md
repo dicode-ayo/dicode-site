@@ -76,7 +76,7 @@ The default chain is:
 This means you can set secrets in either the encrypted store or as environment variables, with the encrypted store taking priority.
 
 ::: tip
-Additional providers (HashiCorp Vault, AWS Secrets Manager, etc.) can be added by implementing the provider interface. The chain is extensible by design.
+External secret stores (Doppler, 1Password, HashiCorp Vault, …) are resolved via **provider tasks** rather than native adapters — see ["Provider tasks (`from: task:`)"](#provider-tasks-from-task) below. The resolver groups requests per provider, caches per the provider's declared TTL, and merges the result into the consumer's environment.
 :::
 
 ---
@@ -181,33 +181,123 @@ permissions:
 
 ## External secret providers
 
-The built-in encrypted store is the default, but dicode's provider chain is designed to be extensible. The roadmap includes first-class integrations for:
+The built-in encrypted store is the default, but dicode resolves secrets from external services through a **task-based provider mechanism** — no daemon release is required to add a new provider. Ship a task folder, reference it from `from: task:<id>`, and you're done.
 
-| Provider | Status | How it will work |
-|----------|--------|-----------------|
-| **Built-in store** | Available now | ChaCha20-Poly1305 encrypted SQLite, Argon2id key derivation |
-| **Environment variables** | Available now | Fallback when a secret isn't in the store — reads from `$ENV_VAR` |
-| **Doppler** | Planned | Sync secrets from Doppler projects via their API |
-| **1Password** | Planned | Resolve secrets from 1Password vaults via Connect or CLI |
-| **HashiCorp Vault** | Planned | Read secrets from Vault KV v2 engine with token or AppRole auth |
+| Provider | Status | Notes |
+|---|---|---|
+| Built-in encrypted store | Available | ChaCha20-Poly1305, Argon2id |
+| Host environment variables | Available | Fallback in the chain |
+| Doppler | Available | Buildin task `buildin/secret-providers/doppler`. Bootstrap with `DOPPLER_TOKEN`. |
+| 1Password | Available via custom provider task | Author your own using the `from: task:` mechanism — see "Provider tasks" below. |
+| HashiCorp Vault | Available via custom provider task | Same as above. |
 
-The provider chain tries each provider in order. If the built-in store has the secret, it's used. If not, the next provider is tried. This means you can migrate incrementally — start with the local store, add Vault for production secrets later, and existing tasks don't change.
+Tasks don't know or care which provider resolves their secrets — they declare `from: task:<id>` (or `secret: <name>`) in `permissions.env` and the resolver handles the rest. You can migrate incrementally: start with the local store, add a Doppler provider task in production, and existing tasks don't change.
 
-Configuration will look like:
+---
+
+## Provider tasks (`from: task:`)
+
+For Doppler, 1Password, HashiCorp Vault, and other external secret stores, dicode resolves secrets by spawning a normal task that calls the upstream API. Provider tasks are first-class tasks — they run in the same sandbox, declare their own `permissions`, ship in your sources, and can be authored by anyone.
+
+### Consumer side — `from: task:<provider-id>`
+
+Reference a provider task from any consumer's `permissions.env` block:
 
 ```yaml
-# dicode.yaml
-secrets:
-  providers:
-    - type: local          # built-in encrypted store (always first)
-    - type: env            # fallback to environment variables
-    - type: vault          # HashiCorp Vault
-      address: https://vault.mycompany.com
-      auth: approle
-      mount: secret/dicode
+# tasks/my-app/task.yaml
+name: "My App"
+runtime: deno
+trigger:
+  cron: "*/5 * * * *"
+permissions:
+  env:
+    - name: PG_URL
+      from: task:secret-providers/doppler   # resolved via the doppler provider task
+    - name: REDIS_URL
+      from: task:secret-providers/doppler   # batched: one spawn for both
+      optional: true
+    - name: LOG_LEVEL
+      from: env:LOG_LEVEL                   # explicit host env
 ```
 
-Tasks don't know or care which provider resolves their secrets — they just declare `secret: my_key` in `permissions.env` and the provider chain handles the rest.
+The daemon groups every `from: task:<id>` entry by provider, spawns each provider once per consumer launch, caches the result with the provider's declared TTL, and merges the resolved values into the consumer's process environment before launching it.
+
+### Provider side — `dicode.output(map, { secret: true })`
+
+A provider is any task that emits its resolved secrets via the secret-flag overload of `output`:
+
+```yaml
+# tasks/buildin/secret-providers/doppler/task.yaml
+name: "Doppler Secret Provider"
+runtime: deno
+trigger:
+  manual: true
+permissions:
+  env:
+    - name: DOPPLER_TOKEN
+      secret: DOPPLER_TOKEN     # bootstrap once via `dicode secrets set DOPPLER_TOKEN ...`
+  net:
+    - api.doppler.com
+provider:
+  cache_ttl: 5m                  # 0 / omitted = no caching
+```
+
+```typescript
+// task.ts
+export default async function main({ params, output }: DicodeSdk) {
+  const reqs = JSON.parse(await params.get("requests") ?? "[]");
+  const out: Record<string, string> = {};
+  // ... call upstream, populate `out` ...
+  await output(out, { secret: true });
+}
+```
+
+Daemon-side semantics for `secret: true`:
+
+- Run-log records keys with `[redacted]` placeholders only — values never hit disk.
+- Values feed the run-log redactor on the consumer launch (so a `console.log` of a resolved value is scrubbed).
+- The map is returned to the resolver awaiting this provider call.
+- Output must be a flat `Record<string, string>` — the daemon refuses nested objects.
+
+### Failure modes
+
+When a provider task fails or returns an unusable result, the consumer run is failed with a typed reason recorded on the run record. All three trigger the configured `on_failure_chain`. The provider's own run also fires its own chain on its own crash.
+
+| Reason | When it fires |
+|---|---|
+| `provider_unavailable: <id>` | Provider task crashed, timed out, or returned no map. |
+| `required_secret_missing: <KEY> from <id>` | Provider returned a map but a non-optional KEY was absent. |
+| `provider_misconfigured: <id>` | Task referenced via `task:<id>` is not a provider (missing `secret: true` flag on its `output`). |
+
+### Built-in providers
+
+| Path | Upstream | Bootstrap secret |
+|---|---|---|
+| `buildin/secret-providers/doppler` | Doppler REST API | `DOPPLER_TOKEN` |
+
+More providers ship under the same path over time (`buildin/secret-providers/onepassword`, `vault`, …). Authoring your own takes a `task.yaml` + `task.ts` pair — see [tasks](./tasks.md).
+
+### Authoring guidance: SDK vs raw `fetch`
+
+Provider tasks are credential-handling code. Pick the smaller dependency surface that gets the job done.
+
+**Use raw `fetch` when:**
+
+- The upstream API is small (one or two endpoints) and stable.
+- The auth scheme is a static header (Bearer token, X-API-Key).
+- An SDK exists but is autogenerated / unmaintained / heavyweight.
+- The buildin doppler provider is the canonical example: ~70 LOC, zero deps beyond Deno's stdlib.
+
+**Reach for an SDK when:**
+
+- The upstream surface is non-trivial (vault selection, item navigation, pagination, multi-step auth flows).
+- The auth method is dynamic (AppRole login → token → renew, OAuth device-flow, AWS IAM signing).
+- The SDK is officially maintained and pinned to a specific upstream contract.
+- 1Password Connect (`@1password/connect`) and HashiCorp Vault (`node-vault`) are the typical cases.
+
+**For Deno tasks specifically:** prefer JSR or `https://deno.land/x/` imports over `npm:` specifiers when both exist — JSR/x packages are typically smaller, audit-friendlier, and don't drag in Node compat shims.
+
+**Always:** pin SDK versions (no floating tags). The provider task content hash invalidates the resolver's cache when source changes — a silently-updated SDK is invisible to that signal.
 
 ## Security considerations
 
