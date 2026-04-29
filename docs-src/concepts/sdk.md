@@ -415,3 +415,75 @@ Return values are:
 - Stored with the run record and visible in the web UI
 - Passed as `input` to chained downstream tasks
 - Available via `dicode.get_runs()` in other tasks
+
+---
+
+## Running task tests over HTTP
+
+Tasks may ship a sibling `task.test.ts` (or `task.test.js` / `.mjs`) file that
+exercises the task's logic with mocked SDK globals. The dicode daemon exposes
+this test harness over a REST endpoint so CI scripts, MCP clients, and other
+external automation can invoke it without the CLI:
+
+```bash
+curl -X POST \
+  -H "Authorization: Bearer $DICODE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"params": {"label": "ci"}, "timeout_s": 30}' \
+  http://localhost:8080/api/tasks/<task-id>/test
+```
+
+### Authentication
+
+The endpoint sits behind the same API-key middleware as `/mcp`. Generate a key
+in **Settings → Authentication → API Keys**, or via `POST /api/auth/keys`, and
+pass it as `Authorization: Bearer <key>`. When `server.auth: false` (the
+default for local development), no header is required.
+
+### Request body
+
+The body is optional. Both fields default to "use the task's declared values":
+
+| Field | Type | Description |
+|---|---|---|
+| `params` | object | Map of param name to value. Validated against the task's declared `params` schema; unknown keys are rejected. |
+| `timeout_s` | int | Hard timeout in seconds for the runner subprocess. Omit (or set to 0) to use the parent context. |
+
+### Response
+
+On completion the endpoint returns HTTP 200 with a JSON body summarising the
+run — even when the underlying test failed. The verdict lives in the `status`
+field, not the HTTP code:
+
+```json
+{
+  "status": "passed",
+  "exit_code": 0,
+  "stdout": "running 1 test from ./tasks/my-task/task.test.ts\nok ...\n",
+  "stderr": "",
+  "duration_ms": 142,
+  "run_id": "0b21c52cf730c50b81509a2fcff40b0d",
+  "test_file": "/path/to/task.test.ts",
+  "passed": 1,
+  "failed": 0,
+  "skipped": 0
+}
+```
+
+`status` is one of `passed`, `failed`, `errored`, or `timeout`.
+
+### Status codes
+
+| Code | Meaning |
+|---|---|
+| 200 | Runner completed (test pass, fail, or runner error — inspect `status`) |
+| 401 | Missing or invalid `Authorization: Bearer` API key |
+| 404 | Task ID is not registered |
+| 408 | The configured `timeout_s` elapsed before the runner finished |
+| 422 | `params` payload failed schema validation; response includes a `fields[]` array with per-field errors |
+
+### Runtime support
+
+Currently only the **deno** runtime is supported (see `Runtime` table in
+[Runtimes](./runtimes.md)). Tasks using `python`, `docker`, or `podman`
+return HTTP 200 with `status: "errored"` and an explanatory error message.
