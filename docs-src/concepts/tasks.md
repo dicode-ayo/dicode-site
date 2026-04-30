@@ -131,7 +131,14 @@ docker:                          # docker/podman runtime only
 
 timeout: 30s                     # default 60s for script tasks; no default for docker/daemon
 mcp_port: 3000                   # daemon exposes MCP server on this port
-on_failure_chain: alert-task     # task to run on failure (overrides global default)
+on_failure_chain: alert-task     # short form — task to run on failure
+# or the structured form:
+# on_failure_chain:
+#   task: buildin/auto-fix
+#   params: { mode: review }
+#   cooldown: 10m
+#   max_concurrent: 1
+#   max_depth: 2
 
 notify:
   on_success: false
@@ -156,7 +163,7 @@ notify:
 | `docker` | object | conditional | Required when runtime is `docker` or `podman` |
 | `timeout` | duration | no | Max execution time (default `60s` for scripts) |
 | `mcp_port` | int | no | Port where a daemon task exposes an MCP server |
-| `on_failure_chain` | string | no | Task ID to trigger on failure |
+| `on_failure_chain` | string \| object | no | Task ID (short form) or structured block to trigger on failure. See [Auto-fix loop](./auto-fix.md). |
 | `notify` | object | no | Notification overrides |
 
 ### Trigger types
