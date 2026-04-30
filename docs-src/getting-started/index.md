@@ -1,6 +1,6 @@
 # Installation & Quickstart
 
-dicode is a single Go binary that runs as a background daemon (`dicoded`) with a thin CLI (`dicode`) that auto-starts the daemon on first use. No containers, no infrastructure, no accounts required.
+dicode is a single Go binary that runs as a background daemon (`dicoded`) with a thin CLI (`dicode`) that auto-starts the daemon on first use. No infrastructure, no accounts required. A multi-arch Docker image is also published if you'd rather run it as a container.
 
 ## Install
 
@@ -33,6 +33,55 @@ Verify the installation:
 ```sh
 dicode version
 ```
+
+## Docker
+
+The published image runs as a non-root user and exposes the dashboard on port 8080. SQLite state lives at `/data` inside the container; mount a volume there to persist runs and task registrations across restarts.
+
+```sh
+docker run -d --name dicode \
+  -p 127.0.0.1:8080:8080 \
+  -v dicode-data:/data \
+  dicodeayo/dicode-core:latest
+```
+
+The dashboard binds to localhost only — drop the `127.0.0.1:` prefix
+if you want it reachable from your LAN, but be aware the dashboard
+authenticates with a single shared passphrase.
+
+### docker-compose
+
+```yaml
+services:
+  dicode:
+    image: dicodeayo/dicode-core:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - dicode-data:/data
+    # Keep secrets out of the compose file and out of version control.
+    # Put DICODE_* vars (AI provider keys, etc.) in a sibling .env file.
+    env_file: .env
+
+volumes:
+  dicode-data:
+```
+
+### Image registries
+
+| Registry | Image |
+| --- | --- |
+| Docker Hub (primary) | `dicodeayo/dicode-core` |
+| GHCR (mirror) | `ghcr.io/dicode-ayo/dicode-core` |
+
+### Tags
+
+- `:latest` -- most recent release
+- `:X.Y.Z` -- exact release (recommended for production)
+- `:X.Y` and `:X` -- track minor / major lines
+
+Multi-arch (`linux/amd64` + `linux/arm64`) for every published tag.
 
 ## Start the daemon
 
