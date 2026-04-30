@@ -290,6 +290,42 @@ permissions:
     runs_replay: true
 ```
 
+The replay is gated by an ownership check: the caller's task must own the run being replayed, OR the caller's `parent_run_id` must match the requested run (the auto-fix lineage). REST callers (operator-driven) bypass the check.
+
+---
+
+## dicode.runs.get_input
+
+Read another run's persisted input — used by replayer / fixer / auditor tasks that need to reason about what triggered a failure.
+
+::: code-group
+
+```ts [Deno]
+const persisted = await dicode.runs.get_input(failedRunID);
+// persisted: { source, params, body, headers, redacted_fields: ["Authorization", ...] }
+```
+
+```python [Python]
+persisted = dicode.runs.get_input(failed_run_id)
+# {"source": ..., "params": ..., "redacted_fields": [...]}
+```
+
+:::
+
+```yaml
+permissions:
+  dicode:
+    runs_get_input: true   # sensitive — grants cross-task input read
+```
+
+::: warning
+`runs_get_input` is **sensitive**. The redaction layer strips deny-listed fields (Authorization, secrets, signatures) at write time, but everything else — params, request bodies, headers — is readable. Grant only to tasks that legitimately need cross-task input access.
+:::
+
+The cap is gated by the same ownership check as `runs.replay`: caller owns the run OR caller's `parent_run_id` matches the requested run. This means the auto-fix loop works (chain-fired agent reads its parent's failed run) but a compromised task can't pivot to inspect arbitrary runs.
+
+The redaction layer is the bound on what's exposed — see [run-input persistence](https://github.com/dicode-ayo/dicode-core/pull/243) for the deny-list mechanics.
+
 ---
 
 ## dicode.tasks.test

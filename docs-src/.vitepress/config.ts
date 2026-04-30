@@ -45,6 +45,7 @@ export default defineConfig({
           { text: "Hot Reload & Dev Workflow", link: "/concepts/hot-reload" },
           { text: "Webhook Relay", link: "/concepts/relay" },
           { text: "AI Agent", link: "/concepts/ai-agent" },
+          { text: "Auto-fix Loop", link: "/concepts/auto-fix" },
           { text: "MCP Server", link: "/concepts/mcp-server" },
         ],
       },
