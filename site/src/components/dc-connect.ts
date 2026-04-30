@@ -150,9 +150,11 @@ export class DcConnect extends LitElement {
           <p class="section-label reveal">One-Click OAuth</p>
           <h2 class="section-title reveal">Click. Authenticate. Done.</h2>
           <p class="section-sub reveal">
-            No client IDs. No app registration. No ngrok for callbacks. Click "Connect" in the UI,
-            authenticate with the provider, and the token appears in your daemon &mdash; encrypted
-            end-to-end with ECIES. 14 providers, zero setup.
+            On the managed relay: click "Connect", authenticate, and the token reaches your daemon
+            &mdash; ECIES end-to-end. 14 providers, zero app registration.
+          </p>
+          <p class="section-sub reveal">
+            Self-hosting? Bring your own OAuth app credentials. Same crypto path, same UX.
           </p>
           <div class="provider-grid stagger">
             ${AVAILABLE.map(
@@ -189,8 +191,7 @@ export class DcConnect extends LitElement {
             </div>
           </div>
           <p class="connect-footer reveal">
-            No app registration needed. Missing a provider? Write your own OAuth flow —
-            dicode gives you the building blocks.
+            Missing a provider? Write your own OAuth flow &mdash; dicode gives you the building blocks.
             <a href="/docs/concepts/relay" style="color:var(--sky); text-decoration:none; font-weight:var(--font-semibold);">Read more &rarr;</a>
           </p>
         </div>
