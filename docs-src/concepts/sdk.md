@@ -261,6 +261,179 @@ permissions:
 
 ---
 
+## dicode.runs.replay
+
+Re-fire an earlier run with its persisted input. The new run carries `triggerSource = "replay"` and `parent_run_id = <original>` so the engine suppresses `on_failure_chain` on its failure (no replay loops).
+
+Used by the auto-fix loop to retry a failed run after an AI agent has patched the source. Requires run-input persistence.
+
+::: code-group
+
+```ts [Deno]
+const { run_id } = await dicode.runs.replay(originalRunID);
+
+// Replay against a different task (e.g. a debug variant)
+const { run_id } = await dicode.runs.replay(originalRunID, "echo-debug");
+```
+
+```python [Python]
+new = dicode.runs.replay(original_run_id)
+new = dicode.runs.replay(original_run_id, task_name="echo-debug")
+# {"run_id": "..."}
+```
+
+:::
+
+```yaml
+permissions:
+  dicode:
+    runs_replay: true
+```
+
+---
+
+## dicode.tasks.test
+
+Run a task's sibling test file (`task.test.{ts,js,py}`) and return the result. Same shape as `POST /api/tasks/{id}/test`.
+
+::: code-group
+
+```ts [Deno]
+const result = await dicode.tasks.test("user-task");
+// { passed, failed, output }
+```
+
+```python [Python]
+result = dicode.tasks.test("user-task")
+```
+
+:::
+
+```yaml
+permissions:
+  dicode:
+    tasks_test: true
+```
+
+---
+
+## dicode.sources.set_dev_mode
+
+Toggle dev mode on a configured taskset source. Two modes:
+
+- **local-path:** point the source at a local checkout for live edits
+- **clone-mode:** clone the remote into a per-fix directory checked out on a feature branch (used by auto-fix; cloned at `${data}/dev-clones/<source>/<run_id>/`)
+
+::: code-group
+
+```ts [Deno]
+// Local-path dev mode
+await dicode.sources.set_dev_mode("infra", {
+  enabled: true,
+  local_path: "/home/dev/infra/taskset.yaml",
+});
+
+// Clone-mode (auto-fix flow)
+await dicode.sources.set_dev_mode("infra", {
+  enabled: true,
+  branch: "fix/auto-2026-04-30",
+  base: "main",
+  run_id: "abc123",
+});
+
+// Disable
+await dicode.sources.set_dev_mode("infra", { enabled: false });
+```
+
+```python [Python]
+dicode.sources.set_dev_mode(
+    "infra",
+    enabled=True,
+    local_path="/home/dev/infra/taskset.yaml",
+)
+
+dicode.sources.set_dev_mode(
+    "infra",
+    enabled=True,
+    branch="fix/auto-2026-04-30",
+    base="main",
+    run_id="abc123",
+)
+
+dicode.sources.set_dev_mode("infra", enabled=False)
+```
+
+:::
+
+```yaml
+permissions:
+  dicode:
+    sources_set_dev_mode: true
+```
+
+---
+
+## dicode.git.commit_push
+
+Add, commit, and push a branch in one call (pure go-git — no `git` binary). Validates the branch against an optional `branch_prefix`; never sets `--force`.
+
+`auth_token_env` names a daemon-process env var holding the token. It **must** be declared in the task's `permissions.env` to prevent arbitrary env-var disclosure. The token is passed as HTTPS basic-auth with username `x-access-token` (compatible with GitHub fine-grained PATs).
+
+::: code-group
+
+```ts [Deno]
+const { commit } = await dicode.git.commit_push("infra", {
+  message: "fix: handle nil receiver in worker",
+  branch: "fix/auto-2026-04-30",
+  branch_prefix: "fix/",
+  files: ["worker.ts"],         // omit to stage all tracked changes
+  author_name: "auto-fix",
+  author_email: "auto-fix@dicode.local",
+  auth_token_env: "GITHUB_TOKEN",
+});
+```
+
+```python [Python]
+result = dicode.git.commit_push(
+    "infra",
+    message="fix: handle None receiver in worker",
+    branch="fix/auto-2026-04-30",
+    branch_prefix="fix/",
+    files=["worker.py"],
+    author_name="auto-fix",
+    author_email="auto-fix@dicode.local",
+    auth_token_env="GITHUB_TOKEN",
+)
+# {"commit": "<hex sha>"}
+```
+
+:::
+
+```yaml
+permissions:
+  env:
+    - GITHUB_TOKEN              # required for auth_token_env to resolve
+  dicode:
+    git_commit_push: true
+```
+
+### Branch authorization
+
+| `branch_prefix` | `allow_main` | `branch` value | Result |
+|---|---|---|---|
+| `"fix/"` | _any_ | `fix/foo` | ✓ allowed |
+| `"fix/"` | `true` | `main` / `master` | ✓ allowed |
+| `"fix/"` | `false` | `main` | ✗ rejected |
+| `""` | `true` | `main` / `master` | ✓ allowed |
+| `""` | `true` | `feature/foo` | ✗ rejected |
+| `""` | `false` | _any_ | ✗ rejected |
+
+::: tip
+Empty `branch_prefix` is intentionally only legal for `main` / `master` with `allow_main: true`. Any other configuration is rejected to prevent accidental wide-open pushes.
+:::
+
+---
+
 ## mcp
 
 Call tools on **external** MCP (Model Context Protocol) servers exposed by daemon tasks. To go the other direction — let an external MCP client (Claude Desktop, Cursor, Claude Code) call into dicode — see [MCP Server](./mcp-server).
