@@ -79,7 +79,32 @@ Cursor's MCP config lives in `.cursor/mcp.json` (per project) or your global Cur
 
 ## Configure Claude Code (CLI)
 
-Claude Code reads MCP servers from your user config. Add via the CLI:
+Three ways, pick whichever feels best:
+
+### 1. Dashboard one-click
+
+Security → **Create API Key**. The success card has a "Connect to Claude Code" expander with the install command pre-filled with the new key. Copy → paste into a terminal where `claude` is installed → done.
+
+### 2. `dicode mcp install`
+
+The dicode CLI ships a helper that runs `claude mcp add` for you:
+
+```sh
+dicode mcp install --key dck_...
+# or read the key from stdin / env
+echo "dck_..." | dicode mcp install
+DICODE_API_KEY=dck_... dicode mcp install
+
+# variants
+dicode mcp uninstall           # reverses — runs `claude mcp remove dicode`
+dicode mcp print-config        # prints command + .claude/mcp.json snippet
+```
+
+The CLI does not call into the daemon for any of this — it's pure local tooling around the host's `claude` binary, so it works even when the daemon is offline.
+
+### 3. Manual `claude mcp add`
+
+Mint a key in the dashboard, then:
 
 ```sh
 claude mcp add --transport http dicode http://localhost:8080/mcp \
