@@ -87,20 +87,35 @@ Security → **Create API Key**. The success card has a "Connect to Claude Code"
 
 ### 2. `dicode mcp install`
 
-The dicode CLI ships a helper that runs `claude mcp add` for you:
+The dicode CLI ships a helper that **mints a fresh API key in the daemon** and runs `claude mcp add` for you — zero-touch:
 
 ```sh
-dicode mcp install --key dck_...
-# or read the key from stdin / env
-echo "dck_..." | dicode mcp install
-DICODE_API_KEY=dck_... dicode mcp install
-
-# variants
-dicode mcp uninstall           # reverses — runs `claude mcp remove dicode`
-dicode mcp print-config        # prints command + .claude/mcp.json snippet
+dicode mcp install
+# → mints "mcp-dicode" in the daemon's secrets store
+# → runs: claude mcp add --transport http dicode http://localhost:8080/mcp \
+#                       --header "Authorization: Bearer dck_..."
 ```
 
-The CLI does not call into the daemon for any of this — it's pure local tooling around the host's `claude` binary, so it works even when the daemon is offline.
+Re-running `install` rotates the key (revokes the previous one with the same name first, mints a new one). To uninstall:
+
+```sh
+dicode mcp uninstall          # revokes the key + runs `claude mcp remove dicode`
+```
+
+Or use a key you already minted:
+
+```sh
+dicode mcp install --key dck_...     # skips the daemon mint
+```
+
+Other helpers:
+
+```sh
+dicode mcp print-config       # prints command + .claude/mcp.json snippet, no mint, no shell-out
+dicode mcp install --print    # rehearse — print the would-be command without running
+```
+
+The mint goes through the daemon's control socket; the daemon must be running. After the key is in hand, `claude mcp add` itself doesn't need the dicode daemon to be up — it just writes to the local Claude Code config.
 
 ### 3. Manual `claude mcp add`
 
