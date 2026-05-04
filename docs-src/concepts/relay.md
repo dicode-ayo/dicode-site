@@ -58,6 +58,18 @@ The UUID is a 64-character hex string. Your relay URL will look like:
 https://relay.dicode.app/u/a1b2c3d4e5f6.../hooks/
 ```
 
+### Identity rotation
+
+The relay client is a Deno daemon task (`tasks/buildin/relay-client/`) that stores its identity encrypted at rest as `<DATADIR>/relay-store/relay/identity-v1.bin`. To rotate the identity (generating a new UUID and relay URL):
+
+1. Stop the daemon.
+2. Delete `<DATADIR>/relay-store/relay/identity-v1.bin`.
+3. Restart the daemon — a fresh identity is generated automatically.
+
+::: warning
+Rotating the identity changes your relay URL. Update any external services (GitHub webhooks, Slack event subscriptions, etc.) that point to the old URL.
+:::
+
 ---
 
 ## What works through the relay
@@ -147,14 +159,14 @@ dicode secrets list | grep SLACK
 
 Under the hood:
 
-1. `buildin/auth-start` calls `dicode.oauth.build_auth_url(provider, scope)` — the daemon signs a `/auth/:provider?…&sig=…` URL with its ECDSA identity key and tracks the session id in memory
+1. `buildin/auth-start` fetches the daemon's cryptographic identity (via `dicode.crypto`), calls `buildAuthURL` from `npm:dicode-relay/client` to construct a signed `/auth/:provider?…&sig=…` URL, and tracks the session id in memory
 2. The user opens that URL in a browser — the broker verifies the signature against the pubkey it knows for that UUID from the live WSS registry
 3. Broker redirects to the provider's OAuth consent screen (using dicode's registered app)
 4. User approves → provider redirects back to the broker with an authorization code
 5. Broker exchanges the code for an access token
 6. Token is **encrypted to the daemon's public key** (ECIES: P-256 ECDH + HKDF + AES-256-GCM, with the message type tag bound as GCM authenticated data)
 7. Encrypted envelope is forwarded over the existing relay WebSocket to a reserved `/hooks/oauth-complete` path
-8. `buildin/auth-relay` receives the envelope and calls the daemon's `store_token` IPC primitive, which decrypts, parses, and writes credentials to the secrets store — **all in Go-process memory**. The decrypted buffer is best-effort zeroed after the write (Go cannot guarantee memory erasure). Tokens then live on as normal dicode secrets, encrypted at rest via ChaCha20-Poly1305.
+8. `buildin/auth-relay` receives the envelope, calls `decryptTokenEnvelope` from `npm:dicode-relay/client`, and writes the resulting credentials to the configured storage task (default: `buildin/local-storage`) using `dicode.crypto.decrypt` — **sub-keys derived via `secrets.LocalProvider.DeriveSubKey` never cross IPC**. `buildin/auth-relay` runs with `silent: true` and zero net/fs/env permissions, so plaintext token exfiltration is physically impossible. Tokens then live on as normal dicode secrets, encrypted at rest.
 
 The token never appears in a browser URL and never touches the relay in plaintext. Tasks that declare the token as an `env` secret receive it in their process environment variables at runtime.
 
@@ -199,17 +211,17 @@ const res = await fetch("https://slack.com/api/auth.test", {
 | Office 365 | Yes | `User.Read Mail.Read` |
 | Azure AD | Yes | `openid profile email` |
 
-Tasks can override scopes per request. New providers can be added to the broker without any changes to your daemon or tasks.
+Tasks can override scopes per request. The authoritative provider catalogue lives in the broker's `relay.yaml` and is served live at `GET /providers` — new providers can be added to the broker without any changes to your daemon or tasks.
 
 ### Security
 
-- **ECDSA-signed auth requests** — the broker verifies the caller controls the relay UUID before starting the OAuth flow. The signed payload layout is hardcoded in Go, so task code can never coax the daemon identity key into signing a payload of the wrong shape (e.g. a WSS handshake digest).
+- **ECDSA-signed auth requests** — the broker verifies the caller controls the relay UUID before starting the OAuth flow. The signed payload layout is enforced by `buildAuthURL` in `npm:dicode-relay/client`, so task code can never coax the daemon identity key into signing a payload of the wrong shape (e.g. a WSS handshake digest).
 - **PKCE binding** — the PKCE challenge is bound into the signed payload and cross-verified on delivery, preventing an attacker who intercepts the URL from swapping in their own challenge.
 - **ECIES token encryption** — tokens are encrypted to the daemon's P-256 public key before entering the relay. Even a compromised relay server — or a CDN sitting in front of it — cannot read tokens.
 - **Type-as-AAD domain separation** — the envelope's message-type tag is bound into AES-GCM's authenticated data on both ends. A ciphertext produced under any other type label (a future or malicious message type reusing the same ECIES scheme) will fail to decrypt through this path.
 - **Pending-session validation** — the daemon tracks outstanding flows by session id and rejects deliveries whose session was never issued (or has expired). This closes a chosen-salt oracle against the identity key.
 - **Reserved delivery path** — the trigger engine refuses to bind `/hooks/oauth-complete` to any task other than `buildin/auth-relay`, so an unrelated user task cannot become a drop-in exfiltration sink for decrypted credentials.
-- **Plaintext never crosses JS** — decrypt, parse, and writes to the secrets store all happen in Go-process memory. `buildin/auth-relay` only ever sees the secret *names* that were written; the decrypted buffer is best-effort zeroed after `store_token` returns (Go cannot guarantee memory erasure). Tokens then live on as normal dicode secrets (encrypted at rest via ChaCha20-Poly1305).
+- **Plaintext never crosses IPC** — `buildin/auth-relay` runs with `silent: true` and zero net/fs/env permissions. Decryption (`dicode.crypto.decrypt`) and storage writes happen inside the task runtime; sub-keys derived via `secrets.LocalProvider.DeriveSubKey` are never surfaced outside the task boundary. Tokens live on as normal dicode secrets, encrypted at rest.
 - **Metadata-only audit log** — every delivery emits a structured log entry with task id, run id, provider, session id, and the list of secret names written. No plaintext, no ciphertext, no pubkeys — just enough for incident response.
 - **Single-use sessions** — broker sessions expire after 5 minutes and are deleted immediately after token delivery. Retries require a fresh flow.
 - **No token storage on the broker** — the broker never persists tokens. They're encrypted and forwarded in one step.
@@ -227,18 +239,7 @@ Tasks can override scopes per request. New providers can be added to the broker 
 
 ## Self-hosted relay
 
-You can run your own relay server instead of using the hosted `relay.dicode.app` service. Two implementations are available:
-
-### Go relay server
-
-The `relay.Server` type in the dicode-core repository implements the relay protocol as an `http.Handler`. Embed it in your own Go HTTP server:
-
-```go
-import "github.com/dicode/dicode/pkg/relay"
-
-srv := relay.NewServer("https://relay.example.com", logger)
-http.Handle("/", srv)
-```
+You can run your own relay server instead of using the hosted `relay.dicode.app` service.
 
 ### Node.js relay server (dicode-relay)
 
