@@ -60,10 +60,10 @@ https://relay.dicode.app/u/a1b2c3d4e5f6.../hooks/
 
 ### Identity rotation
 
-The relay client is a Deno daemon task (`tasks/buildin/relay-client/`) that stores its identity encrypted at rest as `<DATADIR>/relay-store/relay/identity-v1.bin`. To rotate the identity (generating a new UUID and relay URL):
+The relay client is a Deno daemon task (`tasks/buildin/relay-client/`) that stores its identity encrypted at rest as `~/.dicode/relay-store/relay/identity-v1.bin` (or `$DICODE_DATADIR/relay-store/relay/identity-v1.bin` if you've overridden the data directory). To rotate the identity (generating a new UUID and relay URL):
 
 1. Stop the daemon.
-2. Delete `<DATADIR>/relay-store/relay/identity-v1.bin`.
+2. Delete `~/.dicode/relay-store/relay/identity-v1.bin` (or `$DICODE_DATADIR/relay-store/relay/identity-v1.bin` if you've overridden the data directory).
 3. Restart the daemon — a fresh identity is generated automatically.
 
 ::: warning
@@ -166,7 +166,7 @@ Under the hood:
 5. Broker exchanges the code for an access token
 6. Token is **encrypted to the daemon's public key** (ECIES: P-256 ECDH + HKDF + AES-256-GCM, with the message type tag bound as GCM authenticated data)
 7. Encrypted envelope is forwarded over the existing relay WebSocket to a reserved `/hooks/oauth-complete` path
-8. `buildin/auth-relay` receives the envelope, calls `decryptTokenEnvelope` from `npm:dicode-relay/client`, and writes the resulting credentials to the configured storage task (default: `buildin/local-storage`) using `dicode.crypto.decrypt` — **sub-keys derived via `secrets.LocalProvider.DeriveSubKey` never cross IPC**. `buildin/auth-relay` runs with `silent: true` and zero net/fs/env permissions, so plaintext token exfiltration is physically impossible. Tokens then live on as normal dicode secrets, encrypted at rest.
+8. `buildin/auth-relay` receives the envelope, calls `decryptTokenEnvelope` from `npm:dicode-relay/client` (which uses `dicode.crypto.decrypt` under the hood — **sub-keys derived via `secrets.LocalProvider.DeriveSubKey` never cross IPC**), and persists the resulting credentials as normal dicode secrets, encrypted at rest. `buildin/auth-relay` runs with `silent: true` and zero net/fs/env permissions, so plaintext token exfiltration is physically impossible.
 
 The token never appears in a browser URL and never touches the relay in plaintext. Tasks that declare the token as an `env` secret receive it in their process environment variables at runtime.
 
