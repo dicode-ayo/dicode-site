@@ -101,7 +101,7 @@ export class DcOpensource extends LitElement {
               Star on GitHub
               ${this._stars ? html`<span class="star-count">${this._stars} &#9733;</span>` : ""}
             </a>
-            <a href="https://discord.gg/dicode" class="discord-btn" target="_blank" rel="noopener">
+            <a href="https://discord.gg/S9mxw6NxEU" class="discord-btn" target="_blank" rel="noopener">
               &#x1F4AC; Join Discord
             </a>
           </div>

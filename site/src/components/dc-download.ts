@@ -1,4 +1,4 @@
-import { LitElement, html, nothing } from "lit";
+import { LitElement, html, nothing, type PropertyValues } from "lit";
 import { customElement, state } from "lit/decorators.js";
 
 import appleIcon from "@iconify-icons/logos/apple.js";
@@ -6,6 +6,7 @@ import linuxIcon from "@iconify-icons/logos/linux-tux.js";
 import windowsIcon from "@iconify-icons/logos/microsoft-windows-icon.js";
 import dockerIcon from "@iconify-icons/logos/docker-icon.js";
 import githubIcon from "@iconify-icons/logos/github-icon.js";
+import helmIcon from "@iconify-icons/logos/helm.js";
 
 import { renderIcon, type IconData } from "../utils/icon.js";
 
@@ -21,8 +22,11 @@ interface DownloadTarget {
   /** Matches against asset filenames to find the right download URL */
   assetPatterns: string[];
   cmd?: string;
-  /** Not a GitHub Release asset — static link */
+  /** Not a GitHub Release asset — shown as a copyable shell snippet */
   staticCmd?: string;
+  /** Companion link rendered next to staticCmd. Default: GHCR package page. */
+  staticLinkHref?: string;
+  staticLinkLabel?: string;
 }
 
 interface ResolvedAsset {
@@ -69,15 +73,74 @@ const TARGETS: DownloadTarget[] = [
     title: "Docker",
     subtitle: "all platforms",
     assetPatterns: [],
-    staticCmd: "docker run -p 8080:8080 ghcr.io/dicode-ayo/dicode:latest",
+    staticCmd: "docker run -p 8080:8080 ghcr.io/dicode-ayo/dicode-core:latest",
+  },
+  {
+    icon: helmIcon,
+    title: "Helm chart",
+    subtitle: "Kubernetes",
+    assetPatterns: [],
+    staticCmd:
+      "git clone https://github.com/dicode-ayo/dicode-core && helm install dicode ./dicode-core/deploy/helm/dicode -n dicode --create-namespace",
+    staticLinkHref:
+      "https://github.com/dicode-ayo/dicode-core/tree/main/deploy/helm/dicode",
+    staticLinkLabel: "Chart on GitHub",
   },
 ];
 
-function detectPlatform(): string {
+interface DetectedPlatform {
+  /** linux | darwin | windows */
+  os: string;
+  /** amd64 | arm64 */
+  arch: string;
+}
+
+interface UserAgentDataLike {
+  platform?: string;
+  getHighEntropyValues?: (hints: string[]) => Promise<{ architecture?: string }>;
+}
+
+/**
+ * Detect the user's OS and CPU architecture for the "Your platform" badge.
+ *
+ * Modern browsers expose `navigator.userAgentData.getHighEntropyValues`
+ * (Chromium 90+) which returns the actual architecture. UA-string sniffing
+ * cannot tell ARM Mac from Intel Mac (Apple Silicon UA still says Intel)
+ * and rarely reveals ARM Linux, so we fall back to per-OS defaults:
+ *
+ *   - Linux   → amd64 (most common; ARM users will still see the right card visually)
+ *   - macOS   → arm64 (Apple Silicon dominates new shipments since 2020)
+ *   - Windows → amd64 (ARM Windows is rare in browsers)
+ */
+async function detectPlatform(): Promise<DetectedPlatform> {
+  const uaData = (navigator as unknown as { userAgentData?: UserAgentDataLike })
+    .userAgentData;
+  if (uaData?.getHighEntropyValues) {
+    try {
+      const hints = await uaData.getHighEntropyValues(["architecture"]);
+      const platform = (uaData.platform || "").toLowerCase();
+      const os = platform.includes("win")
+        ? "windows"
+        : platform.includes("mac")
+          ? "darwin"
+          : "linux";
+      const arch = hints.architecture === "arm" ? "arm64" : "amd64";
+      return { os, arch };
+    } catch {
+      // fall through to UA sniff
+    }
+  }
+
   const ua = navigator.userAgent.toLowerCase();
-  if (ua.includes("win")) return "windows";
-  if (ua.includes("mac")) return "darwin";
-  return "linux";
+  const os = ua.includes("win")
+    ? "windows"
+    : ua.includes("mac")
+      ? "darwin"
+      : "linux";
+  let arch = "amd64";
+  if (ua.includes("aarch64") || ua.includes("arm64")) arch = "arm64";
+  else if (os === "darwin") arch = "arm64"; // Apple Silicon assumption
+  return { os, arch };
 }
 
 function formatSize(bytes: number): string {
@@ -91,7 +154,8 @@ export class DcDownload extends LitElement {
   @state() private _assets: ResolvedAsset[] = [];
   @state() private _loading = true;
   @state() private _error = false;
-  @state() private _detectedPlatform = "";
+  @state() private _detectedOs = "";
+  @state() private _detectedArch = "";
 
   protected createRenderRoot() {
     return this;
@@ -99,8 +163,32 @@ export class DcDownload extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this._detectedPlatform = detectPlatform();
+    void this._detect();
     this._fetchRelease();
+  }
+
+  private async _detect(): Promise<void> {
+    const { os, arch } = await detectPlatform();
+    this._detectedOs = os;
+    this._detectedArch = arch;
+  }
+
+  protected updated(changed: PropertyValues): void {
+    super.updated(changed);
+    // initScrollReveal() (utils/reveal.ts) sets up the IntersectionObserver
+    // once at app boot, scanning .reveal/.stagger elements that exist at
+    // that moment. Our grid + version + cta render asynchronously after
+    // the GitHub API fetch resolves, so the boot-time observer never sees
+    // them and they stay at opacity: 0. Mark them visible directly when
+    // we transition out of the loading state — the CSS transition still
+    // plays once on add.
+    if (changed.has("_loading") && !this._loading) {
+      requestAnimationFrame(() => {
+        this.querySelectorAll(".reveal, .stagger").forEach((el) => {
+          el.classList.add("visible");
+        });
+      });
+    }
   }
 
   private async _fetchRelease() {
@@ -130,7 +218,9 @@ export class DcDownload extends LitElement {
   }
 
   private _isDetected(target: DownloadTarget): boolean {
-    return target.assetPatterns.some((p) => p.includes(this._detectedPlatform));
+    if (!this._detectedOs || !this._detectedArch) return false;
+    const tag = `${this._detectedOs}-${this._detectedArch}`;
+    return target.assetPatterns.includes(tag);
   }
 
   render() {
@@ -307,7 +397,8 @@ export class DcDownload extends LitElement {
               </div>
               ${t.staticCmd
                 ? html`<pre class="download-cmd">${t.staticCmd}</pre>
-                        <a class="download-link" href="https://github.com/dicode-ayo/dicode-core/pkgs/container/dicode" target="_blank" rel="noopener">View on GHCR</a>`
+                        <a class="download-link" href="${t.staticLinkHref ??
+                          "https://github.com/dicode-ayo/dicode-core/pkgs/container/dicode-core"}" target="_blank" rel="noopener">${t.staticLinkLabel ?? "View on GHCR"}</a>`
                 : asset
                   ? html`<a class="download-btn" href="${asset.url}" rel="noopener">${asset.name}</a>
                          <span class="download-meta">${formatSize(asset.size)}</span>`
