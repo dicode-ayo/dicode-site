@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  OG card for dicode.app, 1200×630.
+  To re-export PNG after edits:
+    npx -y svgexport site/public/og-image.svg site/public/og-image.png 1200:630
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#0d6efd" stop-opacity="0.35"/>
+      <stop offset="60%" stop-color="#0d6efd" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#0d0d1a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#0d0d1a"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <!-- brand mark: scaled-up version of favicon.svg, top-left -->
+  <g transform="translate(80, 80)">
+    <rect width="96" height="96" rx="21" fill="#0d6efd"/>
+    <path d="M60 18 L30 54 L45 54 L39 78 L66 39 L51 39 Z" fill="#ffffff"/>
+  </g>
+
+  <!-- wordmark next to the brand mark -->
+  <text x="200" y="148" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        font-size="56" font-weight="700" fill="#ffffff" letter-spacing="-1">dicode</text>
+
+  <!-- main headline -->
+  <text x="80" y="340" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        font-size="72" font-weight="800" fill="#ffffff" letter-spacing="-2">You describe it.</text>
+  <text x="80" y="430" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        font-size="72" font-weight="800" fill="#0d6efd" letter-spacing="-2">AI builds, ships, and fixes it.</text>
+
+  <!-- subline -->
+  <text x="80" y="510" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+        font-size="32" font-weight="400" fill="#8b93a8">A task kernel with AI in the loop. Open source, free forever.</text>
+
+  <!-- footer URL -->
+  <text x="80" y="580" font-family="'Fira Code', 'Cascadia Code', ui-monospace, SFMono-Regular, monospace"
+        font-size="24" font-weight="500" fill="#a0c4ff">dicode.app</text>
+</svg>
