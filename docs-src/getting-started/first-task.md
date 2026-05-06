@@ -4,7 +4,7 @@ This guide walks you through creating a cron task that runs every minute, uses t
 
 ## 1. Create the task directory
 
-Each task lives in its own directory inside a source. If you followed the [quickstart](./), you already have `~/dicode-tasks/` configured as a local source.
+Each task lives in its own directory inside a source. The first-launch wizard already wired `~/dicode-tasks/` as a local source under `spec.entries.local` and dropped a starter `taskset.yaml` there with empty `entries: {}` — you just add the task subfolder.
 
 ```sh
 mkdir -p ~/dicode-tasks/hello-cron
@@ -58,15 +58,21 @@ Key points:
 
 ## 4. Add the task to your taskset
 
-Update `~/dicode-tasks/taskset.yaml` to include the new task:
+Update `~/dicode-tasks/taskset.yaml` so its `spec.entries` map references the new task. Each entry key is the namespace segment, and `ref.path` points at the task's `task.yaml`:
 
 ```yaml
 apiVersion: dicode/v1
 kind: TaskSet
-name: my-tasks
-tasks:
-  - hello-cron
+metadata:
+  name: my-tasks
+spec:
+  entries:
+    hello-cron:
+      ref:
+        path: ./hello-cron/task.yaml
 ```
+
+The first-launch wizard scaffolds this file with `entries: {}` — you just add the new entry under `spec.entries`.
 
 ## 5. The daemon picks it up
 
