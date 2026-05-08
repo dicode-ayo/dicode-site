@@ -127,6 +127,14 @@ The relay strips hop-by-hop headers (`Connection`, `Keep-Alive`, `Transfer-Encod
 
 The hosted relay at `relay.dicode.app` includes an **OAuth broker** that eliminates the need to register your own OAuth apps with providers. This is a key feature of the dicode.app Pro plan.
 
+The broker is the **single source of truth** for the providers it carries. As of `dicode-relay@0.1.5` that's 14 providers — `github`, `slack`, `google`, `spotify`, `linear`, `discord`, `gitlab`, `airtable`, `notion`, `confluence`, `salesforce`, `stripe`, `office365`, `azure` — and dicode-core no longer ships per-provider entries (`auth/github-oauth`, `auth/google-oauth`, …) for any of them. With `relay.enabled: true` you get the full broker flow with zero per-provider configuration in your taskset; the dashboard's `buildin/auth-providers` task discovers the catalogue dynamically from `GET /providers`.
+
+For providers the broker doesn't carry (e.g. Looker) or for any provider you'd rather drive with your own OAuth app — see the [BYO flow](#byo-flow-providers-the-broker-doesn-t-carry) below.
+
+::: info Migration note (2026-05)
+Earlier dicode releases shipped per-provider entries `auth/github-oauth`, `auth/google-oauth`, `auth/slack-oauth`, etc. for every broker-backed provider. Those entries were removed once the broker became the source of truth — operators who relied on `/hooks/<provider>-oauth` callbacks for any of the 13 broker-backed providers should switch to the broker flow (no callback URL re-registration needed: the redirect URI lives on the broker, not your daemon). Operators who prefer to keep a self-hosted OAuth app for a specific provider can [instantiate `_oauth-app`](#byo-flow-providers-the-broker-doesn-t-carry) with their own credentials.
+:::
+
 ### How it works
 
 ::: info Prerequisite
@@ -234,6 +242,51 @@ A representative sample of providers the hosted broker at `relay.dicode.app` shi
 
 Self-hosted brokers can add providers by editing `relay.yaml` and restarting — no code change to dicode-core, no daemon redeploy.
 
+### BYO flow - providers the broker doesn't carry
+
+For providers the relay broker doesn't proxy (Looker today), or for any provider you'd rather drive with your own OAuth app, dicode-core ships a generic OAuth task at `tasks/auth/_oauth-app/task.yaml`. You instantiate it from your own taskset with provider-specific overrides — the daemon talks to the provider directly, with credentials you store as secrets.
+
+The default `auth` taskset ships `looker-oauth` as a working example, plus the standalone `openrouter-oauth`. To wire a new provider, copy one of those entries into your own taskset:
+
+```yaml
+# ~/dicode-tasks/taskset.yaml
+apiVersion: dicode/v1
+kind: TaskSet
+metadata:
+  name: my-tasks
+spec:
+  entries:
+    my-google-oauth:
+      ref:
+        path: <path-to-dicode>/tasks/auth/_oauth-app/task.yaml
+      overrides:
+        name: My Google OAuth
+        trigger: { webhook: /hooks/my-google-oauth }
+        params:
+          provider: google
+          scope: "https://www.googleapis.com/auth/gmail.readonly"
+          client_id_env: CLIENT_ID
+          client_secret_env: CLIENT_SECRET
+          access_token_env:  MY_GOOGLE_ACCESS_TOKEN
+          refresh_token_env: MY_GOOGLE_REFRESH_TOKEN
+        env:
+          - { name: CLIENT_ID,               secret: MY_GOOGLE_CLIENT_ID }
+          - { name: CLIENT_SECRET,           secret: MY_GOOGLE_CLIENT_SECRET }
+          - { name: MY_GOOGLE_ACCESS_TOKEN,  secret: MY_GOOGLE_ACCESS_TOKEN,  optional: true }
+          - { name: MY_GOOGLE_REFRESH_TOKEN, secret: MY_GOOGLE_REFRESH_TOKEN, optional: true }
+```
+
+Then store your credentials and click Connect on the dashboard:
+
+```sh
+dicode secret set MY_GOOGLE_CLIENT_ID     <client-id>
+dicode secret set MY_GOOGLE_CLIENT_SECRET <client-secret>
+```
+
+The redirect URI registered with the provider must point at your daemon's webhook for this entry — typically `http://localhost:8080/hooks/my-google-oauth`, or `https://relay.dicode.app/u/<uuid>/hooks/my-google-oauth` if you're going through the relay. BYO works with or without `relay.enabled: true`; the broker is not in the loop for these flows.
+
+The full walkthrough — including the `_oauth-app` parameter reference and a list of provider keys understood by `tasks/auth/_oauth/providers.ts` — lives in the [`tasks/auth/taskset.yaml`](https://github.com/dicode-ayo/dicode-core/blob/main/tasks/auth/taskset.yaml) header in dicode-core.
+
 ### Daemon-side connection status
 
 The dashboard's **Auth providers** panel needs more than the catalogue — it has to show, for each provider, whether the user has already completed the OAuth flow. That join lives in a built-in daemon task, `buildin/auth-providers`, which combines the broker's `/providers` response with the daemon's local secrets store.
@@ -289,7 +342,7 @@ Because the broker is the single source of truth, adding a new provider to `rela
 | | Self-hosted (free) | dicode.app Pro |
 |---|---|---|
 | Webhook relay | Yes (run your own server) | Yes (managed, unlimited) |
-| OAuth broker | No — register your own apps | Yes — 14 providers, zero setup |
+| OAuth broker | No — instantiate `_oauth-app` per provider with your own apps | Yes — 14 providers, zero setup |
 | Custom domain | Your own domain | `*.dicode.app` |
 | Token encryption | N/A | ECIES (P-256 + AES-256-GCM) |
 

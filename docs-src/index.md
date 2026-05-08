@@ -38,8 +38,8 @@ features:
     link: /concepts/relay
     linkText: Webhook relay docs
   - icon: "\U0001F511"
-    title: One-Click OAuth (14 Providers)
-    details: "Click Connect in the UI, authenticate with the provider, token appears in your daemon — encrypted end-to-end. No app registration, no client secrets, no callback URLs. GitHub, Slack, Google, Discord, GitLab, Spotify, Linear, Notion, Stripe, Salesforce, Office 365, Azure AD, Airtable, Confluence."
+    title: One-Click OAuth (13 Providers)
+    details: "Click Connect in the UI, authenticate with the provider, token appears in your daemon — encrypted end-to-end. No app registration, no client secrets, no callback URLs. GitHub, Slack, Google, Discord, GitLab, Spotify, Linear, Notion, Stripe, Salesforce, Azure AD, Airtable, Confluence — plus a BYO instantiation path for any provider the broker doesn't carry."
     link: /concepts/relay
     linkText: OAuth broker docs
   - icon: "\U0001F6E1"
