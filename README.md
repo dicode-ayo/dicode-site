@@ -78,7 +78,7 @@ docs-src/
     └── config.ts           # nav + sidebar
 ```
 
-Standard VitePress conventions. Add a new concept page under `concepts/`, then list it in `.vitepress/config.ts` under the appropriate sidebar group.
+Standard VitePress conventions. Add a new concept page under `concepts/`, then list it in `.vitepress/config.ts` under the appropriate sidebar group. Set a `description:` field in the page's YAML frontmatter — VitePress emits it as `<meta name="description">` and `<meta property="og:description">`, which is what search engines and link previews use.
 
 ## Deployment
 
