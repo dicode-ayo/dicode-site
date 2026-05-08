@@ -192,26 +192,84 @@ const res = await fetch("https://slack.com/api/auth.test", {
 });
 ```
 
-### Supported providers
+### Discovering providers
 
-| Provider | PKCE | Scopes |
-|----------|------|--------|
+The broker exposes its enabled providers at `GET /providers` (added in `dicode-relay@0.1.5`). The endpoint is unauthenticated and returns the metadata your daemon needs to render a "connect" UI without ever shipping a hard-coded catalogue. Secret values (`client_id`, `client_secret`) are never returned.
+
+```sh
+curl https://relay.dicode.app/providers
+```
+
+```json
+[
+  { "key": "github",   "pkce": true,  "scopes": ["user", "repo"],            "secret_required": true,  "configured": true },
+  { "key": "slack",    "pkce": true,  "scopes": ["channels:read"],           "secret_required": false, "configured": true },
+  { "key": "google",   "pkce": true,  "scopes": ["https://www.googleapis.com/auth/userinfo.email"], "secret_required": true, "configured": true },
+  { "key": "notion",   "pkce": false, "scopes": [],                          "secret_required": true,  "configured": true },
+  { "key": "stripe",   "pkce": false, "scopes": ["read_write"],              "secret_required": true,  "configured": true }
+]
+```
+
+Field reference (matches `PublicProviderInfo` in `dicode-relay`):
+
+| Field | Type | Meaning |
+|-------|------|---------|
+| `key` | string | Provider identifier — pass to `buildin/auth-start` as `provider=<key>` |
+| `pkce` | bool | Whether the broker uses PKCE for this provider |
+| `scopes` | string[] | Default scopes; tasks can override per request via `?scope=` |
+| `secret_required` | bool | Whether the broker is configured with a `client_secret` for this provider |
+| `configured` | bool | Whether `client_id` is set on this deployment (always `true` in the current implementation — providers without credentials are filtered out) |
+
+A representative sample of providers the hosted broker at `relay.dicode.app` ships with — call `/providers` for the live, authoritative list:
+
+| Provider | PKCE | Default scopes |
+|----------|------|----------------|
 | GitHub | Yes | `user repo` |
 | Slack | Yes | `channels:read` |
 | Google | Yes | `userinfo.email` |
-| Spotify | Yes | `user-read-private` |
-| Linear | Yes | `read` |
-| Discord | Yes | `identify email` |
 | GitLab | Yes | `read_user read_api` |
-| Airtable | Yes | `data.records:read` |
-| Notion | No | — |
-| Confluence | Yes | `read:me` |
-| Salesforce | Yes | `api refresh_token` |
+| Discord | Yes | `identify email` |
+| Notion | No | (empty) |
 | Stripe | No | `read_write` |
-| Office 365 | Yes | `User.Read Mail.Read` |
-| Azure AD | Yes | `openid profile email` |
 
-Tasks can override scopes per request. The authoritative provider catalogue lives in the broker's `relay.yaml` and is served live at `GET /providers` — new providers can be added to the broker without any changes to your daemon or tasks.
+Self-hosted brokers can add providers by editing `relay.yaml` and restarting — no code change to dicode-core, no daemon redeploy.
+
+### Daemon-side connection status
+
+The dashboard's **Auth providers** panel needs more than the catalogue — it has to show, for each provider, whether the user has already completed the OAuth flow. That join lives in a built-in daemon task, `buildin/auth-providers`, which combines the broker's `/providers` response with the daemon's local secrets store.
+
+For each broker entry the task calls `dicode.secrets.has("<KEY>_ACCESS_TOKEN")` (a presence-only IPC verb — values never cross the boundary) and adds the result as `has_token`:
+
+```json
+[
+  {
+    "key": "github",
+    "pkce": true,
+    "scopes": ["user", "repo"],
+    "secret_required": true,
+    "configured": true,
+    "has_token": true
+  },
+  {
+    "key": "slack",
+    "pkce": true,
+    "scopes": ["channels:read"],
+    "secret_required": false,
+    "configured": true,
+    "has_token": false
+  }
+]
+```
+
+Trigger it from the daemon via the standard task-run mechanism (the dashboard does this internally over IPC):
+
+```sh
+dicode run buildin/auth-providers action=list
+```
+
+The task accepts an optional `providers=key1,key2` parameter to filter the result, and an `action=connect` mode that delegates to `buildin/auth-start` to mint a signed `/auth/:provider` URL. Standalone (non-broker) providers like `openrouter` are appended to the list with their own `webhookPath` so the dashboard can route them past the broker.
+
+Because the broker is the single source of truth, adding a new provider to `relay.yaml` is enough — the dashboard picks it up on the next refresh without a dicode-core release.
 
 ### Security
 
