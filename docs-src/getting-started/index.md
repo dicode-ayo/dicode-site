@@ -83,63 +83,90 @@ volumes:
 
 Multi-arch (`linux/amd64` + `linux/arm64`) for every published tag.
 
-## Start the daemon
+## First launch — the setup wizard
 
-You do not need to start the daemon manually. Any CLI command auto-starts `dicoded` in the background if it is not already running:
+You do not need to start the daemon manually, and you do not need to write `dicode.yaml` by hand. Any CLI command auto-starts `dicoded` in the background:
 
 ```sh
 dicode list
 ```
 
-The first run creates `~/.dicode/` with a default `dicode.yaml` config file and a SQLite database.
+When `~/.dicode/dicode.yaml` does not yet exist, the daemon runs a first-launch wizard, picks the appropriate surface based on your environment, generates a passphrase, and writes a ready-to-run config under `~/.dicode/` (mode `0700` directory, `0600` file). The dashboard passphrase is printed **once** — copy it before closing the terminal.
 
-## Local-only mode (no git needed)
+### Wizard surfaces
 
-The simplest setup points dicode at a local directory of tasks. Create a minimal config:
+The wizard auto-selects one of three surfaces based on TTY + `DISPLAY` detection:
+
+| Surface | When it runs | What you see |
+| --- | --- | --- |
+| **Browser** | Desktop session detected (`DISPLAY` or `WAYLAND_DISPLAY` set) | A short setup page opens at `http://localhost:8080/setup` — pick which tasksets to enable and submit. The success page shows the passphrase and a copy button. |
+| **CLI** | Interactive terminal, no display | A line-by-line prompt: enable each curated taskset (Y/n), confirm the local tasks dir and data dir, set a port. The passphrase prints when you finish. |
+| **Silent** | Non-interactive (containers, systemd, CI) | All curated tasksets enabled, defaults applied, passphrase generated. The config + passphrase are printed to stdout once. |
+
+### Curated tasksets
+
+The wizard pre-wires three git-backed tasksets, all default-on:
+
+| Taskset | What it gives you |
+| --- | --- |
+| **Built-in tasks** (`buildin`) | Tray icon, notifications, web UI, dicodai chat, alert. The daemon's standard inventory. |
+| **Examples** (`examples`) | Copy-friendly samples — `hello-cron`, `github-stars`, `webhook-form`, `nginx-start`, and more. |
+| **OAuth providers** (`auth`) | Zero-paste OAuth tasks for Google, GitHub, Slack, OpenRouter, Spotify, and more. |
+
+The wizard also scaffolds a local tasks directory (default `~/dicode-tasks/`) with a starter `taskset.yaml` so you can drop your own tasks in next to the curated ones.
+
+### Adding a custom local source after setup
+
+The generated `dicode.yaml` already contains a `local:` entry pointing at `~/dicode-tasks`. To add a second local source — for example, a separate scratch directory — open `~/.dicode/dicode.yaml` and add another entry under `spec.entries`:
 
 ```yaml
 # ~/.dicode/dicode.yaml
-sources:
-  - type: local
-    path: ~/dicode-tasks/taskset.yaml
+spec:
+  entries:
+    # ... wizard-generated entries above ...
+    scratch:
+      ref:
+        path: ~/scratch-tasks/taskset.yaml
+        watch: true
 ```
 
-Then create the tasks directory and a `taskset.yaml`:
-
-```sh
-mkdir -p ~/dicode-tasks
-```
+The matching `taskset.yaml` declares the tasks the directory contains:
 
 ```yaml
-# ~/dicode-tasks/taskset.yaml
+# ~/scratch-tasks/taskset.yaml
 apiVersion: dicode/v1
 kind: TaskSet
-name: my-tasks
-tasks:
-  - hello-cron
+metadata:
+  name: scratch
+spec:
+  entries:
+    hello-cron:
+      ref:
+        path: ./hello-cron/task.yaml
 ```
 
-Each entry in `tasks` is a subdirectory name containing a `task.yaml` and a script file. See [Your First Task](./first-task) for a complete walkthrough.
+Each `entry.ref.path` points at a `task.yaml` file inside its own subdirectory. See [Your First Task](./first-task) for a full walkthrough, and the [Configuration Reference](./configuration) for every supported field.
 
-The daemon watches local sources with `fsnotify` and picks up changes within milliseconds -- no restart needed.
+The daemon watches local sources with `fsnotify` and picks up changes within milliseconds — no restart needed.
 
-## Add a git source (optional)
+### Adding a git source
 
-To pull tasks from a remote git repository, add a git source to your config:
+To pull tasks from a remote git repository, add another entry under `spec.entries`:
 
 ```yaml
 # ~/.dicode/dicode.yaml
-sources:
-  - type: git
-    url: https://github.com/your-org/your-tasks.git
-    branch: main
-    poll_interval: 30s
-    auth:
-      type: token
-      token_env: GITHUB_TOKEN
+spec:
+  entries:
+    team-tasks:
+      ref:
+        url: https://github.com/your-org/your-tasks.git
+        branch: main
+        poll_interval: 30s
+        auth:
+          token_env: GITHUB_TOKEN
 ```
 
-The daemon clones the repo, polls for changes at the configured interval, and reconciles tasks automatically. Private repos require a token -- set the environment variable referenced by `token_env`.
+The daemon clones the repo, polls for changes at the configured interval, and reconciles tasks automatically. Private repos require a token — set the environment variable referenced by `auth.token_env`.
 
 ## CLI commands
 

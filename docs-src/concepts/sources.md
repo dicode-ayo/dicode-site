@@ -1,118 +1,122 @@
 # Sources & TaskSets
 
-Sources tell dicode where to find tasks. A source can be a local directory on disk or a remote Git repository. TaskSets provide a hierarchical composition model for organizing tasks across multiple repositories with namespace-scoped IDs and override cascades.
+dicode watches one or more **sources** for task files and reconciles them automatically. Add a file, the task is live. Delete a file, it stops. No restart needed.
 
-## Local source
+`dicode.yaml` is itself a **root TaskSet**: every source is declared as an entry under `spec.entries`, where the key is the namespace and the `ref` block points at a `taskset.yaml` (local or git). The same parent-override mechanism that operators use inside a `taskset.yaml` works at the top level too, so you can disable or patch a built-in task directly in `dicode.yaml` without forking the taskset.
 
-A local source watches a directory on disk for task changes.
-
-```yaml
-# dicode.yaml
-sources:
-  - type: local
-    path: /home/user/tasks
-```
-
-- **fsnotify**: File changes are detected via OS filesystem notifications (fsnotify) with approximately 150ms debounce to handle editors that write via tmp-rename.
-- **Initial scan**: On startup, all task directories are scanned and registered.
-- **Hot reload**: Adding, modifying, or removing a task directory is detected in real time -- no restart needed.
+::: tip First-run setup
+You normally don't write `dicode.yaml` by hand. The first-launch wizard generates it for you with curated tasksets pre-wired. See the [Quickstart](../getting-started/) for the wizard surfaces; this page documents the schema so you can edit the result.
+:::
 
 ---
 
-## Git source
-
-A git source clones a remote repository and polls it for changes on a configurable interval.
+## dicode.yaml as a root TaskSet
 
 ```yaml
 # dicode.yaml
-sources:
-  - type: git
-    url: https://github.com/myorg/my-tasks.git
-    branch: main                  # default: main
-    poll_interval: 30s            # default: 30s
-    auth:
-      token_env: GITHUB_TOKEN    # env var holding a PAT or access token
+spec:
+  entries:
+    buildin:
+      ref:
+        path: ${CONFIGDIR}/tasks/buildin/taskset.yaml
+      overrides:
+        entries:
+          relay-client:
+            enabled: false       # disable one buildin task without forking the set
+    examples:
+      ref:
+        url: https://github.com/dicode-ayo/dicode-core
+        branch: main
+        path: tasks/examples/taskset.yaml
+        poll_interval: 5m
+        auth:
+          token_env: GITHUB_TOKEN
 ```
 
-- **Clone on startup**: The repository is cloned to a local cache directory under `~/.dicode/repos/`.
-- **Polling**: dicode pulls the branch at the configured interval and diffs the snapshot to detect added, updated, or removed tasks.
-- **Token auth**: For private repositories, set `auth.token_env` to the name of an environment variable containing an HTTP Bearer / Basic-auth token (e.g. a GitHub PAT).
+Each entry key becomes the namespace under which the referenced taskset's tasks are registered. Both sources contribute to the same registry — task IDs must be unique across all sources.
+
+### Field reference for `spec.entries.<name>.ref`
+
+| Field | Default | Description |
+|---|---|---|
+| `path` | required (local) | Absolute or `~/`-relative path to `taskset.yaml`; `${CONFIGDIR}` and `${HOME}` are expanded |
+| `url` | required (git) | HTTPS or SSH git URL |
+| `branch` | `main` | Branch to track (git only) |
+| `poll_interval` | `30s` | How often to fetch (git only) |
+| `auth.token_env` | | Env var holding a personal access token |
+| `auth.ssh_key` | | Path to an SSH private key |
+| `watch` | `true` | Enable fsnotify live reload (local refs) |
+| `dev_ref` | | Substitute ref when [dev mode](#dev-mode) is active |
+
+### Field reference for `spec.entries.<name>` (entry-level)
+
+| Field | Default | Description |
+|---|---|---|
+| `ref` | required | Source descriptor (see above) |
+| `enabled` | `true` | Disable without deleting; one-liner shortcut for `overrides.enabled` |
+| `tags` | `[]` | UI grouping labels |
+| `overrides` | | Patch the referenced taskset (see [Override precedence](#override-precedence)) |
 
 ---
 
-## TaskSets
+## TaskSet sources
 
-TaskSets are hierarchical YAML manifests that compose tasks from multiple sources with namespace scoping, override cascades, and deduplication. They are the recommended way to manage tasks at scale.
-
-### Structure
-
-A TaskSet file has `kind: TaskSet` and contains named entries. Each entry can reference a local task directory, a git repository, or another nested TaskSet:
+A TaskSet source uses a `taskset.yaml` file as its entry point. Tasks are composed hierarchically — a TaskSet can reference other TaskSets, allowing large task trees to be built from smaller ones (like ArgoCD App-of-Apps).
 
 ```yaml
+# taskset.yaml — entry point for one source
 apiVersion: dicode/v1
 kind: TaskSet
 metadata:
-  name: my-taskset
+  name: infra
 spec:
   defaults:
-    timeout: 30s
-    env:
-      - name: LOG_LEVEL
-        value: info
+    timeout: 30m
   entries:
     deploy-backend:
       ref:
-        path: ./tasks/deploy-backend
-    deploy-frontend:
-      ref:
-        url: https://github.com/myorg/frontend-deploy.git
-        path: taskset.yaml
-        branch: main
+        path: ./backend/task.yaml
       overrides:
-        params:
-          environment: staging
-    monitoring:
+        timeout: 5m
+    platform:
       ref:
-        url: https://github.com/myorg/monitoring-tasks.git
-        path: taskset.yaml
+        path: ./platform/taskset.yaml   # nested TaskSet — namespace: infra/platform
+```
+
+Each task file declares its kind:
+
+```yaml
+apiVersion: dicode/v1
+kind: Task
+name: Deploy Backend
+trigger:
+  manual: true
 ```
 
 ### Namespace-scoped IDs
 
-Tasks within a TaskSet get namespaced IDs based on the entry hierarchy. For example, if the root TaskSet is named `infra` and has an entry `deploy-backend`, the task ID becomes `infra/deploy-backend`. Nested TaskSets add further segments: `infra/monitoring/check-health`.
+Task IDs are built from the path of TaskSet names:
 
-This prevents name collisions across independently maintained task repositories.
+- Root entry `buildin` + inner entry `relay-client` → ID `buildin/relay-client`
+- Nested entry `buildin` > `platform` + inner entry `nginx-start` → ID `buildin/platform/nginx-start`
+
+This prevents collisions across independently maintained task repositories.
 
 ### Override precedence
 
-TaskSets apply overrides in a three-level cascade (lowest to highest priority):
+Overrides apply in a three-level cascade (lowest to highest):
 
-1. **task.yaml base spec** -- The original task definition as written by the author.
-2. **TaskSet defaults** -- The `spec.defaults` block of the TaskSet containing the entry. Applied to all entries in the set.
-3. **Per-entry overrides** -- The `overrides` block on the specific entry. Highest priority, wins over everything.
+1. **`task.yaml` base values** — the original task definition.
+2. **TaskSet `spec.defaults`** — applied to every entry in the set.
+3. **Per-entry `overrides`** — parent-entry patch merged with local entry overrides; leaf wins.
 
-For example:
-
-```yaml
-spec:
-  defaults:                       # Level 2: applied to all entries
-    timeout: 60s
-    env:
-      - name: ENV
-        value: staging
-  entries:
-    my-task:
-      ref:
-        path: ./tasks/my-task     # Level 1: task.yaml base
-      overrides:                   # Level 3: per-entry, wins
-        timeout: 120s
-        params:
-          limit: "50"
-```
+::: warning Deprecated
+`kind: Config` `spec.defaults` and `overrides.defaults` from parent TaskSets are no longer applied to the override stack. Migrate shared defaults to the `defaults:` block in `dicode.yaml`.
+:::
 
 ### What can be overridden
 
-The override system can patch these fields without modifying the original task.yaml:
+The override system can patch these fields without modifying the original `task.yaml`:
 
 - `name`, `description`
 - `trigger` (cron, webhook, manual, chain, daemon, restart)
@@ -121,8 +125,28 @@ The override system can patch these fields without modifying the original task.y
 - `net` (replace network access list)
 - `timeout`
 - `runtime`
-- `notify` (on_success, on_failure)
-- `dicode` permissions (tasks, mcp, list_tasks, get_runs, secrets_write)
+- `notify` (`on_success`, `on_failure`)
+- `dicode` permissions (`tasks`, `mcp`, `list_tasks`, `get_runs`, `secrets_write`)
+- `enabled` (see below)
+
+### Disabling an entry
+
+Set `enabled: false` to disable a task without deleting its definition. Disabled tasks remain visible in the API (with `enabled: false`) and the registry, but are not scheduled (no cron), not spawned (no daemon), and not routed (no webhook).
+
+```yaml
+spec:
+  entries:
+    relay-client:
+      enabled: false        # one-liner shortcut; default is true when omitted
+      ref:
+        path: ./relay-client/task.yaml
+```
+
+The longer nested form (`overrides.enabled: false`) is equivalent and still supported; setting both is a parse error.
+
+A parent TaskSet (or `dicode.yaml`) can also flip an entry's enabled state via its own `overrides.entries.<key>.enabled`. This lets a higher-level operator disable a built-in task without forking the taskset. Parent-level override wins over child-level.
+
+You can also toggle `enabled` at runtime via the dashboard or the [`PATCH /api/tasks/{id}/overrides`](./tasks#enable-disable) endpoint — runtime overrides are persisted to `dicode.yaml`.
 
 ### Nested entry overrides
 
@@ -142,53 +166,81 @@ entries:
             endpoint: https://api.example.com
 ```
 
-### Git refs in entries
+---
 
-Entries can reference tasks in remote Git repositories:
+## Multiple sources
+
+Configure multiple sources by adding entries to `spec.entries`. Each entry key is the namespace:
 
 ```yaml
-entries:
-  deploy:
-    ref:
-      url: https://github.com/myorg/deploy-tasks.git
-      path: tasks/deploy           # path within the repo
-      branch: main
-      poll_interval: 60s
-      auth:
-        token_env: GITHUB_TOKEN
+spec:
+  entries:
+    shared:
+      ref:
+        url: https://github.com/acme/tasks
+        branch: main
+    dev:
+      ref:
+        path: ~/tasks-dev
+        watch: true
 ```
+
+Both sources contribute tasks to the same registry. Task IDs must be unique across all sources.
+
+---
+
+## Reconciler
+
+The reconciler is the component that consumes events from all sources and keeps the task registry in sync.
+
+**Event types:**
+
+| Kind | Trigger | Registry action |
+|---|---|---|
+| `added` | New task folder detected | Register task (load spec, add to in-memory map, schedule triggers) |
+| `updated` | Existing task changed | Re-register task (reload spec, reschedule) |
+| `removed` | Task folder deleted | Unregister task (cancel triggers, remove from map) |
+
+**Fan-in:** the reconciler fans in channels from all sources using a single goroutine. Events are processed sequentially to avoid registry races.
+
+**Error handling:**
+
+- If a task's `task.yaml` fails validation on `added` or `updated`, the error is logged and the task is not registered (or the old version is kept for `updated`).
+- Source errors (git clone failure, auth failure) are logged and retried on the next poll cycle. The reconciler does not crash.
+
+**Local sources** use `fsnotify` with ~150ms debounce to handle editors that write via tmp-rename. **Git sources** are cloned to a cache directory under `data_dir` and pulled at `poll_interval`.
+
+### Task ownership
+
+Each task belongs to exactly one source. When a task is registered, the source ID is recorded. This matters for `dicode task commit` — it knows which source to commit to.
 
 ---
 
 ## Dev mode
 
-TaskSet sources support a **dev mode** that temporarily swaps a remote git source for a local directory. This lets you develop and test changes to tasks without pushing to a remote repository.
+TaskSet sources support a **dev mode** that temporarily swaps a source ref for a local directory. This lets you develop and test changes to tasks without pushing to a remote repository.
 
 ### Activating dev mode
 
 Via the REST API:
 
 ```bash
-curl -X PATCH http://localhost:8080/api/sources/my-source/dev \
+curl -X PATCH http://localhost:8080/api/sources/buildin/dev \
   -H 'Content-Type: application/json' \
-  -d '{"enabled": true, "local_path": "/home/user/my-local-tasks/taskset.yaml"}'
+  -d '{"enabled": true, "local_path": "/tmp/my-dev-tasks/taskset.yaml"}'
 ```
 
-Via MCP (for AI agent integrations):
-
-```
-switch_dev_mode(source="my-source", enabled=true, local_path="/home/user/my-local-tasks")
-```
+Or toggle it from the **Sources** page in the web UI: enable dev mode, enter the local path.
 
 ### Deactivating dev mode
 
 ```bash
-curl -X PATCH http://localhost:8080/api/sources/my-source/dev \
+curl -X PATCH http://localhost:8080/api/sources/buildin/dev \
   -H 'Content-Type: application/json' \
   -d '{"enabled": false}'
 ```
 
-When dev mode is deactivated, the source reverts to its configured git remote.
+Disabling dev mode immediately reverts to the original ref.
 
 ### Dev refs
 
@@ -203,3 +255,65 @@ entries:
       dev_ref:
         path: /home/user/local-tasks/taskset.yaml
 ```
+
+---
+
+## Migration from the old `sources:` array
+
+The top-level `sources:` array was removed in v0.1+ ([dicode-core#262](https://github.com/dicode-ayo/dicode-core/pull/262)). The format change is mechanical:
+
+**Before:**
+
+```yaml
+sources:
+  - name: buildin
+    type: local
+    path: ${CONFIGDIR}/tasks/buildin/taskset.yaml
+    watch: true
+  - name: examples
+    type: git
+    url: https://github.com/dicode-ayo/dicode-core
+    branch: main
+    entry_path: tasks/examples/taskset.yaml
+    poll_interval: 5m
+    auth:
+      type: token
+      token_env: GITHUB_TOKEN
+```
+
+**After:**
+
+```yaml
+spec:
+  entries:
+    buildin:
+      ref:
+        path: ${CONFIGDIR}/tasks/buildin/taskset.yaml
+        watch: true
+    examples:
+      ref:
+        url: https://github.com/dicode-ayo/dicode-core
+        branch: main
+        path: tasks/examples/taskset.yaml
+        poll_interval: 5m
+        auth:
+          token_env: GITHUB_TOKEN
+```
+
+**Field mapping:**
+
+| Old `sources[]` field | New location |
+|---|---|
+| `name` | entry key (e.g. `buildin:`) |
+| `type` | inferred: `url` present → git; `path` present → local |
+| `path` | `ref.path` |
+| `url` | `ref.url` |
+| `branch` | `ref.branch` |
+| `poll_interval` | `ref.poll_interval` |
+| `auth.token_env` | `ref.auth.token_env` |
+| `auth.ssh_key` | `ref.auth.ssh_key` |
+| `watch` | `ref.watch` |
+| `dev_ref` | `ref.dev_ref` |
+| `tags` | `entry.tags` |
+
+If you still have a `sources:` array in your `dicode.yaml`, the daemon will refuse to start and print an error pointing at this migration guide. See [dicode-core#261](https://github.com/dicode-ayo/dicode-core/issues/261).

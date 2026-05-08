@@ -158,6 +158,7 @@ notify:
 | `runtime` | string | yes | `deno`, `python`, `docker`, or `podman` |
 | `version` | string | no | Version string for the task |
 | `trigger` | object | yes | How the task is triggered (see below) |
+| `enabled` | boolean | no | Default `true`. Disabled tasks remain visible in API/UI but are not scheduled, spawned, or routed. Toggle from the dashboard or via [`PATCH /api/tasks/{id}/overrides`](#enable-disable). |
 | `params` | map | no | User-configurable input parameters |
 | `permissions` | object | no | Security sandbox declarations |
 | `docker` | object | conditional | Required when runtime is `docker` or `podman` |
@@ -177,6 +178,44 @@ Exactly one trigger type must be configured per task.
 | **Manual** | `manual: true` | CLI or UI only |
 | **Chain** | `chain: { from: task-id, on: success }` | Fires after another task completes |
 | **Daemon** | `daemon: true` | Long-running process, started with the service |
+
+### Enable / disable
+
+Every task has an `enabled` flag (default `true`). Disabled tasks remain visible in the API and the registry but are **not** scheduled, **not** spawned (daemons), and **not** routed (webhooks).
+
+You can toggle it three ways:
+
+1. **Dashboard** — click the circle/slash icon at the right of any row in the task list. Disabled tasks render faded with a "paused" badge.
+2. **Statically in YAML** — set `enabled: false` on a `task.yaml`, or use the entry-level shortcut inside a `taskset.yaml` / `dicode.yaml`. See [Sources & TaskSets — Disabling an entry](./sources#disabling-an-entry) for parent-override semantics.
+3. **REST API** — `PATCH /api/tasks/{id}/overrides`.
+
+#### `PATCH /api/tasks/{id}/overrides`
+
+Generic JSON Merge Patch (RFC 7396) endpoint that writes runtime overrides into `dicode.yaml`'s `spec.entries.<source>.overrides.entries.<task>` block. Today's clients toggle `enabled`; the endpoint accepts every `taskset.Overrides` field, so future param/timeout UIs reuse it without backend changes.
+
+```sh
+# Disable a task
+curl -X PATCH http://localhost:8080/api/tasks/buildin/relay-client/overrides \
+  -H 'Content-Type: application/json' \
+  -d '{"enabled": false}'
+
+# Re-enable (clear the override entirely)
+curl -X PATCH http://localhost:8080/api/tasks/buildin/relay-client/overrides \
+  -H 'Content-Type: application/json' \
+  -d '{"enabled": null}'
+```
+
+Setting a field to `null` removes it from the merge patch (per RFC 7396), reverting that field to the underlying TaskSet/`task.yaml` value.
+
+| Status | Meaning |
+|---|---|
+| `200` | Override applied; reconciler picks up the change within ~1s |
+| `400` | Malformed JSON, unknown override field, or invalid task ID suffix |
+| `404` | Task ID not found in the registry |
+| `409` | Stale write — `dicode.yaml` was modified since you last read it (mtime-based optimistic concurrency); re-read and retry |
+| `422` | Cannot enable a task whose ancestor source is disabled — clear the ancestor override first |
+
+The toggle propagates within ~1 second: the source manager triggers an out-of-band reconcile rather than waiting up to 30 s for the next poll tick.
 
 ### Docker runtime config
 
