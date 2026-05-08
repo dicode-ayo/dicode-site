@@ -29,6 +29,10 @@ All AI features work with any OpenAI-compatible API:
 
 Set `base_url` and `api_key_env` in your config. Use a free local model for development, a cloud model for production. Switch in one line.
 
+### Or use your Claude.ai subscription
+
+If you already pay for Claude Pro/Max, the [`buildin/ai-agent-claude-cli`](#subscription-backed-alternative-buildin-ai-agent-claude-cli) task wraps the official `claude` CLI so dicode runs against your subscription quota instead of charging per-token via the API. Mint a one-year OAuth token, drop it into secrets, and any task that calls `dicode.run_task("ai-agent-claude-cli", ...)` runs on your subscription.
+
 ### What happens when AI is wrong?
 
 The fix is a git commit. If the fix breaks things, the next run fails, and the monitoring loop catches it — same as a human mistake. `git revert` is always one command away. You can configure:
@@ -203,6 +207,68 @@ The bundled chat page persists `session_id` in `localStorage` so refreshing the 
 - **API keys never enter the conversation.** They are resolved from `Deno.env.get(api_key_env)` at task start and used only to construct the OpenAI client. They are not logged, not returned, and not visible to the model.
 - **Model output is rendered as `textContent`**, never `innerHTML`. The chat UI is safe by default against untrusted markdown/HTML in responses.
 - **Session blobs are per-task and isolated.** They live under the `buildin/ai-agent` task's own KV namespace.
+
+## Subscription-backed alternative: `buildin/ai-agent-claude-cli`
+
+`buildin/ai-agent` talks to OpenAI-compatible HTTPS endpoints with per-task API keys — the standard provider-agnostic path. If you have a **Claude.ai Pro or Max subscription**, there's a parallel buildin task that wraps the official `claude` CLI so dicode drives Claude with your subscription credentials instead of paying per token.
+
+### When to pick which
+
+| | `buildin/ai-agent` | `buildin/ai-agent-claude-cli` |
+|---|---|---|
+| Backend | OpenAI-compatible HTTPS endpoint | Local `claude` CLI subprocess |
+| Auth | Per-task `*_API_KEY` env or secret | One-year OAuth token (`CLAUDE_CODE_OAUTH_TOKEN`) |
+| Billing | Per-token via the chosen provider's API | Counts against subscription rate windows (Pro/Max: 5-hour) |
+| Model selection | `model` param | `model` param (`sonnet`, `opus`, …) |
+| Tool use | dicode tasks via `tools` param | Disabled in `claude -p` print mode (no agentic tools) |
+| Setup | Provide an API key | Mint OAuth token + install `claude` binary on the daemon host |
+
+If your dicode workload fits inside a 5-hour Pro/Max window — typical for auto-fix loops or occasional ad-hoc agent calls — the CLI path is free of marginal cost. For non-Anthropic models, predictable per-token billing, or workloads that exceed the subscription rate cap, stay on `buildin/ai-agent`.
+
+Both can coexist: nothing prevents one task from using the API path and another from using the subscription path.
+
+### Setup (three steps)
+
+1. **Mint a Claude OAuth token.** On any machine where you've signed into Claude Code with your Pro/Max account, run `claude setup-token`. Store the result as a dicode secret named `CLAUDE_CODE_OAUTH_TOKEN`.
+
+2. **Install the `claude` binary on the daemon host.** Three paths depending on your deployment shape:
+   - **Plain host** (laptops, single VMs): `curl -fsSL https://install.claude.ai | bash`. Make sure `~/.local/bin` is on the daemon's PATH.
+   - **Custom Docker image**: build a derivative of `ghcr.io/dicode-ayo/dicode-core` that copies the binary in. The published image is distroless (no shell), so the actual install runs in a builder stage.
+   - **Kubernetes init container**: an Alpine init container runs the installer into a shared `emptyDir`; the main dicode container reads from it via `CLAUDE_CLI_PATH`. No image rebuild required.
+
+   Full Dockerfile and Pod spec recipes live in the [task README](https://github.com/dicode-ayo/dicode-core/blob/main/tasks/buildin/ai-agent-claude-cli/README.md).
+
+3. **Verify** by hitting the task's webhook:
+   ```sh
+   curl -X POST http://localhost:8080/hooks/ai-claude \
+     -H 'Content-Type: application/json' \
+     -d '{"prompt":"In one sentence, what is dicode?"}'
+   ```
+   Response includes a `session_id` you pass back to continue the conversation.
+
+### Plumbing into the auto-fix loop
+
+The auto-fix preset's `ai_task` param selects which agent task drives the loop. Swap the OpenAI-compatible default for the Claude-CLI variant via a sibling override:
+
+```yaml
+auto-fix-claude:
+  ref:
+    path: ./auto-fix/task.yaml
+  overrides:
+    params:
+      ai_task: "ai-agent-claude-cli"
+    dicode:
+      tasks: ["ai-agent-claude-cli", "git-pr"]
+```
+
+Then point `on_failure_chain` at `buildin/auto-fix-claude` instead of `buildin/auto-fix`. Same loop, different LLM backend, no marginal cost while you're under the 5-hour rate window.
+
+### Limitations (current)
+
+- **No tool-use beyond `claude -p` defaults.** Print mode disables Claude's filesystem / bash tools; the wrapper is purely chat-completion-style.
+- **No streaming.** The wrapper waits for the full response before returning. Plumbing `--output-format stream-json` through `dicode.output()` is a tracked follow-up.
+- **No subscription-aware queueing.** Hitting the 5-hour cap returns an error; the task has no built-in retry or backpressure.
+- **One subscription per dicode instance.** OAuth tokens belong to one Claude account — fine for personal/team setups, less suited to multi-tenant.
 
 ## Follow-up work
 
