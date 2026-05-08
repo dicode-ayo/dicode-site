@@ -12,6 +12,17 @@ export default defineConfig({
 
   head: [
     ["link", { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" }],
+    // OpenGraph (per-page og:title and og:description come from frontmatter)
+    ["meta", { property: "og:type", content: "website" }],
+    ["meta", { property: "og:site_name", content: "dicode docs" }],
+    ["meta", { property: "og:locale", content: "en_US" }],
+    ["meta", { property: "og:image", content: "https://dicode.app/og-image.png" }],
+    ["meta", { property: "og:image:width", content: "1200" }],
+    ["meta", { property: "og:image:height", content: "630" }],
+    ["meta", { property: "og:image:alt", content: "dicode — You describe it. AI builds, ships, and fixes it. Open source, free forever." }],
+    // Twitter / X / Slack / Discord / LinkedIn link previews
+    ["meta", { name: "twitter:card", content: "summary_large_image" }],
+    ["meta", { name: "twitter:image", content: "https://dicode.app/og-image.png" }],
   ],
 
   themeConfig: {
