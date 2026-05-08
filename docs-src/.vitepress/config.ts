@@ -6,6 +6,9 @@ export default defineConfig({
   base: "/docs/",
   outDir: "../docs/docs",
   cleanUrls: true,
+  sitemap: {
+    hostname: "https://dicode.app/docs/",
+  },
 
   head: [
     ["link", { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" }],
