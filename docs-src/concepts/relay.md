@@ -127,9 +127,9 @@ The relay strips hop-by-hop headers (`Connection`, `Keep-Alive`, `Transfer-Encod
 
 The hosted relay at `relay.dicode.app` includes an **OAuth broker** that eliminates the need to register your own OAuth apps with providers. This is a key feature of the dicode.app Pro plan.
 
-The broker is the **single source of truth** for the providers it carries. As of `dicode-relay@0.1.5` that's 13 providers — `github`, `slack`, `google`, `spotify`, `linear`, `discord`, `gitlab`, `airtable`, `notion`, `confluence`, `salesforce`, `stripe`, `azure` — and dicode-core no longer ships per-provider entries (`auth/github-oauth`, `auth/google-oauth`, …) for any of them. With `relay.enabled: true` you get the full broker flow with zero per-provider configuration in your taskset; the dashboard's `buildin/auth-providers` task discovers the catalogue dynamically from `GET /providers`.
+The broker is the **single source of truth** for the providers it carries. As of `dicode-relay@0.1.5` that's 14 providers — `github`, `slack`, `google`, `spotify`, `linear`, `discord`, `gitlab`, `airtable`, `notion`, `confluence`, `salesforce`, `stripe`, `office365`, `azure` — and dicode-core no longer ships per-provider entries (`auth/github-oauth`, `auth/google-oauth`, …) for any of them. With `relay.enabled: true` you get the full broker flow with zero per-provider configuration in your taskset; the dashboard's `buildin/auth-providers` task discovers the catalogue dynamically from `GET /providers`.
 
-For providers the broker doesn't carry (e.g. Office 365, Looker) or for any provider you'd rather drive with your own OAuth app — see the [BYO flow](#byo-flow-providers-the-broker-doesn-t-carry) below.
+For providers the broker doesn't carry (e.g. Looker) or for any provider you'd rather drive with your own OAuth app — see the [BYO flow](#byo-flow-providers-the-broker-doesn-t-carry) below.
 
 ::: info Migration note (2026-05)
 Earlier dicode releases shipped per-provider entries `auth/github-oauth`, `auth/google-oauth`, `auth/slack-oauth`, etc. for every broker-backed provider. Those entries were removed once the broker became the source of truth — operators who relied on `/hooks/<provider>-oauth` callbacks for any of the 13 broker-backed providers should switch to the broker flow (no callback URL re-registration needed: the redirect URI lives on the broker, not your daemon). Operators who prefer to keep a self-hosted OAuth app for a specific provider can [instantiate `_oauth-app`](#byo-flow-providers-the-broker-doesn-t-carry) with their own credentials.
@@ -244,9 +244,9 @@ Self-hosted brokers can add providers by editing `relay.yaml` and restarting —
 
 ### BYO flow - providers the broker doesn't carry
 
-For providers the relay broker doesn't proxy (Office 365 / Microsoft Graph and Looker today), or for any provider you'd rather drive with your own OAuth app, dicode-core ships a generic OAuth task at `tasks/auth/_oauth-app/task.yaml`. You instantiate it from your own taskset with provider-specific overrides — the daemon talks to the provider directly, with credentials you store as secrets.
+For providers the relay broker doesn't proxy (Looker today), or for any provider you'd rather drive with your own OAuth app, dicode-core ships a generic OAuth task at `tasks/auth/_oauth-app/task.yaml`. You instantiate it from your own taskset with provider-specific overrides — the daemon talks to the provider directly, with credentials you store as secrets.
 
-The default `auth` taskset includes working examples (`office365-oauth`, `looker-oauth`, plus the standalone `openrouter-oauth`). To wire a new provider, copy one of those entries into your own taskset:
+The default `auth` taskset ships `looker-oauth` as a working example, plus the standalone `openrouter-oauth`. To wire a new provider, copy one of those entries into your own taskset:
 
 ```yaml
 # ~/dicode-tasks/taskset.yaml
@@ -342,7 +342,7 @@ Because the broker is the single source of truth, adding a new provider to `rela
 | | Self-hosted (free) | dicode.app Pro |
 |---|---|---|
 | Webhook relay | Yes (run your own server) | Yes (managed, unlimited) |
-| OAuth broker | No — instantiate `_oauth-app` per provider with your own apps | Yes — 13 providers, zero setup |
+| OAuth broker | No — instantiate `_oauth-app` per provider with your own apps | Yes — 14 providers, zero setup |
 | Custom domain | Your own domain | `*.dicode.app` |
 | Token encryption | N/A | ECIES (P-256 + AES-256-GCM) |
 
