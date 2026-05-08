@@ -125,7 +125,7 @@ The override system can patch these fields without modifying the original `task.
 - `net` (replace network access list)
 - `timeout`
 - `runtime`
-- `notify` (`on_success`, `on_failure`)
+- `on_failure_chain` (override which task fires on failure, including notifications)
 - `dicode` permissions (`tasks`, `mcp`, `list_tasks`, `get_runs`, `secrets_write`)
 - `enabled` (see below)
 
