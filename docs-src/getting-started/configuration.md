@@ -168,8 +168,8 @@ Two buildins are shipped out of the box:
 
 | Task | Surface | Notes |
 |---|---|---|
-| `buildin/notify` | Native OS desktop notification (`notify-send` / `osascript` / `powershell`) | No external service. Works offline. |
-| `buildin/alert` | Wrapper that calls `buildin/notify` via `dicode.run_task` | Demonstrates the chain pattern; copy and adapt for ntfy / Slack / Discord / email / etc. |
+| `buildin/notifications` | Native OS desktop notification (`notify-send` / `osascript` / `powershell`) | No external service. Works offline. |
+| `buildin/alert` | Wrapper that calls `buildin/notifications` via `dicode.run_task` | Demonstrates the chain pattern; copy and adapt for ntfy / Slack / Discord / email / etc. |
 
 For mobile push (ntfy.sh, gotify, pushover, telegram), webhook integrations (Slack, Discord), or any custom delivery, write a task that POSTs to the right endpoint and point `defaults.on_failure_chain` at it. Per-task overrides go through the task-level `on_failure_chain` field — see [Tasks → on_failure_chain](/concepts/tasks#field-reference).
 
