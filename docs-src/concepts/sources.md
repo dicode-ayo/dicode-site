@@ -39,7 +39,7 @@ Each entry key becomes the namespace under which the referenced taskset's tasks 
 
 | Field | Default | Description |
 |---|---|---|
-| `path` | required (local) | Absolute or `~/`-relative path to `taskset.yaml`; `${CONFIGDIR}` and `${HOME}` are expanded |
+| `path` | required (local) | Absolute path to `taskset.yaml`; `${CONFIGDIR}` and `${HOME}` are expanded, and a leading `~/` resolves to the user's home directory |
 | `url` | required (git) | HTTPS or SSH git URL |
 | `branch` | `main` | Branch to track (git only) |
 | `poll_interval` | `30s` | How often to fetch (git only) |

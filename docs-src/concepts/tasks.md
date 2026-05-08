@@ -191,17 +191,21 @@ You can toggle it three ways:
 
 #### `PATCH /api/tasks/{id}/overrides`
 
-Generic JSON Merge Patch (RFC 7396) endpoint that writes runtime overrides into `dicode.yaml`'s `spec.entries.<source>.overrides.entries.<task>` block. Today's clients toggle `enabled`; the endpoint accepts every `taskset.Overrides` field, so future param/timeout UIs reuse it without backend changes.
+Generic JSON Merge Patch (RFC 7396) endpoint that **persists** overrides to `dicode.yaml`'s `spec.entries.<source>.overrides.entries.<task>` block on disk — the change survives daemon restarts and is what the dashboard's enable/disable toggle calls under the hood. Today's clients only set `enabled`; the endpoint accepts every `taskset.Overrides` field, so future param/timeout UIs reuse it without backend changes.
+
+The route is gated by `requireAuth` (session cookie only — API keys are not accepted here). The wizard generates configs with `server.auth: true`, so a bare `curl` against a wizard-bootstrapped install will be redirected to the login page. Copy the `dicode_secrets_sess` cookie from your browser's devtools and pass it on the request:
 
 ```sh
 # Disable a task
 curl -X PATCH http://localhost:8080/api/tasks/buildin/relay-client/overrides \
   -H 'Content-Type: application/json' \
+  -b "dicode_secrets_sess=<paste-from-browser>" \
   -d '{"enabled": false}'
 
 # Re-enable (clear the override entirely)
 curl -X PATCH http://localhost:8080/api/tasks/buildin/relay-client/overrides \
   -H 'Content-Type: application/json' \
+  -b "dicode_secrets_sess=<paste-from-browser>" \
   -d '{"enabled": null}'
 ```
 
