@@ -83,7 +83,7 @@ volumes:
 
 Multi-arch (`linux/amd64` + `linux/arm64`) for every published tag.
 
-## First launch — the setup wizard
+## First launch: the setup wizard
 
 You do not need to start the daemon manually, and you do not need to write `dicode.yaml` by hand. Any CLI command auto-starts `dicoded` in the background:
 
@@ -91,17 +91,26 @@ You do not need to start the daemon manually, and you do not need to write `dico
 dicode list
 ```
 
-When `~/.dicode/dicode.yaml` does not yet exist, the daemon runs a first-launch wizard, picks the appropriate surface based on your environment, generates a passphrase, and writes a ready-to-run config under `~/.dicode/` (mode `0700` directory, `0600` file). The dashboard passphrase is printed **once** — copy it before closing the terminal.
+When `~/.dicode/dicode.yaml` does not yet exist, the daemon runs a first-launch wizard, picks one of three surfaces based on your environment, generates a dashboard passphrase, and writes a ready-to-run config to `~/.dicode/dicode.yaml` (mode `0600` under a `0700` directory). The passphrase is printed **once** at the end of the wizard — copy it before closing the terminal. To change it later, edit `server.secret` in `dicode.yaml` and restart.
 
 ### Wizard surfaces
 
-The wizard auto-selects one of three surfaces based on TTY + `DISPLAY` detection:
+The surface is picked in this order:
 
-| Surface | When it runs | What you see |
+1. The `DICODE_ONBOARDING` environment variable, if set to `silent`, `cli`, or `browser`, wins over everything below — set it for headless or scripted installs.
+2. No TTY → **silent**.
+3. TTY but no display → **CLI**.
+4. TTY **and** a display → the daemon prompts `Set up in [b]rowser or [c]li? [b]` and you pick (default browser).
+
+Display detection is loose by design: macOS and Windows always count as having a display; on Linux the daemon checks for `DISPLAY` or `WAYLAND_DISPLAY`.
+
+| Surface | Selected when | What happens |
 | --- | --- | --- |
-| **Browser** | Desktop session detected (`DISPLAY` or `WAYLAND_DISPLAY` set) | A short setup page opens at `http://localhost:8080/setup` — pick which tasksets to enable and submit. The success page shows the passphrase and a copy button. |
-| **CLI** | Interactive terminal, no display | A line-by-line prompt: enable each curated taskset (Y/n), confirm the local tasks dir and data dir, set a port. The passphrase prints when you finish. |
-| **Silent** | Non-interactive (containers, systemd, CI) | All curated tasksets enabled, defaults applied, passphrase generated. The config + passphrase are printed to stdout once. |
+| **Browser** | Desktop session, or you pick `b` at the prompt | The daemon listens on a random `127.0.0.1:<ephemeral>` port, prints a 6-digit PIN to your terminal, and opens your default browser at that URL. You type the PIN into the wizard, choose which tasksets to enable, then submit. The success page shows the passphrase with a copy button. After 5 wrong PIN attempts the session locks and you have to restart the daemon. |
+| **CLI** | Interactive terminal, no display | Line-by-line prompts: enable each curated taskset (`Y/n`), confirm the local tasks dir (or type `skip`), then optionally `Configure advanced options (data dir, port)? [y/N]` — defaults to `N`. The passphrase prints when you finish. |
+| **Silent** | Non-interactive (Docker, systemd, CI) | All default-on tasksets enabled, default paths applied, passphrase generated. The terminal prints a banner with the dashboard URL and the passphrase — the YAML itself is **not** echoed; it is written to disk. |
+
+The PIN gate on the browser surface is a deliberate security control: the PIN is delivered to the user's controlling terminal (`/dev/tty`, falling back to stdout), never embedded in the wizard URL — which keeps it out of `argv` for `xdg-open`/`open`/`start.exe` and out of `/proc/<pid>/cmdline`.
 
 ### Curated tasksets
 
