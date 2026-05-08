@@ -122,8 +122,8 @@ dicode manages the full container lifecycle:
   unexpectedly, orphaned containers are detected and cleaned up on the
   next startup. Containers are labeled with dicode metadata for tracking.
 - **Exit codes** -- The container's exit code becomes the task run's exit
-  code. Non-zero exits are treated as failures and trigger `notify.on_failure`
-  if configured.
+  code. Non-zero exits are treated as failures and fire
+  `on_failure_chain` if one is configured at the task or `defaults` level.
 
 ## Using Podman instead of Docker
 

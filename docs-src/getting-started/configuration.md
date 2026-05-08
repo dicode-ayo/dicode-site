@@ -44,14 +44,6 @@ secrets:
     - type: local
     - type: env
 
-notifications:
-  on_failure: true
-  on_success: false
-  provider:
-    type: ntfy
-    url: https://ntfy.sh
-    topic: dicode-alerts
-
 server:
   port: 8080
   auth: false
@@ -69,7 +61,7 @@ ai:
   base_url: ""
 
 defaults:
-  on_failure_chain: ""
+  on_failure_chain: buildin/alert
 
 relay:
   enabled: false
@@ -170,18 +162,16 @@ The `env` provider reads directly from environment variables.
 
 ## Notifications
 
-```yaml
-notifications:
-  on_failure: true          # notify on task failure (default: true)
-  on_success: false         # notify on task success (default: false)
-  provider:
-    type: ntfy              # "ntfy", "gotify", "pushover", or "telegram"
-    url: https://ntfy.sh    # provider base URL
-    topic: dicode-alerts    # ntfy topic / gotify app token / etc.
-    token_env: NTFY_TOKEN   # env var holding auth token (optional)
-```
+Notifications are delivered by **tasks**, not by a daemon-level config block. Wire any notification path you like by pointing `defaults.on_failure_chain` at a task that emits the alert — see the [Defaults](#defaults) section below.
 
-Individual tasks can override notification settings with the `notify` field in `task.yaml`.
+Two buildins are shipped out of the box:
+
+| Task | Surface | Notes |
+|---|---|---|
+| `buildin/notifications` | Native OS desktop notification (`notify-send` / `osascript` / `powershell`) | No external service. Works offline. |
+| `buildin/alert` | Wrapper that calls `buildin/notifications` via `dicode.run_task` | Demonstrates the chain pattern; copy and adapt for ntfy / Slack / Discord / email / etc. |
+
+For mobile push (ntfy.sh, gotify, pushover, telegram), webhook integrations (Slack, Discord), or any custom delivery, write a task that POSTs to the right endpoint and point `defaults.on_failure_chain` at it. Per-task overrides go through the task-level `on_failure_chain` field — see [Tasks → on_failure_chain](/concepts/tasks#field-reference).
 
 ## Server
 
@@ -255,10 +245,10 @@ The AI config is used for task generation features. It supports any OpenAI-compa
 
 ```yaml
 defaults:
-  on_failure_chain: notify-on-failure  # task ID to fire when any task fails
+  on_failure_chain: buildin/alert      # task ID to fire when any task fails
 ```
 
-The `on_failure_chain` field specifies a task to trigger whenever another task fails. Individual tasks can override this with the `on_failure_chain` field in `task.yaml`, or disable it with an empty string.
+The `on_failure_chain` field specifies a task to trigger whenever another task fails. This is the primary hook for notifications — point it at `buildin/alert` for desktop notifications, or at any task you write yourself for ntfy / Slack / email / custom delivery. Individual tasks can override this with the `on_failure_chain` field in `task.yaml`, or disable it with an empty string. See [Auto-fix loop](/concepts/auto-fix) for chain-related guardrails (cooldown, concurrency caps, storm circuit breaker).
 
 ## Relay
 
