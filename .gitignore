@@ -3,3 +3,9 @@ docs/docs/
 docs/assets/
 docs-src/.vitepress/cache/
 docs/index.html
+docs/favicon.svg
+docs/og-image.png
+docs/og-image.svg
+docs/robots.txt
+docs/sitemap.xml
+docs/landing-sitemap.xml
