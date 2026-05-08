@@ -25,6 +25,18 @@ export default defineConfig({
     ["meta", { name: "twitter:image", content: "https://dicode.app/og-image.png" }],
   ],
 
+  transformPageData(pageData) {
+    const cleanPath = pageData.relativePath
+      .replace(/(^|\/)index\.md$/, "$1")
+      .replace(/\.md$/, "");
+    const url = `https://dicode.app/docs/${cleanPath}`;
+    pageData.frontmatter.head ??= [];
+    pageData.frontmatter.head.push(
+      ["link", { rel: "canonical", href: url }],
+      ["meta", { property: "og:url", content: url }],
+    );
+  },
+
   themeConfig: {
     logo: undefined,
     siteTitle: "dicode docs",
