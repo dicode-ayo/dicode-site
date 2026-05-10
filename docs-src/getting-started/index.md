@@ -120,7 +120,7 @@ The wizard pre-wires three git-backed tasksets, all default-on:
 | --- | --- |
 | **Built-in tasks** (`buildin`) | Tray icon, notifications, web UI, dicodai chat, alert. The daemon's standard inventory. |
 | **Examples** (`examples`) | Copy-friendly samples — `hello-cron`, `github-stars`, `webhook-form`, `nginx-start`, and more. |
-| **OAuth providers** (`auth`) | Carries the BYO `looker-oauth` entry and the standalone `openrouter-oauth`. With `relay.enabled: true`, the broker handles GitHub, Slack, Google, Spotify, Linear, Discord, GitLab, Airtable, Notion, Confluence, Salesforce, Stripe, Office 365, and Azure end-to-end — no per-provider entry needed. See [Webhook Relay & OAuth](/concepts/relay#oauth-broker-dicode-app-pro). |
+| **OAuth providers** (`auth`) | Ships only the standalone `openrouter-oauth`. With `relay.enabled: true`, the broker handles GitHub, Slack, Google, Spotify, Linear, Discord, GitLab, Airtable, Notion, Confluence, Salesforce, Stripe, Office 365, and Azure end-to-end — no per-provider entry needed. For any provider the broker doesn't carry, instantiate `_oauth-app` from your own taskset; the dashboard auto-discovers it via the `template: dicode.io/oauth-app` marker. See [Webhook Relay & OAuth](/concepts/relay#oauth-broker-dicode-app-pro). |
 
 The wizard also scaffolds a local tasks directory (default `~/dicode-tasks/`) with a starter `taskset.yaml` so you can drop your own tasks in next to the curated ones.
 

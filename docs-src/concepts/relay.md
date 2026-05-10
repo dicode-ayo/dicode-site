@@ -244,9 +244,9 @@ Self-hosted brokers can add providers by editing `relay.yaml` and restarting —
 
 ### BYO flow - providers the broker doesn't carry
 
-For providers the relay broker doesn't proxy (Looker today), or for any provider you'd rather drive with your own OAuth app, dicode-core ships a generic OAuth task at `tasks/auth/_oauth-app/task.yaml`. You instantiate it from your own taskset with provider-specific overrides — the daemon talks to the provider directly, with credentials you store as secrets.
+For providers the relay broker doesn't proxy (Looker, self-hosted GitLab, niche enterprise IdPs), or for any provider you'd rather drive with your own OAuth app, dicode-core ships a generic OAuth task at `tasks/auth/_oauth-app/task.yaml`. You instantiate it from your own taskset with provider-specific overrides — the daemon talks to the provider directly, with credentials you store as secrets. The dashboard's auth-providers panel auto-discovers your entry via the `template: dicode.io/oauth-app` marker, so once you've added it to your taskset it shows up next to the broker-backed providers with no further config.
 
-The default `auth` taskset ships `looker-oauth` as a working example, plus the standalone `openrouter-oauth`. To wire a new provider, copy one of those entries into your own taskset:
+The default `auth` taskset ships only the standalone `openrouter-oauth`. Use this template as a starting point for your own taskset:
 
 ```yaml
 # ~/dicode-tasks/taskset.yaml
