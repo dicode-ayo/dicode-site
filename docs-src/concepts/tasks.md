@@ -174,6 +174,8 @@ Exactly one trigger type must be configured per task.
 | **Chain** | `chain: { from: task-id, on: success }` | Fires after another task completes |
 | **Daemon** | `daemon: true` | Long-running process, started with the service |
 
+Any trigger type can also declare a `trigger.before:` **preflight pipeline** — a sequential list of one-shot prereq tasks that must succeed before the main body runs. See [Triggers → Preflight pipelines](./triggers.md#preflight-pipelines).
+
 ### Enable / disable
 
 Every task has an `enabled` flag (default `true`). Disabled tasks remain visible in the API and the registry but are **not** scheduled, **not** spawned (daemons), and **not** routed (webhooks).
