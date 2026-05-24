@@ -64,6 +64,7 @@ export default defineConfig({
           { text: "Tasks", link: "/concepts/tasks" },
           { text: "Runtimes", link: "/concepts/runtimes" },
           { text: "Triggers", link: "/concepts/triggers" },
+          { text: "Pipelines", link: "/concepts/pipelines" },
           { text: "SDK Globals", link: "/concepts/sdk" },
           { text: "Secrets", link: "/concepts/secrets" },
           { text: "Sources & TaskSets", link: "/concepts/sources" },
