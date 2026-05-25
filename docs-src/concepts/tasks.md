@@ -174,7 +174,7 @@ Exactly one trigger type must be configured per task.
 | **Chain** | `chain: { from: task-id, on: success }` | Fires after another task completes |
 | **Daemon** | `daemon: true` | Long-running process, started with the service |
 
-Any trigger type can also declare a `trigger.before:` **preflight pipeline** — a sequential list of one-shot prereq tasks that must succeed before the main body runs. See [Triggers → Preflight pipelines](./triggers.md#preflight-pipelines).
+To run an ordered sequence of stages before a daemon or body — render a config, persist it, then start the daemon — use a **`kind: PipelineTask`** instead of a trigger field. See [Pipelines](./pipelines.md).
 
 ### Enable / disable
 

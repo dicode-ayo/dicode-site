@@ -312,88 +312,24 @@ Daemons cycle through a small set of states observable in the dashboard and via 
 
 | State | Meaning |
 | --- | --- |
-| `stopped` | Resting state (clean exit). Either deliberately stopped, never started, or ran to completion with `status: success` and no restart configured. |
-| `prereq_running` | The `trigger.before` preflight pipeline is executing. |
-| `prereq_failed` | A preflight stage returned a non-success status. The daemon will not start until the failing stage is re-fired successfully. |
-| `running` | The daemon body is executing. |
-| `stopping` | The engine is shutting the daemon down (operator unregister or engine shutdown). |
-| `failed_after_preflight` | Preflight succeeded, but the daemon's own dispatch errored (binary missing, port already bound, etc.). Terminal — re-fire the daemon to retry. |
-| `crashed` | The daemon's body ran but exited non-success and the restart policy isn't going to restart it. Distinct from `stopped` so clean exits and crashes are visibly different. Terminal — re-fire the daemon to retry. |
+| `stopped` | Resting state. Either deliberately stopped, never started, or the body exited cleanly (`status: success`) with no restart configured. |
+| `running` | The daemon body launched successfully and is up. |
+| `stopping` | A restart is in flight -- the engine is tearing down the current run before re-firing the daemon. |
+| `failed_after_preflight` | The daemon body's **launch** errored (binary missing, port already bound, runtime resource exhaustion -- `fireAsync` returned an error before the body ran). Terminal -- re-fire the daemon to retry. |
+| `crashed` | The body started, then exited non-success (`failure`, `cancelled`, ...) **and** the restart policy will not restart it (`restart: never`, or `restart: on-failure` with a status not treated as a failure). Terminal -- re-fire the daemon to retry. |
+
+`failed_after_preflight` means "body launch failed" -- the daemon body's launch errored before the body ran.
+
+A run that backs a daemon reports one of the standard run statuses — `running`, `success`, `failure`, or `cancelled`. These are a **separate** enum from the daemon states above (there is no `crashed` run status, for example). A daemon killed before it exits (operator kill or engine shutdown) records `cancelled`.
+
+::: tip Need a render → persist → start-daemon flow?
+If your daemon needs config rendered and written to disk before it boots, model that as a [pipeline](./pipelines.md): a `kind: PipelineTask` whose render/persist stages run first and whose **terminal stage** is the daemon `kind: Task`.
+:::
 
 ---
 
-## Preflight pipelines
+## Pipelines (render → persist → start-daemon)
 
-Any trigger type — daemon, manual, cron, webhook, or chain — can declare a `trigger.before:` pipeline of one-shot prereq tasks that must succeed before the main task body runs. Stages run **sequentially in declaration order**, and each stage's return value is piped to the next via `${input.output}`. If any stage fails, the pipeline short-circuits and the main body does not run.
+To run an ordered sequence of stages before a daemon or body — render a config, persist it to disk, then start the daemon — declare a **`kind: PipelineTask`**. Each stage is an existing `kind: Task`; stages run sequentially, each stage's return value threads to the next via `${input.output}`, and the first failure short-circuits the rest. When the **terminal stage** is a daemon, the pipeline stays `running` for the daemon's lifetime.
 
-```yaml
-trigger:
-  daemon: true
-  restart: always
-  before:
-    # Stage 1: render config from secrets + literal values.
-    - task: buildin/template
-      overrides:
-        params:
-          template: |
-            base_url: ${BASE_URL}
-            password: ${STATUS_PASSWORD}
-        env:
-          - name: BASE_URL
-            value: "https://relay.example.com"
-          - name: STATUS_PASSWORD
-            from: task:secret-providers/doppler
-
-    # Stage 2: persist stage 1's rendered output to disk.
-    - task: buildin/write-local
-      overrides:
-        params:
-          content: "${input.output}"
-          path: "${DATADIR}/relay/relay.yaml"
-          mode: "0600"
-        fs:
-          - path: "${DATADIR}/relay"
-            permission: rw
-```
-
-Each `before[]` entry can be a bare task-ID string or a `{task, overrides}` mapping. Per-edge overrides accept the same conservative subset as `trigger.chain.overrides` (`params`, `env`, `net`, `fs`, `timeout`, `dicode`, `runtime` — not `trigger`, `enabled`, `name`, etc.). Forms can be mixed within the same list.
-
-The engine re-fires every stage on every preflight attempt — there's no "already-satisfied" short-circuit — because the point of preflight is to refresh ephemeral state (rendered configs, freshly rotated credentials) right before the body runs.
-
-**Run-row semantics on failure:**
-
-- **Daemon** — preflight failure leaves the daemon in `prereq_failed` and no daemon-body run is created.
-- **One-shot** (manual / cron / webhook / chain) — preflight + body collapse into a single parent run row. Preflight failure surfaces as `status=failure` with `fail_reason="preflight_failed: stage N (<task-id>): <error>"`.
-
-Preflight stages run as their own child runs tagged `trigger_source=preflight`, linked back to the parent fire — the dashboard groups them under the parent for visibility.
-
-### `${input.output}` interpolation
-
-Three reference shapes are recognised at dispatch time in `before[i].overrides.params` defaults and `trigger.chain.params` values:
-
-| Form | Resolves to |
-| --- | --- |
-| `${input.output}` | upstream's full string return value |
-| `${input.output.<field>}` | named string field of an object-shaped upstream return (e.g. `{path: "..."}`) |
-| `${input.params.<name>}` | named entry from the upstream's `RunOptions.Params` (chain edge only — preflight edges run with empty params) |
-
-Embedded forms (`"prefix-${input.output}-suffix"`) and multi-token forms (`"${input.params.scheme}://${input.output.host}"`) work too — any string containing one or more recognised tokens is rewritten in place. The `<field>` / `<name>` portion accepts letters, digits, underscores, hyphens, and dots, so common shapes like `${input.params.x-forwarded-for}` and `${input.output.db.host}` work without escapes.
-
-References that can't be resolved at dispatch time fail loud — the chain or preflight dispatch is skipped rather than passing a literal token to the downstream. Unknown shapes (e.g. `${input.foo}`) are rejected at task-registration time with a site-qualified error so misuse surfaces at config-load.
-
-The first stage (`before[0]`) has no upstream return value, so any `${input.…}` reference there is rejected at registration. Use a literal default or an env-projected secret on stage 0; downstream stages can then pipe via `${input.output}`.
-
-### Mid-pipeline re-fire (daemon-only)
-
-When an intermediate stage at index `i` re-runs successfully — e.g. an operator manually fires `buildin/template` to pick up a rotated secret — the engine re-fires stages `[i+1..n-1]` with the re-run's fresh return value as the initial `${input.output}`, then restarts the daemon to pick up the propagated config. Propagations are coalesced per daemon (at most one in flight) so a flurry of upstream completions produces a single re-render + restart, not a thrash loop. One-shots don't auto-restart on a prereq re-run — re-fire the one-shot yourself if you want it to re-run.
-
-### Registration-time validation
-
-The engine rejects at registration:
-
-- References to unknown tasks.
-- References to daemons (only one-shot tasks can be preflights).
-- Self-references and cycles in the before-graph (e.g. `A.before: [B]; B.before: [A]`).
-- `${input.params.<name>}` on any `before[]` edge — preflight stages run with empty `RunOptions`, so the upstream params channel is statically unavailable.
-
-For an end-to-end example combining daemon preflight, per-edge overrides, `${DATADIR}` volumes, and secret rotation, see the [Cloudflare Tunnel worked example](https://github.com/dicode-ayo/dicode-core/blob/main/docs/examples/cloudflare-tunnel.md) in dicode-core.
+See [Pipelines](./pipelines.md) for the full reference.
