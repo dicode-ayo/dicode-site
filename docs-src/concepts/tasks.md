@@ -174,7 +174,7 @@ Exactly one trigger type must be configured per task.
 | **Chain** | `chain: { from: task-id, on: success }` | Fires after another task completes |
 | **Daemon** | `daemon: true` | Long-running process, started with the service |
 
-To run an ordered sequence of stages before a daemon or body — render a config, persist it, then start the daemon — use a **`kind: PipelineTask`** instead of a trigger field. (The old `trigger.before:` preflight list has been removed and is rejected at load.) See [Pipelines](./pipelines.md).
+To run an ordered sequence of stages before a daemon or body — render a config, persist it, then start the daemon — use a **`kind: PipelineTask`** instead of a trigger field. See [Pipelines](./pipelines.md).
 
 ### Enable / disable
 

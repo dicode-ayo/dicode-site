@@ -318,22 +318,18 @@ Daemons cycle through a small set of states observable in the dashboard and via 
 | `failed_after_preflight` | The daemon body's **launch** errored (binary missing, port already bound, runtime resource exhaustion -- `fireAsync` returned an error before the body ran). Terminal -- re-fire the daemon to retry. |
 | `crashed` | The body started, then exited non-success (`failure`, `cancelled`, ...) **and** the restart policy will not restart it (`restart: never`, or `restart: on-failure` with a status not treated as a failure). Terminal -- re-fire the daemon to retry. |
 
-The `failed_after_preflight` name is historical: pre-`PipelineTask` it meant "preflight passed but body launch failed". Daemons no longer preflight, so it now simply means "body launch failed" -- the string is kept so existing dashboards and API consumers don't break.
+`failed_after_preflight` means "body launch failed" -- the daemon body's launch errored before the body ran.
 
 A run that backs a daemon reports one of the standard run statuses — `running`, `success`, `failure`, or `cancelled`. These are a **separate** enum from the daemon states above (there is no `crashed` run status, for example). A daemon killed before it exits (operator kill or engine shutdown) records `cancelled`.
 
 ::: tip Need a render → persist → start-daemon flow?
-If your daemon needs config rendered and written to disk before it boots, model that as a [pipeline](./pipelines.md): a `kind: PipelineTask` whose render/persist stages run first and whose **terminal stage** is the daemon `kind: Task`. This replaces the old `trigger.before` preflight list.
+If your daemon needs config rendered and written to disk before it boots, model that as a [pipeline](./pipelines.md): a `kind: PipelineTask` whose render/persist stages run first and whose **terminal stage** is the daemon `kind: Task`.
 :::
 
 ---
 
 ## Pipelines (render → persist → start-daemon)
 
-::: info `trigger.before` was removed
-Earlier versions let any trigger declare a `trigger.before:` list of preflight prereq tasks. That has been **removed** — a `task.yaml` that still declares `trigger.before` is rejected at load. Preflight orchestration is now a first-class `kind: PipelineTask`.
-:::
-
 To run an ordered sequence of stages before a daemon or body — render a config, persist it to disk, then start the daemon — declare a **`kind: PipelineTask`**. Each stage is an existing `kind: Task`; stages run sequentially, each stage's return value threads to the next via `${input.output}`, and the first failure short-circuits the rest. When the **terminal stage** is a daemon, the pipeline stays `running` for the daemon's lifetime.
 
-See [Pipelines](./pipelines.md) for the full reference, including the [`trigger.before` → `kind: PipelineTask` migration guide](./pipelines.md#migrating-from-trigger-before).
+See [Pipelines](./pipelines.md) for the full reference.
