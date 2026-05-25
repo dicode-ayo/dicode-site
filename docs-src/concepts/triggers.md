@@ -312,12 +312,15 @@ Daemons cycle through a small set of states observable in the dashboard and via 
 
 | State | Meaning |
 | --- | --- |
-| `stopped` | Resting state (clean exit). Either deliberately stopped, never started, or ran to completion with `status: success` and no restart configured. |
-| `running` | The daemon body is executing. |
-| `stopping` | The engine is shutting the daemon down (operator unregister or engine shutdown). |
-| `failed` | The daemon's body ran but exited non-success and the restart policy isn't going to restart it. Distinct from `stopped` so clean exits and failures are visibly different. Terminal — re-fire the daemon to retry. |
+| `stopped` | Resting state. Either deliberately stopped, never started, or the body exited cleanly (`status: success`) with no restart configured. |
+| `running` | The daemon body launched successfully and is up. |
+| `stopping` | A restart is in flight -- the engine is tearing down the current run before re-firing the daemon. |
+| `failed_after_preflight` | The daemon body's **launch** errored (binary missing, port already bound, runtime resource exhaustion -- `fireAsync` returned an error before the body ran). Terminal -- re-fire the daemon to retry. |
+| `crashed` | The body started, then exited non-success (`failure`, `cancelled`, ...) **and** the restart policy will not restart it (`restart: never`, or `restart: on-failure` with a status not treated as a failure). Terminal -- re-fire the daemon to retry. |
 
-A run that backs a daemon reports one of the standard run statuses — `running`, `success`, `failure`, or `cancelled`. A daemon killed before it exits (operator kill or engine shutdown) records `cancelled`.
+The `failed_after_preflight` name is historical: pre-`PipelineTask` it meant "preflight passed but body launch failed". Daemons no longer preflight, so it now simply means "body launch failed" -- the string is kept so existing dashboards and API consumers don't break.
+
+A run that backs a daemon reports one of the standard run statuses — `running`, `success`, `failure`, or `cancelled`. These are a **separate** enum from the daemon states above (there is no `crashed` run status, for example). A daemon killed before it exits (operator kill or engine shutdown) records `cancelled`.
 
 ::: tip Need a render → persist → start-daemon flow?
 If your daemon needs config rendered and written to disk before it boots, model that as a [pipeline](./pipelines.md): a `kind: PipelineTask` whose render/persist stages run first and whose **terminal stage** is the daemon `kind: Task`. This replaces the old `trigger.before` preflight list.

@@ -74,14 +74,14 @@ A pipeline accepts `manual`, `cron`, `webhook` (with optional `webhook_secret` /
 
 ## Stage input threading
 
-Stages share the same `${input.…}` interpolation grammar as [chain params](./triggers.md#chain), evaluated at dispatch time against the **previous stage's** output:
+Stages thread data forward with the `${input.…}` interpolation grammar below, evaluated at dispatch time against the **previous stage's** output. (This is the dispatch-time token grammar; it is distinct from the runtime [`input` global](./triggers.md#input-passing) that a chained task reads.)
 
 | Form | Resolves to |
 | --- | --- |
 | `${input.output}` | the previous stage's full string return value |
 | `${input.output.<field>}` | a named string field of an object-shaped previous-stage return (e.g. `{path: "..."}`) |
 
-These tokens are used inside `stages[].overrides.params` defaults (and the other override string fields). Empty strings are treated as "not provided": a token that would resolve to an empty string **fails the stage loudly** (`ErrInputUnavailable`) rather than substituting silently. Embedded forms (`"prefix-${input.output}-suffix"`) and multi-token forms work too. The `<field>` portion accepts letters, digits, underscores, hyphens, and dots — so `${input.output.db.host}` works without escapes.
+These tokens are resolved **only** inside `stages[].overrides.params` defaults. Other override fields (`env[].value`, `fs[].path`, `timeout`, ...) are applied verbatim -- a `${input.…}` token in those is **not** interpolated and would be passed through literally. Empty strings are treated as "not provided": a token that would resolve to an empty string **fails the stage loudly** (`ErrInputUnavailable`) rather than substituting silently. Embedded forms (`"prefix-${input.output}-suffix"`) and multi-token forms work too. The `<field>` portion accepts letters, digits, underscores, hyphens, and dots — so `${input.output.db.host}` works without escapes.
 
 ::: warning v1 threads `Output` only
 `${input.params.<name>}` (referencing the *upstream stage's* input params) is **not** supported in sequential pipelines and is rejected at load on every stage. Cross-stage param threading is a planned follow-up; for now, thread data forward through each stage's **return value** (`${input.output}`).
