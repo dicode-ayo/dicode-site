@@ -58,6 +58,23 @@ The secret value supports `${ENV_VAR}` interpolation -- the actual secret is rea
 You never need to verify the HMAC signature in your task script. dicode handles this automatically when `webhook_secret` is configured.
 :::
 
+### Replay protection
+
+When `webhook_secret` is set, dicode automatically rejects duplicate webhook bodies within a 1-hour window. This prevents replay attacks -- the task fires once and subsequent identical requests return HTTP 409 Conflict.
+
+The nonce cache is keyed on the HMAC digest (already computed during signature verification), bounded to 10,000 entries, and kept in memory. It works for both `kind: Task` and `kind: PipelineTask` webhooks.
+
+Replay protection is enabled by default. Opt out per task if your sender legitimately sends byte-identical payloads:
+
+```yaml
+trigger:
+  webhook: /hooks/idempotent-task
+  webhook_secret: "${SECRET}"
+  replay_protection: false
+```
+
+Open webhooks (no `webhook_secret`) are unaffected -- replay protection only applies when signature verification is active.
+
 ### Session authentication
 
 For webhooks that should only be accessible to authenticated dicode users (not external services):
