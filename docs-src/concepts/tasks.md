@@ -69,6 +69,7 @@ trigger:
   cron: "0 9 * * *"              # 5-field cron expression
   webhook: /hooks/my-task        # HTTP path
   webhook_secret: "${SECRET}"    # HMAC-SHA256 secret (env var interpolation)
+  replay_protection: false       # nonce-cache replay guard (default true when secret set)
   auth: true                     # require dicode session — see /concepts/triggers#session-authentication
   manual: true                   # only triggered explicitly
   daemon: true                   # long-running process
