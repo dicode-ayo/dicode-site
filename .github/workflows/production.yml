@@ -67,6 +67,7 @@ jobs:
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           # --branch=main makes this the production deployment for the
           # dicode-site project. Without --branch it would deploy as a
           # preview at a per-commit URL only.
