@@ -41,7 +41,7 @@ stages:
 | `kind` | string | yes | Must be `PipelineTask` |
 | `name` | string | yes | Human-readable pipeline name |
 | `description` | string | no | One-line (or multi-line) description |
-| `subtype` | string | yes | Must be `sequential` in v1. Any other value (e.g. `parallel`) is rejected at load — parallel pipelines are a planned follow-up. |
+| `subtype` | string | yes | `sequential` or `parallel`. See [Sequential semantics](#sequential-semantics) and [Parallel semantics](#parallel-semantics). |
 | `trigger` | object | no | How the **pipeline** is fired. At most one trigger type. Omit for a pipeline that's only fired programmatically (e.g. via `dicode.run_task`). |
 | `trigger.manual` | bool | no | Manual-only fire (API / UI) |
 | `trigger.cron` | string | no | Standard 5-field cron expression |
@@ -51,6 +51,8 @@ stages:
 | `trigger.chain` | object | no | Chain trigger — fire the pipeline when an upstream task/pipeline completes |
 | `stages` | list | yes | Ordered list of stages; at least one required |
 | `stages[].task` | string | yes | Task ID of an existing `kind: Task` to run as this stage |
+| `stages[].id` | string | no | Stable identifier for the stage, used as a `depends_on` target in parallel pipelines. Defaults to the stage's `task` value. |
+| `stages[].depends_on` | list of strings | no | Stage IDs this stage waits for before starting (`subtype: parallel` only). Omit for stages with no dependencies — they start immediately. |
 | `stages[].overrides` | object | no | Per-stage patch applied to the stage task's spec at dispatch time (see [Stage overrides](#stage-overrides)) |
 | `timeout` | duration | no | Overall pipeline timeout (e.g. `5m`). Cancels the in-flight stage and fails the pipeline if exceeded. |
 
@@ -67,6 +69,41 @@ A pipeline accepts `manual`, `cron`, `webhook` (with optional `webhook_secret` /
 1. Each non-terminal stage is fired as a child run and the pipeline **waits for it to reach `success`** before advancing.
 2. The stage's return value is threaded into the next stage as `${input.output}` (see [Stage input threading](#stage-input-threading)).
 3. The first stage to reach `failure` / `timeout` / `cancelled` **short-circuits** the pipeline: the remaining stages are never fired, the pipeline's run goes to `failure`, and `fail_reason` is set to `stage N (<task-id>): <error>` (N is **0-based**, so the first stage failing reports `stage 0 (...)`).
+
+## Parallel semantics
+
+`subtype: parallel` runs stages as a DAG, governed by `depends_on`:
+
+1. Stages with **no `depends_on`** start immediately and run concurrently.
+2. A stage with `depends_on: [A, B]` waits for **all** listed stages to reach `success` before starting (fan-in).
+3. **Fail-fast**: the first stage failure cancels all in-flight sibling stages. The pipeline's run goes to `failure` with `fail_reason` identifying the failed stage.
+4. The pipeline succeeds only when **every** stage reaches `success`.
+
+```yaml
+apiVersion: dicode/v1
+kind: PipelineTask
+name: Build and deploy
+description: Lint and test in parallel, then deploy.
+subtype: parallel
+
+trigger:
+  manual: true
+
+stages:
+  - id: lint
+    task: ci/lint
+  - id: test
+    task: ci/test
+  - id: deploy
+    task: ci/deploy
+    depends_on: [lint, test]   # waits for both to succeed
+```
+
+In this example `lint` and `test` start concurrently. `deploy` starts only after both succeed. If either fails, the other is cancelled and `deploy` never fires.
+
+::: warning No input threading in parallel pipelines
+`${input.output}` is available only in `subtype: sequential` pipelines. In parallel pipelines, stages communicate through shared state (KV, filesystem) or params — not through the `${input.…}` grammar.
+:::
 
 ## Stage input threading
 

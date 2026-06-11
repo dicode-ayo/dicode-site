@@ -32,12 +32,16 @@ The MCP server exposes six tools. Three are direct passthroughs to the dicode SD
 
 | Tool | What it does | Backed by |
 |---|---|---|
-| `list_tasks` | Returns all registered tasks with their IDs, names, descriptions, and declared params. | `dicode.list_tasks()` |
-| `get_task` | Returns the spec for a single task. | `dicode.list_tasks()` filtered by id |
-| `run_task` | Triggers a task by ID and waits for it to finish. Returns the run result. | `dicode.run_task()` |
+| `list_tasks` | Returns MCP-exposed tasks with their IDs, names, descriptions, and declared params. Only tasks with `mcp_exposed: true` in their `task.yaml` appear — all others are hidden from MCP by default. | `dicode.list_tasks()` |
+| `get_task` | Returns the spec for a single task. The task must have `mcp_exposed: true`; querying a non-exposed task returns an error. | `dicode.list_tasks()` filtered by id |
+| `run_task` | Triggers a task by ID and waits for it to finish. Returns the run result. The task must have `mcp_exposed: true`; invoking a non-exposed task returns an error. | `dicode.run_task()` |
 | `list_sources` | Hint: call `GET /api/sources` directly. | — |
 | `switch_dev_mode` | Hint: call `PATCH /api/sources/{name}/dev` directly. | — |
 | `test_task` | Hint: call `POST /api/tasks/{id}/test` directly. | — |
+
+::: warning Tasks must opt in to MCP exposure
+By default, tasks are **hidden** from MCP clients. To make a task visible to `list_tasks` and invokable via `tools/call`, set `mcp_exposed: true` in its `task.yaml`. This prevents unintended exposure of internal tasks to MCP clients. Calling `get_task` or `run_task` on a non-exposed task returns a JSON-RPC error. See [Tasks — `mcp_exposed`](./tasks.md#field-reference) for the field reference.
+:::
 
 The "hint" tools intentionally don't proxy. Every MCP client already has the dicode API key (it's how it reached `/mcp`), so when it needs to manage sources or run task tests, it calls the corresponding REST endpoint directly with the same key — one less round-trip than going through MCP.
 
