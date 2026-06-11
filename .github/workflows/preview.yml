@@ -99,6 +99,8 @@ jobs:
           # steps.slug.outputs.safe is constrained to [a-z0-9-] by the
           # sanitize step above, so interpolation here is safe by construction.
           command: pages deploy docs --project-name=dicode-site --branch=${{ steps.slug.outputs.safe }} --commit-dirty=true
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
       - name: Comment preview URL on PR
         # Sticky comment that updates in place on every push instead of spamming.

@@ -72,3 +72,5 @@ jobs:
           # dicode-site project. Without --branch it would deploy as a
           # preview at a per-commit URL only.
           command: pages deploy docs --project-name=dicode-site --branch=main --commit-dirty=true
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
