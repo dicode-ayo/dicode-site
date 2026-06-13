@@ -262,6 +262,15 @@ The relay allows your local dicode instance to receive webhooks from external se
 
 See [Webhook Relay](/concepts/relay) for details.
 
+## Audit Log
+
+```yaml
+audit_log:
+  retention_days: 30   # days to keep audit events (0 = keep forever, omitted = 30)
+```
+
+dicode records security-sensitive operations (task triggers, IPC calls, auth failures) to an internal `audit_log` table. See [Security & Audit Log](/concepts/security) for the full reference including the `GET /api/audit` query endpoint and the redaction model.
+
 ## Runtimes
 
 ```yaml
