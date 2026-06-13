@@ -73,6 +73,9 @@ runtimes:
   python:
     version: "0.7.3"
     disabled: false
+
+audit_log:
+  retention_days: 30
 ```
 
 ## Sources (`spec.entries`)

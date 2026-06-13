@@ -19,10 +19,11 @@ Four categories of events are emitted:
 
 Sensitive values in logged parameters are replaced with `[REDACTED]`:
 
-- Keys matching a deny-list (e.g. `password`, `secret`, `token`, `key`, `api_key`)
-- Values that are `env:`, `secret:`, or `secrets:` references
+- **Exact-match keys** (case-insensitive): `authorization`, `cookie`, `password`, `passphrase`, `api_key`, `apikey`, `api-key`, `secret`, `token`, `bearer`, `credential`, `credentials`
+- **Substring-match keys** (case-insensitive): any param name containing `key`, `token`, `secret`, `password`, `passphrase`, `credential`, or `signature` — for example, `signing_key`, `refresh_token`, `db_password`
+- **Reference values**: any value that starts with `env:`, `secret:`, or `secrets:` (these reference daemon-resolved material)
 
-Nested MCP arguments are walked recursively with a depth cap.
+When in doubt, redaction is the safe failure mode — `tokens_per_minute` would be redacted because its name contains `token`.
 
 ### Querying audit events
 
@@ -40,7 +41,21 @@ Requires authentication (session cookie or Bearer API key).
 | `limit` | Max results (default 100, cap 1000) |
 | `offset` | Pagination offset |
 
-Results are returned newest-first as a JSON array. Each entry includes `id`, `ts`, `event_type`, `actor_id`, `task_id`, `run_id`, `allowed`, `params`, and `reason`.
+Results are returned newest-first as a JSON array. Each entry includes:
+
+| Field | Description |
+|---|---|
+| `id` | Event UUID |
+| `ts` | Timestamp (ISO 8601) |
+| `event_type` | One of `run_triggered`, `task_called`, `mcp_called`, `denied` |
+| `actor_kind` | Who initiated: `task`, `ip`, or trigger source (`cron`, `webhook`, …) |
+| `actor_id` | Actor identifier (matches the `actor` query param) |
+| `target_kind` | What was acted on: `task`, `mcp`, or `endpoint` |
+| `target_id` | Target identifier — task ID, MCP tool name, or `METHOD /path` (matches the `task_id` query param) |
+| `params` | Sanitized JSON of call parameters (`[REDACTED]` for sensitive values) |
+| `run_id` | Associated run ID, when applicable |
+| `allowed` | `true` if the operation was allowed; `false` if denied |
+| `reason` | Denial reason or context note |
 
 ### Retention
 
