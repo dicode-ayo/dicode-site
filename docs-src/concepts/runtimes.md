@@ -81,7 +81,7 @@ Runs tasks using [uv](https://docs.astral.sh/uv/), the fast Python package manag
 
 - **Auto-installs**: dicode downloads and manages `uv` automatically. No manual installation required. Python itself is managed by uv.
 - **PEP 723 inline dependencies**: Declare dependencies directly in your script -- no `requirements.txt` or `pyproject.toml` needed.
-- **Async detection**: If your script defines an `async def main()` function, the runtime calls it automatically with all SDK globals as keyword arguments.
+- **Async detection**: If your script defines an `async def main()` function, the runtime detects it and runs `main()` via `asyncio.run()` with no arguments — SDK globals are available as module-level globals, same as sync tasks.
 - **SDK globals**: All globals (`log`, `params`, `env`, `kv`, `input`, `output`, `mcp`, `dicode`) are available at module level.
 
 ### Task structure
@@ -124,7 +124,7 @@ async def main():
     return {"greeting": f"Hello, {name}!"}
 ```
 
-When `async def main()` is present, the runtime detects it and runs it with `asyncio.run()`, passing all SDK globals as keyword arguments.
+When `async def main()` is present, the runtime detects it and calls `asyncio.run(main())` with no arguments. SDK globals (`params`, `log`, `kv`, `env`, `input`, `output`, `mcp`, `dicode`) are available at module level — the same as sync tasks.
 
 ### PEP 723 inline dependencies
 
