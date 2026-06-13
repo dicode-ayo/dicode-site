@@ -238,6 +238,12 @@ Required when `runtime` is `docker` or `podman`. Must specify either `image` or 
 | `env_vars` | Extra environment variables (literal values) |
 | `pull_policy` | `always`, `missing` (default), or `never` |
 
+::: warning Container security floor
+By default, dicode rejects Docker and Podman task configurations that use host networking, dangerous Linux capabilities, insecure `security_opt` values, or bind mounts to sensitive system paths. Tasks with such configuration will fail at start time with a descriptive error.
+
+To opt in to a specific exception, add a `container_security:` block to `dicode.yaml` — see [Container Security](/getting-started/configuration#container-security). Named and anonymous volumes (not host bind-mounts) are always allowed.
+:::
+
 ## Return values
 
 Tasks can return structured data that is stored with the run result and passed as `input` to chained tasks.

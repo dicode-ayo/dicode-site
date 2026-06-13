@@ -285,6 +285,35 @@ Available runtimes:
 | `docker` | _(none -- uses image)_ | N/A |
 | `podman` | _(none -- uses image)_ | N/A |
 
+## Container Security
+
+Docker and Podman tasks are subject to a **container security floor**: dangerous host configuration is rejected at run time before the container is created. You can selectively opt in to specific exceptions via `container_security:` in `dicode.yaml`.
+
+```yaml
+container_security:
+  allow_host_network: false          # allow network_mode: host (default: false)
+  allow_insecure_security_opt: false # allow seccomp=unconfined / apparmor=unconfined (default: false)
+  allowed_cap_add: []                # cap_add values the operator permits, e.g. ["NET_BIND_SERVICE"]
+  allowed_volume_roots: []           # additional host paths allowed as bind-mount sources
+```
+
+**Rejected by default:**
+- `network_mode: host` / `container:` / `ns:`
+- Dangerous capabilities: `ALL`, `SYS_ADMIN`, `SYS_PTRACE`, `SYS_MODULE`, `SYS_RAWIO`, `SYS_BOOT`, `SYS_TIME`, `NET_ADMIN`, `DAC_READ_SEARCH`, `DAC_OVERRIDE`, `BPF`, `SYSLOG`
+- `security_opt`: `seccomp=unconfined`, `apparmor=unconfined`, `label=disable`, `systempaths=unconfined`
+- Bind mounts resolving to sensitive system paths (`/proc`, `/sys`, `/etc`, `/dev`, `/boot`, `/root`, `/run`, `/var/run`, `/var/lib/docker`, `/var/lib/containers`) or Docker/Podman sockets
+
+A task that uses one of these configurations will have its run aborted with a descriptive error. To allow it, add the corresponding opt-in to `container_security` in your `dicode.yaml`.
+
+**Example: allow host networking for a task that legitimately requires it:**
+
+```yaml
+container_security:
+  allow_host_network: true
+```
+
+Named and anonymous volumes (not host bind-mounts) are always allowed.
+
 ## Config variables
 
 Path fields in `dicode.yaml` support these template variables:
