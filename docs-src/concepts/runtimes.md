@@ -171,6 +171,7 @@ Run tasks in any Docker container. Supports any language, any toolchain.
 - **Live logs**: Container stdout/stderr is streamed to the run log in real time.
 - **Kill support**: Long-running containers can be stopped from the UI or CLI.
 - **Orphan cleanup**: dicode tracks all containers it starts and cleans up orphans on restart.
+- **Security floor**: Certain host-facing options (`network_mode: host`, dangerous `cap_add`, insecure `security_opt`, sensitive bind mounts) are rejected by default. See [Container Security](/getting-started/configuration#container-security) for details and opt-in configuration.
 
 ### Task structure
 
@@ -257,6 +258,7 @@ A rootless, daemonless alternative to Docker. Uses the same `docker:` config blo
 - **Rootless**: Runs containers without root privileges.
 - **Same config**: Uses the identical `docker:` block in task.yaml -- just change `runtime: podman`.
 - **Drop-in replacement**: If you can run it with Docker, you can run it with Podman.
+- **Security floor**: Certain host-facing options (`network_mode: host`, dangerous `cap_add`, insecure `security_opt`, sensitive bind mounts) are rejected by default. See [Container Security](/getting-started/configuration#container-security) for details and opt-in configuration.
 
 ```yaml
 apiVersion: dicode/v1
