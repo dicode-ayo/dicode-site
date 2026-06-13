@@ -73,6 +73,9 @@ runtimes:
   python:
     version: "0.7.3"
     disabled: false
+
+audit_log:
+  retention_days: 30
 ```
 
 ## Sources (`spec.entries`)
@@ -261,6 +264,15 @@ relay:
 The relay allows your local dicode instance to receive webhooks from external services (GitHub, Slack, etc.) without port forwarding or a public IP. When enabled, the daemon connects outbound over WebSocket to the relay server and receives forwarded HTTP requests.
 
 See [Webhook Relay](/concepts/relay) for details.
+
+## Audit Log
+
+```yaml
+audit_log:
+  retention_days: 30   # days to keep audit events (0 = keep forever, omitted = 30)
+```
+
+dicode records security-sensitive operations (task triggers, IPC calls, auth failures) to an internal `audit_log` table. See [Security & Audit Log](/concepts/security) for the full reference including the `GET /api/audit` query endpoint and the redaction model.
 
 ## Runtimes
 

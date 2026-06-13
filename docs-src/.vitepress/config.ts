@@ -74,6 +74,7 @@ export default defineConfig({
           { text: "AI Agent", link: "/concepts/ai-agent" },
           { text: "Auto-fix Loop", link: "/concepts/auto-fix" },
           { text: "MCP Server", link: "/concepts/mcp-server" },
+          { text: "Security & Audit Log", link: "/concepts/security" },
         ],
       },
       {
