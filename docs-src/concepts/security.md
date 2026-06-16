@@ -43,7 +43,21 @@ Requires authentication (session cookie or Bearer API key).
 | `after` | Opaque cursor from a previous response's `next_cursor`; resumes from that position (mutually exclusive with `offset`) |
 | `order` | `asc` or `desc` (default `desc` — newest-first) |
 
-Results are returned newest-first as a JSON array. Each entry includes:
+The response is a JSON object. Results are ordered newest-first by default (`order=desc`); pass `order=asc` to reverse.
+
+**Response envelope:**
+
+| Field | Description |
+|---|---|
+| `events` | Array of audit event objects (see per-event fields below) |
+| `count` | Number of events in this page |
+| `next_cursor` | Opaque cursor for the next page; absent when no further results exist. Pass as `after=` on the next request. |
+
+::: tip Cursor vs offset
+Use cursor pagination (`after=` + `next_cursor`) for forward-walking exports. Use `offset=` for random-access page access. Supplying both returns `400`.
+:::
+
+**Per-event fields** (each object in the `events` array):
 
 | Field | Description |
 |---|---|
@@ -58,11 +72,6 @@ Results are returned newest-first as a JSON array. Each entry includes:
 | `run_id` | Associated run ID, when applicable |
 | `allowed` | `true` if the operation was allowed; `false` if denied |
 | `reason` | Denial reason or context note |
-| `next_cursor` | Opaque cursor for the next page; omitted when no further results exist. Pass as `after=` on the next request. |
-
-::: tip Cursor vs offset
-Use cursor pagination (`after=` + `next_cursor`) for forward-walking exports. Use `offset=` for random-access page access. Supplying both returns `400`.
-:::
 
 ### Retention
 
