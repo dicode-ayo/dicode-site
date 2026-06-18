@@ -86,6 +86,7 @@ params:
     required: true
 
 permissions:
+  env_read_exposed: false        # Deno only: set true to grant bare --allow-env (off by default)
   env:
     - HOME                       # allowlist host env var
     - name: API_KEY              # rename from host env
@@ -229,13 +230,13 @@ Required when `runtime` is `docker` or `podman`. Must specify either `image` or 
 | Field | Description |
 |-------|-------------|
 | `image` | Docker image to pull (e.g. `nginx:alpine`) |
-| `build.dockerfile` | Path to Dockerfile, relative to task dir |
-| `build.context` | Build context directory, relative to task dir |
-| `command` | Override image CMD |
-| `entrypoint` | Override image ENTRYPOINT |
-| `volumes` | Bind mounts in `host:container[:ro]` format |
+| `build.dockerfile` | Path to Dockerfile, relative to task dir. Supports `${VAR}` expansion. |
+| `build.context` | Build context directory, relative to task dir. Supports `${VAR}` expansion. |
+| `command` | Override image CMD. Supports `${VAR}` expansion. |
+| `entrypoint` | Override image ENTRYPOINT. Supports `${VAR}` expansion. |
+| `volumes` | Bind mounts in `host:container[:ro]` format. Supports `${VAR}` expansion. |
 | `ports` | Port mappings in `hostPort:containerPort` format |
-| `working_dir` | Container working directory |
+| `working_dir` | Container working directory. Supports `${VAR}` expansion. |
 | `env_vars` | Extra environment variables (literal values) |
 | `pull_policy` | `always`, `missing` (default), or `never` |
 
@@ -319,11 +320,63 @@ See [Secrets](./secrets.md) for details on `permissions.env` and secret injectio
 For Deno tasks, permissions map directly to Deno's `--allow-*` flags. Python and Docker tasks use env injection only (`permissions.env`).
 :::
 
+### Permissions field reference
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `env` | list | Env vars the task may read; each entry is a bare name, `from:` rename, `secret:` injection, or literal `value:`. See [Secrets](./secrets.md). |
+| `env_read_exposed` | bool | **Deno only.** Grant bare `--allow-env` (read any env var). Default `false`. See below. |
+| `fs` | list | **Deno (read + write); Python (write mode only).** Filesystem paths and access modes (`r`, `w`, `rw`). |
+| `run` | list | Executables the script may spawn (`Deno.Command` / Python `subprocess`). Use `["*"]` for all; omit to deny all. |
+| `net` | list | Outbound network hostnames. Use `["*"]` for all; omit to deny all. |
+| `sys` | list | **Deno only.** System-info APIs (`hostname`, `osRelease`, …). |
+| `dicode` | object | dicode runtime API access (`tasks`, `mcp`, `list_tasks`, `get_runs`, `secrets_write`). |
+
+### `env_read_exposed` — grant unrestricted env read (Deno / npm escape hatch)
+
+`permissions.env_read_exposed: true` grants the Deno subprocess bare `--allow-env`, allowing it to read **any** env var. It exists for tasks that import npm packages via `npm:` specifiers: transitive dependencies often read `process.env` keys (such as `NODE_ENV`) at module-init time, before `main()` runs. Because that set of keys is unpredictable per dependency, listing individual names in `env:` is fragile — the import will still throw `NotCapable` for any key not declared.
+
+`env_read_exposed` widens *read permission* only and is independent of the `env:` list. Named `env:` entries already grant per-variable read permission (they appear in `--allow-env=FOO,BAR,...`) and inject values into the subprocess env. The flag is needed only when a transitive dependency reads env vars that are **not** declared in `env:`. Keep named/`secret:`/`from:` entries for variables the task explicitly declares; add the flag only if npm-compat imports still fail:
+
+```yaml
+permissions:
+  env_read_exposed: true   # allow reading any env var (node-compat import needs this)
+  env:
+    - DICODE_DATADIR        # still forwarded so the script's value is populated
+    - DICODE_VERSION
+```
+
+**Why this is safe.** A task subprocess does not inherit the full daemon environment. The subprocess env is assembled as an allowlist: process basics, cache/proxy/TLS vars, the per-run IPC coordinates (`DICODE_SOCKET`/`DICODE_TOKEN`), host values of the task's own named `env:` entries, and resolved secrets. The daemon master key and admin/MCP API keys are explicitly denylisted and never forwarded. Bare `--allow-env` therefore exposes only the already-task-scoped env — nothing the task did not already hold.
+
+**Constraints:**
+
+- Only settable in the task's own `task.yaml`. Taskset `overrides:` blocks cannot set `env_read_exposed`.
+- Toggling the flag changes the task's content hash, which re-pends the task at the approval gate.
+- Deno only. Python tasks read env through the SDK (`env.get()`), which is not gated by `--allow-env`; this flag is silently ignored on Python, Docker, and Podman runtimes.
+
+::: warning Validation error for `env: ["*"]`
+A bare `"*"` entry in the `env:` list is now a **validation error**. Use `env_read_exposed: true` instead.
+:::
+
 ## Template variables
 
 A tight allowlist of fields in `task.yaml` support `${VAR}` substitution, resolved at task-load time. Use them for paths and indirection keys that depend on where the task is loaded from.
 
-**Supported fields:** `permissions.fs[].path`, `trigger.webhook_secret`, and `permissions.env[].from | .secret | .value`. Everything else is taken literally.
+**Supported fields:**
+
+| Field | Notes |
+| --- | --- |
+| `permissions.fs[].path` | |
+| `trigger.webhook_secret` | |
+| `permissions.env[].from \| .secret \| .value` | |
+| `docker.command` | `envFallback` off — see below |
+| `docker.entrypoint` | `envFallback` off — see below |
+| `docker.working_dir` | `envFallback` off — see below |
+| `docker.build.context` | `envFallback` off — see below |
+| `docker.build.dockerfile` | `envFallback` off — see below |
+| `docker.volumes` | `envFallback` off — see below |
+
+Everything else is taken literally.
 
 **Built-in variables:**
 
@@ -335,6 +388,12 @@ A tight allowlist of fields in `task.yaml` support `${VAR}` substitution, resolv
 | `${SKILLS_DIR}` | Auto-derived as `${SOURCE_ROOT}/skills` |
 
 Resolution order: built-ins → process env → **leave literal** (unknown `${VAR}` references stay in place so bugs surface loudly rather than silently collapsing to an empty string).
+
+::: warning Docker fields: daemon env vars are not a fallback
+For all `docker.*` fields listed above, `envFallback` is **off**: built-in variables (`${TASK_DIR}`, `${DATADIR}`, etc.) are expanded, but daemon process environment variables are **not** accessible as a fallback. An unrecognised `${VAR}` reference is left as-is rather than silently replaced with a daemon env var value.
+
+This matches the existing behaviour of `docker.volumes` and is intentional — Docker tasks declare their env access via `permissions.env`, not through template substitution.
+:::
 
 **Example: reference the shared skills directory regardless of source type:**
 
@@ -354,4 +413,17 @@ trigger:
 permissions:
   env:
     - GITHUB_WEBHOOK_SECRET
+```
+
+**Example: use `${TASK_DIR}` in Docker fields to mount or reference files from the task directory:**
+
+```yaml
+docker:
+  build:
+    context: "${TASK_DIR}"
+    dockerfile: "${TASK_DIR}/Dockerfile"
+  working_dir: /app
+  volumes:
+    - "${TASK_DIR}/config:/app/config:ro"
+  command: ["python", "main.py", "--data", "/data"]
 ```

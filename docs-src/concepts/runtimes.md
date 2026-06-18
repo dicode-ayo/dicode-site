@@ -232,6 +232,28 @@ docker:
   pull_policy: missing    # always | missing (default) | never
 ```
 
+::: tip Template variable expansion in Docker fields
+`${VAR}` substitution is supported in `command`, `entrypoint`, `working_dir`,
+`build.context`, `build.dockerfile`, and `volumes`. The most useful built-in is
+`${TASK_DIR}`, which resolves to the absolute path of the task's own directory.
+
+```yaml
+docker:
+  build:
+    context: "${TASK_DIR}"
+    dockerfile: "${TASK_DIR}/Dockerfile"
+  volumes:
+    - "${TASK_DIR}/config:/app/config:ro"
+```
+
+Daemon process environment variables are **not** a fallback in these fields
+(`envFallback: false`). To pass host env vars into the container, use
+`permissions.env` and `docker.env_vars`.
+
+See [Template variables](/concepts/tasks#template-variables) for the full list of
+supported fields and built-in variables.
+:::
+
 ### Daemon containers
 
 Docker tasks work well as daemons -- long-running services that start with dicode:

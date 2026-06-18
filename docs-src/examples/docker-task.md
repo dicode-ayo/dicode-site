@@ -154,18 +154,70 @@ docker:
     dockerfile: Dockerfile
 ```
 
+## Template variable expansion
+
+Several `docker:` fields support `${VAR}` substitution, resolved at task-load
+time. The most useful built-in is `${TASK_DIR}`, which is the absolute path to
+the task's own directory.
+
+::: tip Which fields expand `${VAR}`?
+`docker.command`, `docker.entrypoint`, `docker.working_dir`,
+`docker.build.context`, `docker.build.dockerfile`, and `docker.volumes` all
+expand template variables.
+
+`docker.image`, `docker.ports`, and `docker.env_vars` do **not** expand
+variables — their values are taken literally.
+:::
+
+::: warning Daemon env vars are not a fallback
+The expansion policy is `envFallback: false`. Built-in variables such as
+`${TASK_DIR}` and `${DATADIR}` are resolved, but daemon process environment
+variables are **not** accessible as a fallback. An unrecognised `${VAR}`
+reference is left as-is rather than replaced with a daemon env var value. To
+pass host env vars into a container, use `permissions.env` and `docker.env_vars`.
+:::
+
+### Example: Dockerfile build using `${TASK_DIR}`
+
+```yaml
+apiVersion: dicode/v1
+kind: Task
+name: App Builder
+description: Builds from the task directory and mounts local config
+runtime: docker
+
+trigger:
+  manual: true
+
+docker:
+  build:
+    context: "${TASK_DIR}"
+    dockerfile: "${TASK_DIR}/Dockerfile"
+  working_dir: /app
+  volumes:
+    - "${TASK_DIR}/config:/app/config:ro"
+  command: ["python", "main.py"]
+```
+
+This guarantees the build context and Dockerfile paths resolve to the correct
+absolute location regardless of how or where dicode is run.
+
 ## Configuration reference
 
 The full set of `docker` fields available in task.yaml:
 
-| Field | Description |
-| --- | --- |
-| `docker.image` | Container image to use (e.g. `nginx:alpine`) |
-| `docker.build.dockerfile` | Path to Dockerfile, relative to the task directory |
-| `docker.ports` | List of port mappings (`host:container`) |
-| `docker.volumes` | List of volume mounts (`host:container[:options]`) |
-| `docker.pull_policy` | When to pull: `always`, `missing`, or `never` |
-| `docker.env` | Additional environment variables to pass to the container |
+| Field | `${VAR}` expansion | Description |
+| --- | --- | --- |
+| `docker.image` | no | Container image to use (e.g. `nginx:alpine`) |
+| `docker.build.dockerfile` | **yes** | Path to Dockerfile, relative to the task directory |
+| `docker.build.context` | **yes** | Build context directory, relative to the task directory |
+| `docker.command` | **yes** | Override image CMD |
+| `docker.entrypoint` | **yes** | Override image ENTRYPOINT |
+| `docker.working_dir` | **yes** | Container working directory |
+| `docker.volumes` | **yes** | List of volume mounts (`host:container[:options]`) |
+| `docker.ports` | no | List of port mappings (`host:container`) |
+| `docker.pull_policy` | no | When to pull: `always`, `missing`, or `never` |
+| `docker.env_vars` | no | Additional environment variables to pass to the container |
 
 When `docker.build` is set, `docker.image` is ignored -- dicode builds and
 tags the image automatically.
