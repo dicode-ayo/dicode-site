@@ -86,7 +86,7 @@ params:
     required: true
 
 permissions:
-  env_read_exposed: false        # Deno only: grant bare --allow-env (read any env var)
+  env_read_exposed: false        # Deno only: set true to grant bare --allow-env (off by default)
   env:
     - HOME                       # allowlist host env var
     - name: API_KEY              # rename from host env
@@ -325,7 +325,7 @@ For Deno tasks, permissions map directly to Deno's `--allow-*` flags. Python and
 |-------|------|-------------|
 | `env` | list | Env vars the task may read; each entry is a bare name, `from:` rename, `secret:` injection, or literal `value:`. See [Secrets](./secrets.md). |
 | `env_read_exposed` | bool | **Deno only.** Grant bare `--allow-env` (read any env var). Default `false`. See below. |
-| `fs` | list | **Deno only.** Filesystem paths and access modes (`r`, `w`, `rw`). |
+| `fs` | list | **Deno (read + write); Python (write mode only).** Filesystem paths and access modes (`r`, `w`, `rw`). |
 | `run` | list | Executables the script may spawn (`Deno.Command` / Python `subprocess`). Use `["*"]` for all; omit to deny all. |
 | `net` | list | Outbound network hostnames. Use `["*"]` for all; omit to deny all. |
 | `sys` | list | **Deno only.** System-info APIs (`hostname`, `osRelease`, …). |
@@ -335,7 +335,7 @@ For Deno tasks, permissions map directly to Deno's `--allow-*` flags. Python and
 
 `permissions.env_read_exposed: true` grants the Deno subprocess bare `--allow-env`, allowing it to read **any** env var. It exists for tasks that import npm packages via `npm:` specifiers: transitive dependencies often read `process.env` keys (such as `NODE_ENV`) at module-init time, before `main()` runs. Because that set of keys is unpredictable per dependency, listing individual names in `env:` is fragile — the import will still throw `NotCapable` for any key not declared.
 
-`env_read_exposed` widens *read permission* only and is independent of the `env:` list. Keep named/`secret:`/`from:` entries for variables that need to be **forwarded** (injected into the subprocess env); the flag grants permission to read a var but does not inject values:
+`env_read_exposed` widens *read permission* only and is independent of the `env:` list. Named `env:` entries already grant per-variable read permission (they appear in `--allow-env=FOO,BAR,...`) and inject values into the subprocess env. The flag is needed only when a transitive dependency reads env vars that are **not** declared in `env:`. Keep named/`secret:`/`from:` entries for variables the task explicitly declares; add the flag only if npm-compat imports still fail:
 
 ```yaml
 permissions:
@@ -350,7 +350,7 @@ permissions:
 **Constraints:**
 
 - Only settable in the task's own `task.yaml`. Taskset `overrides:` blocks cannot set `env_read_exposed`.
-- Toggling the flag changes the task's content hash, which re-pends the task at the approval gate.
+- Toggling the flag changes the task's content hash, which re-pends the task at the approval gate (if the approval gate is enabled via `approval.enabled: true` in `dicode.yaml`).
 - Deno only. Python tasks read env via `os.environ` directly (the subprocess env is already bounded by `SubprocessEnv`); this flag is silently ignored on Python, Docker, and Podman runtimes.
 
 ::: warning Validation error for `env: ["*"]`
