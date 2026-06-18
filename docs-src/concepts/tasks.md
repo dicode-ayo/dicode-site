@@ -86,6 +86,7 @@ params:
     required: true
 
 permissions:
+  env_read_exposed: false        # Deno only: grant bare --allow-env (read any env var)
   env:
     - HOME                       # allowlist host env var
     - name: API_KEY              # rename from host env
@@ -316,6 +317,44 @@ See [Secrets](./secrets.md) for details on `permissions.env` and secret injectio
 
 ::: tip
 For Deno tasks, permissions map directly to Deno's `--allow-*` flags. Python and Docker tasks use env injection only (`permissions.env`).
+:::
+
+### Permissions field reference
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `env` | list | Env vars the task may read; each entry is a bare name, `from:` rename, `secret:` injection, or literal `value:`. See [Secrets](./secrets.md). |
+| `env_read_exposed` | bool | **Deno only.** Grant bare `--allow-env` (read any env var). Default `false`. See below. |
+| `fs` | list | **Deno only.** Filesystem paths and access modes (`r`, `w`, `rw`). |
+| `run` | list | Executables the script may spawn (`Deno.Command` / Python `subprocess`). Use `["*"]` for all; omit to deny all. |
+| `net` | list | Outbound network hostnames. Use `["*"]` for all; omit to deny all. |
+| `sys` | list | **Deno only.** System-info APIs (`hostname`, `osRelease`, …). |
+| `dicode` | object | dicode runtime API access (`tasks`, `mcp`, `list_tasks`, `get_runs`, `secrets_write`). |
+
+### `env_read_exposed` — grant unrestricted env read (Deno / npm escape hatch)
+
+`permissions.env_read_exposed: true` grants the Deno subprocess bare `--allow-env`, allowing it to read **any** env var. It exists for tasks that import npm packages via `npm:` specifiers: transitive dependencies often read `process.env` keys (such as `NODE_ENV`) at module-init time, before `main()` runs. Because that set of keys is unpredictable per dependency, listing individual names in `env:` is fragile — the import will still throw `NotCapable` for any key not declared.
+
+`env_read_exposed` widens *read permission* only and is independent of the `env:` list. Keep named/`secret:`/`from:` entries for variables that need to be **forwarded** (injected into the subprocess env); the flag grants permission to read a var but does not inject values:
+
+```yaml
+permissions:
+  env_read_exposed: true   # allow reading any env var (node-compat import needs this)
+  env:
+    - DICODE_DATADIR        # still forwarded so the script's value is populated
+    - DICODE_VERSION
+```
+
+**Why this is safe.** A task subprocess does not inherit the full daemon environment. The subprocess env is assembled as an allowlist: process basics, cache/proxy/TLS vars, the per-run IPC coordinates (`DICODE_SOCKET`/`DICODE_TOKEN`), host values of the task's own named `env:` entries, and resolved secrets. The daemon master key and admin/MCP API keys are explicitly denylisted and never forwarded. Bare `--allow-env` therefore exposes only the already-task-scoped env — nothing the task did not already hold.
+
+**Constraints:**
+
+- Only settable in the task's own `task.yaml`. Taskset `overrides:` blocks cannot set `env_read_exposed`.
+- Toggling the flag changes the task's content hash, which re-pends the task at the approval gate.
+- Deno only. Python tasks read env through the SDK (`env.get()`), which is not gated by `--allow-env`; this flag is silently ignored on Python, Docker, and Podman runtimes.
+
+::: warning Validation error for `env: ["*"]`
+A bare `"*"` entry in the `env:` list is now a **validation error**. Use `env_read_exposed: true` instead.
 :::
 
 ## Template variables
