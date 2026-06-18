@@ -16,15 +16,31 @@ Speaks JSON-RPC 2.0 over a single POST per call. The same shape every MCP client
 
 ## Authentication
 
-When `server.auth: true` (the recommended deployment mode), calls to `/mcp` require an API key as a Bearer token. Generate one in the WebUI:
+`/mcp` accepts two authentication mechanisms:
+
+| Mechanism | Header | Use case |
+|---|---|---|
+| **Bearer API key** | `Authorization: Bearer dck_...` | Machine clients, agents, CI — no browser session needed |
+| **Session cookie** | `Cookie: dicode_session=...` | Browser-based tooling that already has a dicode session |
+
+**Bearer API keys are the recommended approach** for all non-browser clients (MCP clients, agents, `curl`, CI pipelines). Generate one in the WebUI:
 
 1. Open the dashboard, go to **Security**
 2. Click **Create API Key**, give it a name
 3. Copy the raw key — it's shown **once** at creation, only its hash is stored
 
-Pass it in the `Authorization` header on every MCP call. Revoke from the same page when a key leaks.
+Pass it in the `Authorization` header on every MCP call:
 
-When `server.auth: false`, `/mcp` is open to anyone who can reach the port — the same trust model as the rest of the API.
+```sh
+curl -X POST http://localhost:8080/mcp \
+  -H "Authorization: Bearer dck_..." \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize"}'
+```
+
+Revoke from the same Security page when a key leaks.
+
+When `server.auth: false`, `/mcp` is open to anyone who can reach the port — the same trust model as the rest of the API. Note that with `auth: false` the daemon binds to `127.0.0.1` by default; see [`server.host`](/getting-started/configuration#bind-address-server-host) if you need network access.
 
 ## Tool surface
 
