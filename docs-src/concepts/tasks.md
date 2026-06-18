@@ -113,6 +113,7 @@ permissions:
     list_tasks: true             # dicode.list_tasks()
     get_runs: true               # dicode.get_runs()
     secrets_write: true          # dicode.secrets_set() / secrets_delete()
+    audit_query: true            # dicode.audit.query() — sensitive; see SDK Globals
 
 docker:                          # docker/podman runtime only
   image: nginx:alpine

@@ -470,6 +470,108 @@ Empty `branch_prefix` is intentionally only legal for `main` / `master` with `al
 
 ---
 
+## dicode.audit.query
+
+Query the daemon's structured audit log from a task script. Returns a page of events and an opaque cursor for resuming. Typical use: a scheduled export task that persists the cursor in `dicode.kv` and resumes each cron run where it left off.
+
+::: warning Sensitive capability
+`audit_query` exposes every security event in the system — actors, targets, denial reasons, and sanitized params. Grant only to tasks that legitimately need audit access. Default-deny: tasks without the capability receive a permission error.
+:::
+
+::: code-group
+
+```ts [Deno]
+export default async function main({ dicode, kv }: DicodeSdk) {
+  const cursor = await kv.get("audit:cursor") as string | null;
+
+  const page = await dicode.audit.query({
+    after:      cursor ?? undefined,
+    order:      "asc",     // oldest-first for a forward export
+    limit:      1000,
+    // Optional filters:
+    // event_type: "denied",
+    // task_id:    "my-task",
+    // actor:      "webhook",
+  });
+
+  for (const event of page.events) {
+    console.log(JSON.stringify(event));
+  }
+
+  if (page.next_cursor) {
+    await kv.set("audit:cursor", page.next_cursor);
+  }
+}
+```
+
+```python [Python]
+cursor = kv.get("audit:cursor")
+
+page = dicode.audit.query(
+    after=cursor,
+    order="asc",
+    limit=1000,
+)
+
+for event in page["events"]:
+    print(event)
+
+if page.get("next_cursor"):
+    kv.set("audit:cursor", page["next_cursor"])
+```
+
+:::
+
+In async Python tasks:
+
+```python
+async def main():
+    cursor = await kv.get_async("audit:cursor")
+    page = await dicode.audit.query_async(after=cursor, order="asc", limit=1000)
+    for event in page["events"]:
+        print(event)
+    if page.get("next_cursor"):
+        await kv.set_async("audit:cursor", page["next_cursor"])
+```
+
+### API
+
+| Method | Deno | Python (sync) | Python (async) |
+|--------|------|---------------|----------------|
+| Query audit log | `await dicode.audit.query(opts?)` | `dicode.audit.query(**opts)` | `await dicode.audit.query_async(**opts)` |
+
+**Options:**
+
+| Option | Type | Description |
+|---|---|---|
+| `after` | string? | Opaque cursor from a previous `next_cursor` |
+| `order` | `"asc"` \| `"desc"` | Sort direction (default `"desc"`) |
+| `limit` | number? | Max events per call (default 100, cap 1000) |
+| `task_id` | string? | Filter by task ID |
+| `actor` | string? | Filter by actor identifier |
+| `event_type` | string? | One of `run_triggered`, `task_called`, `mcp_called`, `denied` |
+
+**Return value:**
+
+```ts
+{
+  events: AuditEvent[];  // up to `limit` events
+  next_cursor?: string;  // present when more results exist; absent otherwise
+}
+```
+
+Each `AuditEvent` matches the response fields documented in [Security & Audit Log — Querying audit events](./security.md#querying-audit-events).
+
+### Required permissions
+
+```yaml
+permissions:
+  dicode:
+    audit_query: true
+```
+
+---
+
 ## mcp
 
 Call tools on **external** MCP (Model Context Protocol) servers exposed by daemon tasks. To go the other direction — let an external MCP client (Claude Desktop, Cursor, Claude Code) call into dicode — see [MCP Server](./mcp-server).
