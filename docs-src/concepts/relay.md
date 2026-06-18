@@ -42,6 +42,10 @@ relay:
 
 That is all. On next startup, the daemon connects to the relay and logs the assigned public URL.
 
+::: info How relay startup works
+The relay connection is managed by an internal daemon task (`buildin/relay-server-body`). It is automatically **disabled** at registration unless **both** `relay.enabled: true` and `relay.server_url` are set — if either is missing, the task never starts and produces no log output. Once you add both values, the reconciler picks them up within ~30 seconds; no daemon restart is needed.
+:::
+
 ---
 
 ## Identity
