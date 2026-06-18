@@ -264,6 +264,8 @@ Set `trust_proxy: true` when dicode runs behind a reverse proxy (nginx, Caddy, T
 `trust_proxy: true` only works correctly when requests actually arrive over HTTPS via a proxy. If you set it with a plain HTTP connection (no proxy in front), browsers will refuse to send the `Secure` cookies and users will be unable to log in.
 
 Do not enable this flag unless dicode is behind a proxy that sets `X-Forwarded-Proto: https`.
+
+Additionally, enabling `trust_proxy` when dicode is directly internet-facing (no proxy) lets any client forge the `X-Forwarded-For` header, causing spoofed IP addresses to appear in the audit log. Only enable this flag when a trusted proxy sits in front of dicode and strips or overwrites those headers before forwarding.
 :::
 
 ## AI
