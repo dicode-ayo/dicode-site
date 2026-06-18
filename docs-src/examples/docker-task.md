@@ -165,8 +165,8 @@ the task's own directory.
 `docker.build.context`, `docker.build.dockerfile`, and `docker.volumes` all
 expand template variables.
 
-`docker.image`, `docker.ports`, and `docker.env` do **not** expand variables —
-their values are taken literally.
+`docker.image`, `docker.ports`, and `docker.env_vars` do **not** expand
+variables — their values are taken literally.
 :::
 
 ::: warning Daemon env vars are not a fallback
