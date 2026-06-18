@@ -181,10 +181,11 @@ For mobile push (ntfy.sh, gotify, pushover, telegram), webhook integrations (Sla
 ```yaml
 server:
   port: 8080                # HTTP server port (default: 8080)
+  host: ""                  # bind address; default depends on auth (see below)
   auth: false               # enable passphrase auth wall (default: false)
   secret: ""                # passphrase override; leave empty to auto-generate on first boot
   allowed_origins: []       # CORS allowlist; empty = same-origin only
-  trust_proxy: false        # trust X-Forwarded-For headers
+  trust_proxy: false        # trust X-Forwarded-For / X-Forwarded-Proto headers
   mcp: true                 # expose MCP endpoint at /mcp (default: true)
   tray: true                # enable system tray integration
   tls_cert: ""              # path to TLS certificate PEM (enables HTTPS)
@@ -192,6 +193,27 @@ server:
 ```
 
 The server hosts the web UI, the REST API, and the MCP endpoint. When `mcp` is enabled, AI tools like Claude Code and Cursor can discover and call your tasks via the Model Context Protocol.
+
+### Bind address (`server.host`)
+
+The daemon selects its bind address based on the `auth` setting:
+
+| `server.auth` | Default bind address | Reachable from |
+|---|---|---|
+| `false` | `127.0.0.1` | Localhost only |
+| `true` | `0.0.0.0` | All interfaces |
+
+When `auth: false`, dicode binds to **loopback only** (`127.0.0.1`) to prevent accidentally exposing an unauthenticated dashboard to the network. If you run without auth but need network access — for example, behind a reverse proxy that terminates auth itself — set `server.host` explicitly:
+
+```yaml
+server:
+  auth: false
+  host: "0.0.0.0"   # bind to all interfaces (ensure network-level access control)
+```
+
+::: warning
+Running without auth on `0.0.0.0` means anyone on the network can reach the dashboard and trigger tasks. Only do this if the daemon sits behind a trusted reverse proxy or firewall.
+:::
 
 ### Auth passphrase
 
@@ -225,6 +247,24 @@ sqlite3 <datadir>/dicode.db "DELETE FROM kv WHERE key='auth.passphrase';"
 ```
 
 **YAML override behaviour.** When `server.secret` is set, the API refuses passphrase rotation requests with `409 Conflict` to prevent split-brain state between YAML and database. Remove the YAML field to manage the passphrase via the dashboard.
+
+### Reverse proxy (`server.trust_proxy`)
+
+```yaml
+server:
+  trust_proxy: true
+```
+
+Set `trust_proxy: true` when dicode runs behind a reverse proxy (nginx, Caddy, Traefik, etc.) that terminates TLS and forwards requests. This enables two behaviors:
+
+1. **Real IP forwarding** — dicode reads the client IP from `X-Forwarded-For` instead of the TCP connection's remote address. This is required for accurate audit log actor IDs and rate-limit keys.
+2. **`Secure` cookie flag** — session and device cookies are set with `Secure: true`, so browsers only send them over HTTPS.
+
+::: warning
+`trust_proxy: true` only works correctly when requests actually arrive over HTTPS via a proxy. If you set it with a plain HTTP connection (no proxy in front), browsers will refuse to send the `Secure` cookies and users will be unable to log in.
+
+Do not enable this flag unless dicode is behind a proxy that sets `X-Forwarded-Proto: https`.
+:::
 
 ## AI
 
