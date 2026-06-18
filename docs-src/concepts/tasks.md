@@ -345,13 +345,13 @@ permissions:
     - DICODE_VERSION
 ```
 
-**Why this is safe.** A task subprocess does not inherit the full daemon environment. The subprocess env is assembled as an allowlist: process basics, cache/proxy/TLS vars, the per-run IPC coordinates (`DICODE_SOCKET`/`DICODE_TOKEN`), host values of the task's own named `env:` entries, and resolved secrets. The daemon master key and admin/MCP API keys are explicitly denylisted and never forwarded. Bare `--allow-env` therefore exposes only the already-task-scoped env — nothing the task did not already hold.
+**Why this is safe.** A task subprocess does not inherit the full daemon environment. The subprocess env is assembled as an allowlist: process basics, cache/proxy/TLS passthrough vars (`PATH`, `HOME`, `HTTP_PROXY`, `HTTPS_PROXY`, `SSL_CERT_FILE`, `DENO_DIR`, etc. — needed by the runtime toolchain), the per-run IPC coordinates (`DICODE_SOCKET`/`DICODE_TOKEN`), host values of the task's own named `env:` entries, and resolved secrets. The daemon master key and admin/MCP API keys are explicitly denylisted and never forwarded. Bare `--allow-env` therefore exposes only that already-task-scoped env — nothing the task did not already hold. Operators should be aware that the proxy/TLS passthrough vars are readable under this flag; avoid embedding credentials in `HTTP_PROXY`/`HTTPS_PROXY` URLs on hosts running tasks with this flag.
 
 **Constraints:**
 
 - Only settable in the task's own `task.yaml`. Taskset `overrides:` blocks cannot set `env_read_exposed`.
 - Toggling the flag changes the task's content hash, which re-pends the task at the approval gate.
-- Deno only. Python tasks read env through the SDK (`env.get()`), which is not gated by `--allow-env`; this flag is silently ignored on Python, Docker, and Podman runtimes.
+- Deno only. Python tasks read env via `os.environ` directly (the subprocess env is already bounded by `SubprocessEnv`); this flag is silently ignored on Python, Docker, and Podman runtimes.
 
 ::: warning Validation error for `env: ["*"]`
 A bare `"*"` entry in the `env:` list is now a **validation error**. Use `env_read_exposed: true` instead.
