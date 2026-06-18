@@ -40,7 +40,7 @@ curl -X POST http://localhost:8080/mcp \
 
 Revoke from the same Security page when a key leaks.
 
-When `server.auth: false`, `/mcp` is open to anyone who can reach the port — the same trust model as the rest of the API. Note that with `auth: false` the daemon binds to `127.0.0.1` by default; see [`server.host`](/getting-started/configuration#bind-address-serverhost) if you need network access.
+When `server.auth: false`, `/mcp` is open to anyone who can reach the port — the same trust model as the rest of the API. Note that with `auth: false` the daemon binds to `127.0.0.1` by default; see [`server.host`](/getting-started/configuration#bind-address-server-host) if you need network access.
 
 ## Tool surface
 
