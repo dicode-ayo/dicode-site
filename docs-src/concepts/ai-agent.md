@@ -10,7 +10,7 @@ Most automation tools stop at "AI helps you write code." dicode puts AI at every
 
 | Stage | What AI does | How it works |
 |-------|-------------|--------------|
-| **Create** | Generates task.yaml + task.ts from plain English | `dicode generate "monitor my API every 5 min"` — AI writes validated code, commits to git |
+| **Create** | Generates task.yaml + task.ts from plain English | `dicode task create` opens an authoring session; AI writes and validates files in the session, then saves to git. See [AI Task Authoring](#ai-task-authoring). |
 | **Validate** | Checks cron syntax, permissions, error handling | AI reviews generated code before it goes live — catches missing env vars, wrong trigger config, common anti-patterns |
 | **Deploy** | Commits to git, reconciler auto-deploys | No human deploy step — git commit triggers the reconciler, task is live in seconds |
 | **Monitor** | Watches runs, detects failure patterns | AI agent can query run history, detect repeated failures, response time changes, error rate spikes |
@@ -207,6 +207,85 @@ The bundled chat page persists `session_id` in `localStorage` so refreshing the 
 - **API keys never enter the conversation.** They are resolved from `Deno.env.get(api_key_env)` at task start and used only to construct the OpenAI client. They are not logged, not returned, and not visible to the model.
 - **Model output is rendered as `textContent`**, never `innerHTML`. The chat UI is safe by default against untrusted markdown/HTML in responses.
 - **Session blobs are per-task and isolated.** They live under the `buildin/ai-agent` task's own KV namespace.
+
+## AI Task Authoring
+
+Beyond the chat agent that *operates* your tasks, dicode ships an interactive **task authoring** workflow that lets the AI — or you — create and edit tasks in a controlled draft environment before anything touches git.
+
+### What authoring sessions are
+
+An **authoring session** is a server-side draft that holds proposed changes to one task's files (`task.yaml`, `task.js` / `task.py`, `task.test.js`) before they are committed to the source git repo. Sessions decouple the "write files" step from the "commit to git" step, giving you (or the AI) the opportunity to review a live diff in the WebUI and iterate before anything is permanent.
+
+Session lifecycle:
+
+| Step | What happens |
+|---|---|
+| **Open** | `dicode task create <name> [--ai "PROMPT"]` (new task) or `dicode task edit <task-id> ["PROMPT"]` (existing) opens a session. The session ID is printed to stderr; the task ID is printed to stdout. Files in the session start as copies of the current task (edit) or an empty scaffold (create). |
+| **Edit** | The AI or user writes files into the session via IPC or REST. Each write is immediately reflected in the WebUI's diff view. |
+| **Validate** | Optional — `task.yaml` is parsed and linted against the task schema. Validation errors are returned without closing the session. |
+| **Save** | `dicode task save <session-id>` commits the draft files to the configured git source. The reconciler picks up the change within ~1 s. |
+| **Cancel** | `dicode task cancel <session-id>` discards the draft. No git change is made. |
+
+Session files are stored in the daemon's data directory (not in git) until save is called. Sessions are automatically expired after 24 hours if neither save nor cancel is called.
+
+### CLI verbs
+
+Four `dicode task` subcommands manage sessions:
+
+```sh
+# Create a new task and open an authoring session.
+# Prints task_id to stdout; session_id and WebUI URL go to stderr.
+dicode task create <name> [--source NAME] [--ai "PROMPT"]
+
+# Open an edit session on an existing task, optionally with an initial AI prompt.
+# Prints session_id to stderr; resume the same session with --session.
+dicode task edit <task-id> ["<prompt>"] [--session <session-id>]
+
+# Commit the draft files to git and close the session.
+# Prints task_id (or PR URL for git sources) to stdout.
+dicode task save <session-id>
+
+# Discard the draft and close the session.
+dicode task cancel <session-id>
+```
+
+Combine with the AI agent for an interactive authoring loop:
+
+```sh
+# Create the task scaffold; capture session_id from stderr.
+dicode task create my-stripe-monitor --ai "check Stripe status every 15 min" 2>/tmp/session-meta.txt
+SESSION=$(grep '^session:' /tmp/session-meta.txt | awk '{print $2}')
+
+# Review the diff in the WebUI (URL printed to stderr), then save.
+dicode task save "$SESSION"
+```
+
+### REST API
+
+For custom integrations or AI agent tool-call paths, the same lifecycle is available over HTTP. All routes are under `/api/` and require authentication (session cookie or `Authorization: Bearer <api-key>`). Session IDs are passed in the JSON request body.
+
+| Method | Path | Body | Description |
+|---|---|---|---|
+| `POST` | `/api/task/create` | `{"name": "<name>", "source": "<source>"}` | Create a new task scaffold and open an authoring session. Returns `{"task_id": "...", "source": "...", "files": [...]}`. |
+| `POST` | `/api/task/edit` | `{"task_id": "<id>"}` or `{"session_id": "<sid>", "task_id": "<id>"}` | Open (or resume) an edit session for an existing task. Returns `{"session_id": "...", "sandbox_path": "...", "source": "...", "source_kind": "..."}`. |
+| `POST` | `/api/task/save` | `{"session_id": "<sid>"}` | Commit the session's files to the git source and close the session. Returns `{"applied": true}`. |
+| `POST` | `/api/task/cancel` | `{"session_id": "<sid>"}` | Discard the session. Returns `{"cancelled": true}`. |
+
+### WebUI flow
+
+The WebUI's **New Task** button and the per-task **Edit** button both use authoring sessions internally. While a session is open, the task-detail page shows a **diff view** (current git state → session state) so you can review every proposed change before saving. Clicking **Save** calls `POST /api/task/save`; **Discard** calls `POST /api/task/cancel`.
+
+### How the AI agent uses sessions
+
+The built-in AI agent tasks (`buildin/ai-agent`, `buildin/ai-agent-claude-cli`) use authoring sessions when generating or editing tasks. The flow:
+
+1. Agent receives a prompt like *"add a task that monitors GitHub stars daily"*.
+2. Agent calls `dicode.run_task("buildin/create-session")` or the IPC equivalent to open a session.
+3. Agent writes generated files into the session via IPC tool calls.
+4. Agent optionally runs validation and iterates on errors.
+5. Agent calls save — or surfaces the `session_id` to the human for manual review and save.
+
+This is how the **AI at every stage** table's "Create" row works end-to-end under v0.4.0+.
 
 ## Subscription-backed alternative: `buildin/ai-agent-claude-cli`
 
