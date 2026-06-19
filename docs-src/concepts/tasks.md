@@ -332,6 +332,21 @@ For Deno tasks, permissions map directly to Deno's `--allow-*` flags. Python and
 | `sys` | list | **Deno only.** System-info APIs (`hostname`, `osRelease`, …). |
 | `dicode` | object | dicode runtime API access (`tasks`, `mcp`, `list_tasks`, `get_runs`, `secrets_write`). |
 
+::: warning Breaking change in v0.4.0
+Before v0.4.0, omitting `permissions.net` from a Deno task granted **unrestricted outbound network access**. Since v0.4.0 the default is **deny** — a task without `permissions.net` cannot make any outbound network connections.
+
+If you are upgrading from v0.3.x, add a `net:` declaration to any Deno task that makes HTTP/HTTPS calls:
+
+```yaml
+permissions:
+  net:
+    - api.github.com          # specific hostname
+    - "*.example.com"         # wildcard subdomain
+    # or:
+  net: ["*"]                  # allow all outbound (less secure)
+```
+:::
+
 ### `env_read_exposed` — grant unrestricted env read (Deno / npm escape hatch)
 
 `permissions.env_read_exposed: true` grants the Deno subprocess bare `--allow-env`, allowing it to read **any** env var. It exists for tasks that import npm packages via `npm:` specifiers: transitive dependencies often read `process.env` keys (such as `NODE_ENV`) at module-init time, before `main()` runs. Because that set of keys is unpredictable per dependency, listing individual names in `env:` is fragile — the import will still throw `NotCapable` for any key not declared.
