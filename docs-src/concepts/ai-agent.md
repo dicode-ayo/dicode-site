@@ -220,7 +220,7 @@ Session lifecycle:
 
 | Step | What happens |
 |---|---|
-| **Open** | `dicode task create` (new task) or `dicode task edit <id>` (existing) opens a session and returns a `session_id`. Files in the session start as copies of the current task (edit) or empty (create). |
+| **Open** | `dicode task create <name> [--ai "PROMPT"]` (new task) or `dicode task edit <task-id> ["PROMPT"]` (existing) opens a session. The session ID is printed to stderr; the task ID is printed to stdout. Files in the session start as copies of the current task (edit) or an empty scaffold (create). |
 | **Edit** | The AI or user writes files into the session via IPC or REST. Each write is immediately reflected in the WebUI's diff view. |
 | **Validate** | Optional — `task.yaml` is parsed and linted against the task schema. Validation errors are returned without closing the session. |
 | **Save** | `dicode task save <session-id>` commits the draft files to the configured git source. The reconciler picks up the change within ~1 s. |
@@ -233,45 +233,47 @@ Session files are stored in the daemon's data directory (not in git) until save 
 Four `dicode task` subcommands manage sessions:
 
 ```sh
-# Open a new-task authoring session (prints session_id to stdout)
-dicode task create
+# Create a new task and open an authoring session.
+# Prints task_id to stdout; session_id and WebUI URL go to stderr.
+dicode task create <name> [--source NAME] [--ai "PROMPT"]
 
-# Open an edit session on an existing task
-dicode task edit <task-id>
+# Open an edit session on an existing task, optionally with an initial AI prompt.
+# Prints session_id to stderr; resume the same session with --session.
+dicode task edit <task-id> ["<prompt>"] [--session <session-id>]
 
-# Commit the draft files to git and close the session
+# Commit the draft files to git and close the session.
+# Prints task_id (or PR URL for git sources) to stdout.
 dicode task save <session-id>
 
-# Discard the draft and close the session
+# Discard the draft and close the session.
 dicode task cancel <session-id>
 ```
 
 Combine with the AI agent for an interactive authoring loop:
 
 ```sh
-# Start a session, feed the session_id to the AI agent
-SESSION=$(dicode task create)
-dicode ai "Write a task that checks the Stripe status page every 15 minutes and alerts via ntfy when any component is degraded. Session: $SESSION"
+# Create the task scaffold; capture session_id from stderr.
+dicode task create my-stripe-monitor --ai "check Stripe status every 15 min" 2>/tmp/session-meta.txt
+SESSION=$(grep '^session:' /tmp/session-meta.txt | awk '{print $2}')
 
-# Review the diff in the WebUI, then save
+# Review the diff in the WebUI (URL printed to stderr), then save.
 dicode task save "$SESSION"
 ```
 
 ### REST API
 
-For custom integrations or AI agent tool-call paths, the same lifecycle is available over HTTP. All routes require authentication (session cookie or `Authorization: Bearer <api-key>`).
+For custom integrations or AI agent tool-call paths, the same lifecycle is available over HTTP. All routes are under `/api/` and require authentication (session cookie or `Authorization: Bearer <api-key>`). Session IDs are passed in the JSON request body.
 
-| Method | Path | Description |
-|---|---|---|
-| `POST` | `/api/authoring/sessions` | Create a session. Body: `{}` for a new task; `{"task_id": "<id>"}` to edit an existing task. Returns `{"session_id": "..."}`. |
-| `PUT` | `/api/authoring/sessions/{id}/files/{path}` | Write `{path}` (e.g. `task.yaml`, `task.js`) into the session. Body is the raw file content (`Content-Type: text/plain`). |
-| `POST` | `/api/authoring/sessions/{id}/validate` | Run layer-1 validation on `task.yaml` without saving. Returns `{"valid": true}` or `{"valid": false, "errors": [...]}`. |
-| `POST` | `/api/authoring/sessions/{id}/save` | Commit the session's files to the git source. Closes the session. Returns `{"task_id": "<id>"}`. |
-| `DELETE` | `/api/authoring/sessions/{id}` | Cancel and discard the session. |
+| Method | Path | Body | Description |
+|---|---|---|---|
+| `POST` | `/api/task/create` | `{"name": "<name>", "source": "<source>"}` | Create a new task scaffold and open an authoring session. Returns `{"task_id": "...", "source": "...", "files": [...]}`. |
+| `POST` | `/api/task/edit` | `{"task_id": "<id>"}` or `{"session_id": "<sid>", "task_id": "<id>"}` | Open (or resume) an edit session for an existing task. Returns `{"session_id": "...", "sandbox_path": "...", "source": "...", "source_kind": "..."}`. |
+| `POST` | `/api/task/save` | `{"session_id": "<sid>"}` | Commit the session's files to the git source and close the session. Returns `{"applied": true}`. |
+| `POST` | `/api/task/cancel` | `{"session_id": "<sid>"}` | Discard the session. Returns `{"cancelled": true}`. |
 
 ### WebUI flow
 
-The WebUI's **New Task** button and the per-task **Edit** button both use authoring sessions internally. While a session is open, the task-detail page shows a **diff view** (current git state → session state) so you can review every proposed change before saving. Clicking **Save** calls `POST /api/authoring/sessions/{id}/save`; **Discard** calls `DELETE`.
+The WebUI's **New Task** button and the per-task **Edit** button both use authoring sessions internally. While a session is open, the task-detail page shows a **diff view** (current git state → session state) so you can review every proposed change before saving. Clicking **Save** calls `POST /api/task/save`; **Discard** calls `POST /api/task/cancel`.
 
 ### How the AI agent uses sessions
 
