@@ -160,6 +160,41 @@ Use the `env` global:
 token = env.get("GITHUB_TOKEN")
 ```
 
+### Permissions enforcement (v0.4.0+)
+
+Since v0.4.0, `permissions.fs`, `permissions.net`, and `permissions.run` declared in `task.yaml` are enforced at runtime via a [PEP 578](https://peps.python.org/pep-0578/) audit hook installed in the Python subprocess before your script runs.
+
+Attempting to access an undeclared resource raises `PermissionError`:
+
+```
+PermissionError: [dicode] fs access denied for '/etc/passwd': declare path under permissions.fs
+PermissionError: [dicode] network access denied for 'api.example.com': add to permissions.net
+PermissionError: [dicode] subprocess denied for 'git': add to permissions.run
+```
+
+Declare these the same way as Deno tasks:
+
+```yaml
+permissions:
+  fs:
+    - path: /tmp/reports
+      permission: rw          # r | w | rw
+  net:
+    - api.example.com
+    - "*.s3.amazonaws.com"
+  run:
+    - git
+    - ffmpeg
+```
+
+::: warning Breaking change in v0.4.0
+Before v0.4.0, `permissions.fs`, `permissions.net`, and `permissions.run` were parsed from `task.yaml` but **not enforced** — the Python subprocess inherited host-level access. Since v0.4.0, undeclared filesystem access, network connections, and subprocess spawns raise `PermissionError` at runtime.
+
+If you are upgrading from v0.3.x, audit your Python tasks and add explicit permission declarations for every file path, hostname, and executable they access.
+:::
+
+`permissions.env` and `permissions.dicode` are unaffected by this change and work the same as before.
+
 ---
 
 ## Docker
