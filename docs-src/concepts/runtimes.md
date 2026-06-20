@@ -75,7 +75,7 @@ console.debug("debug");         // level: debug
 
 ### Dependency pinning
 
-If a `deno.lock` file exists at or near the task directory, dicode automatically enforces it. The runtime walks up to three parent directories from the task directory looking for `deno.lock`. When found, Deno is invoked with `--lock=<path> --frozen`, which prevents per-run resolution of newer package versions — all imports are pinned to the exact versions recorded in the lockfile.
+If a `deno.lock` file exists at or near the task directory, dicode automatically enforces it. The runtime walks up to two parent directories from the task directory looking for `deno.lock`. When found, Deno is invoked with `--lock=<path> --frozen`, which prevents per-run resolution of newer package versions — all imports are pinned to the exact versions recorded in the lockfile.
 
 The canonical layout for buildin tasks places a shared lockfile two levels above the individual task folders:
 
@@ -88,9 +88,9 @@ tasks/
       task.ts
 ```
 
-**Opt-out**: If the task directory contains its own `deno.json`, the walk is skipped entirely. Deno respects whatever lock configuration that file declares.
+**Opt-out**: If the task directory contains its own `deno.json` (note: `deno.jsonc` is not detected), the walk is skipped entirely. Deno respects whatever lock configuration that file declares.
 
-**Missing lockfile entry**: If an import is not present in the lockfile (for example, after adding a new `npm:` dependency without updating the lockfile), Deno fails at task startup with a lockfile integrity error. Fix it by running `deno cache task.ts` or `deno install` inside the task directory to regenerate the lockfile, then commit the updated `deno.lock`.
+**Missing lockfile entry**: If an import is not present in the lockfile (for example, after adding a new `npm:` dependency without updating the lockfile), Deno fails at task startup with a lockfile integrity error. Fix it by running `deno install` (or `deno cache task.ts` for older Deno versions) inside the task directory to regenerate the lockfile, then commit the updated `deno.lock`.
 
 ---
 
