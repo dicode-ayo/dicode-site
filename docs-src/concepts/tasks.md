@@ -326,11 +326,15 @@ For Deno tasks, permissions map directly to Deno's `--allow-*` flags. Python and
 |-------|------|-------------|
 | `env` | list | Env vars the task may read; each entry is a bare name, `from:` rename, `secret:` injection, or literal `value:`. See [Secrets](./secrets.md). |
 | `env_read_exposed` | bool | **Deno only.** Grant bare `--allow-env` (read any env var). Default `false`. See below. |
-| `fs` | list | **Deno (read + write); Python (write mode only).** Filesystem paths and access modes (`r`, `w`, `rw`). |
+| `fs` | list | **Deno (read + write); Python (write mode only).** Filesystem paths and access modes (`r`, `w`, `rw`). See write-protection note below. |
 | `run` | list | Executables the script may spawn (`Deno.Command` / Python `subprocess`). Use `["*"]` for all; omit to deny all. |
 | `net` | list | Outbound network hostnames. Use `["*"]` for all; omit to deny all. |
 | `sys` | list | **Deno only.** System-info APIs (`hostname`, `osRelease`, …). |
 | `dicode` | object | dicode runtime API access (`tasks`, `mcp`, `list_tasks`, `get_runs`, `secrets_write`). |
+
+::: warning Write-protected daemon files
+`dicode.lock` and `dicode.yaml` are unconditionally write-protected for all tasks, regardless of declared `permissions.fs` grants. A task with `permissions.fs: [{path: /home/user/.dicode, permission: w}]` covering the config directory will still receive `NotCapable` (Deno) or `PermissionError` (Python) when it tries to write or remove either file. This protection cannot be overridden via taskset `overrides:` — it is enforced by the runtime at the flag / audit-hook level to guard the approval-gate state.
+:::
 
 ### `env_read_exposed` — grant unrestricted env read (Deno / npm escape hatch)
 
