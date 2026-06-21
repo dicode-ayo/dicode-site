@@ -130,3 +130,15 @@ Each log line is the full JSON audit event. Stream labels are low-cardinality:
 #### Adapting to other backends
 
 The poll-batch-push structure (cursor in KV, fetch page, push, advance cursor only on success) is backend-agnostic. Copy `buildin/audit-export-loki` and change the HTTP target and serialization to target Datadog Logs, Elastic, or any other ingest API.
+
+## Task write protections
+
+dicode unconditionally write-protects two daemon files from all task code: `dicode.lock` and `dicode.yaml`. This protection is enforced at the runtime level and cannot be overridden by taskset `overrides:` blocks or any `permissions.fs` grant.
+
+- **Deno runtime:** the subprocess is launched with `--deny-write=<dicode.lock>,<dicode.yaml>`. Deno's `--deny-write` flag takes precedence over any `--allow-write` grant, including a broad path covering the config directory. Write or remove attempts return `NotCapable`.
+- **Python runtime:** a PEP 578 audit hook checks the `fs_deny` list before the write allowlist. Writes to these paths raise `PermissionError` even when a broad `permissions.fs` write grant covers the config directory.
+- Paths are canonicalized (symlinks resolved) before comparison, so the deny entry matches even when the config directory is reached via a symlink.
+
+The reason these files are protected is that they hold the approval-gate state: `dicode.lock` records approval decisions for pending tasks, and `dicode.yaml` is the daemon configuration. A task with a broad filesystem write grant that could overwrite `dicode.lock` could self-approve other pending tasks, bypassing the approval gate entirely.
+
+See [Permissions field reference](./tasks.md#permissions-field-reference) for the `permissions.fs` declaration syntax.
