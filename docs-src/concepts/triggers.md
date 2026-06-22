@@ -246,6 +246,24 @@ trigger:
     on: failure
 ```
 
+### Chain constraints
+
+#### Cycle detection
+
+Success chains are validated for cycles at registration time. If adding a task would create a cycle (for example, task A chains from B, and B chains from A), the completing task is **rejected** — it is not armed and will not fire. A warning is written to the daemon log identifying the cycle.
+
+::: warning
+A cyclic chain does not crash dicode; the task is simply skipped during registration. To fix it, correct the cycle in `task.yaml` and push — the reconciler re-registers the task on the next sync (within ~30 seconds).
+:::
+
+#### Depth cap
+
+Success chains have a maximum depth of **10**. When a chain reaches depth 10, further chaining is terminated and a warning is written to the daemon log. Design pipelines that exceed this limit using explicit cron or manual triggers at intermediate stages.
+
+::: tip
+Failure chains have had a depth cap since before v0.4.0. The depth cap for success chains was introduced in dicode-core PR [#438](https://github.com/dicode-ayo/dicode-core/pull/438).
+:::
+
 ---
 
 ## Daemon
