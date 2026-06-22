@@ -297,7 +297,7 @@ When a daemon exits and is eligible for restart, dicode waits before re-launchin
 | 5th | 16 seconds |
 | 6th+ | 30 seconds (cap) |
 
-The backoff resets if the daemon ran stably for **at least 10 seconds** before the crash — a healthy long-lived daemon that eventually exits is not penalised. A daemon that crashes immediately on every boot will reach the 30-second inter-restart gap by the sixth attempt. This is intentional: the cap keeps the process alive and retrying without saturating the CPU.
+The backoff resets if the daemon ran stably for **at least 10 seconds** before the crash — a healthy long-lived daemon that eventually exits is not penalised. A daemon that crashes immediately on every boot hits the 30-second cap (applied to what the doubling would otherwise make 32 seconds) by the sixth restart. This is intentional: the cap keeps the process alive and retrying without saturating the CPU.
 
 Backoff state is per-daemon and in-memory — it resets when `dicode daemon` itself restarts.
 
@@ -307,9 +307,9 @@ Backoff state is per-daemon and in-memory — it resets when `dicode daemon` its
 
 ::: tip Deployment notes
 - **systemd** — the default `KillSignal` is `SIGTERM`, which works. No extra configuration needed.
-- **supervisord** — `stopsignal=TERM` (the default) works. `SIGHUP` is also accepted if you use it to reload your supervisor tree.
+- **supervisord** — `stopsignal=TERM` (the default) works. Note that `SIGHUP` also triggers a full graceful shutdown — if your supervisord setup sends `SIGHUP` to managed processes during a reload, dicode will shut down, not stay running.
 - **Docker** — set `STOPSIGNAL SIGTERM` in your `Dockerfile` (already the default).
-- **Kubernetes** — the default `preStop` grace period sends `SIGTERM`; dicode will drain and exit cleanly within the `terminationGracePeriodSeconds` window.
+- **Kubernetes** — Kubernetes sends `SIGTERM` directly to PID 1 when a pod terminates. dicode will drain in-flight runs and exit cleanly within the `terminationGracePeriodSeconds` window.
 :::
 
 ### MCP server daemons
