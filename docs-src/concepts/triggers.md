@@ -250,18 +250,18 @@ trigger:
 
 #### Cycle detection
 
-Success chains are validated for cycles at registration time. If adding a task would create a cycle (for example, task A chains from B, and B chains from A), the completing task is **rejected** — it is not armed and will not fire. A warning is written to the daemon log identifying the cycle.
+Success chains are validated for cycles at registration time. If registering a task would create a cycle (for example, task A chains from B, and B chains from A), the **new task is rejected** — its trigger is not armed and it will not fire. A warning is written to the daemon log identifying the cycle.
 
 ::: warning
-A cyclic chain does not crash dicode; the task is simply skipped during registration. To fix it, correct the cycle in `task.yaml` and push — the reconciler re-registers the task on the next sync (within ~30 seconds).
+To fix a cycle rejection: correct the chain in the offending `task.yaml` and push — the reconciler re-registers the task on the next sync (within ~30 seconds). The daemon does not need to restart.
 :::
 
 #### Depth cap
 
-Success chains have a maximum depth of **10**. When a chain reaches depth 10, further chaining is terminated and a warning is written to the daemon log. Design pipelines that exceed this limit using explicit cron or manual triggers at intermediate stages.
+Success chains have a maximum depth of **10 hops** past the root trigger. The cap is enforced at runtime: once a chain is 10 hops deep, the engine stops firing further hops and writes a warning to the daemon log. Hops 1–10 execute normally; hop 11 and beyond are suppressed. Design pipelines that require more stages using explicit cron or manual triggers at intermediate steps.
 
 ::: tip
-Failure chains have had a depth cap since before v0.4.0. The depth cap for success chains was introduced in dicode-core PR [#438](https://github.com/dicode-ayo/dicode-core/pull/438).
+Failure chains have a configurable depth cap with a default of **2** (`on_failure_chain.max_depth` in `task.yaml`). Both caps prevent infinite loops caused by misconfigured chains.
 :::
 
 ---
