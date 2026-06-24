@@ -246,6 +246,24 @@ trigger:
     on: failure
 ```
 
+### Chain constraints
+
+#### Cycle detection
+
+Success chains are validated for cycles at registration time. If registering a task would create a cycle (for example, task A chains from B, and B chains from A), the **new task is rejected** — its trigger is not armed and it will not fire. A warning is written to the daemon log identifying the cycle.
+
+::: warning
+To fix a cycle rejection: correct the chain in the offending `task.yaml` and push — the reconciler re-registers the task on the next sync (within ~30 seconds). The daemon does not need to restart.
+:::
+
+#### Depth cap
+
+Success chains have a maximum depth of **10 hops** past the root trigger. The cap is enforced at runtime: once a chain is 10 hops deep, the engine stops firing further hops and writes a warning to the daemon log. Hops 1–10 execute normally; hop 11 and beyond are suppressed. Design pipelines that require more stages using explicit cron or manual triggers at intermediate steps.
+
+::: tip
+Failure chains have a configurable depth cap with a default of **2** (`on_failure_chain.max_depth` in `task.yaml`). Both caps prevent infinite loops caused by misconfigured chains.
+:::
+
 ---
 
 ## Daemon
@@ -265,6 +283,34 @@ trigger:
 | `always` | Restart the task whenever it exits (default) |
 | `on-failure` | Restart only if the task exits with a non-zero status |
 | `never` | Do not restart; the task runs once at startup |
+
+### Crash backoff
+
+When a daemon exits and is eligible for restart, dicode waits before re-launching it. The wait follows an exponential schedule to prevent CPU thrash from daemons that crash immediately on every boot:
+
+| Restart attempt | Wait before re-launch |
+|---|---|
+| 1st | 1 second |
+| 2nd | 2 seconds |
+| 3rd | 4 seconds |
+| 4th | 8 seconds |
+| 5th | 16 seconds |
+| 6th+ | 30 seconds (cap) |
+
+The backoff resets if the daemon ran stably for **at least 10 seconds** before the crash — a healthy long-lived daemon that eventually exits is not penalised. A daemon that crashes immediately on every boot hits the 30-second cap (applied to what the doubling would otherwise make 32 seconds) by the sixth restart. This is intentional: the cap keeps the process alive and retrying without saturating the CPU.
+
+Backoff state is per-daemon and in-memory — it resets when `dicode daemon` itself restarts.
+
+### Shutdown signals
+
+`dicode daemon` responds to **`SIGTERM`**, **`SIGINT`**, and **`SIGHUP`** with a graceful shutdown: in-flight runs are cancelled, logs are flushed, and the database is closed cleanly before the process exits.
+
+::: tip Deployment notes
+- **systemd** — the default `KillSignal` is `SIGTERM`, which works. No extra configuration needed.
+- **supervisord** — `stopsignal=TERM` (the default) works. Note that `SIGHUP` also triggers a full graceful shutdown — if your supervisord setup sends `SIGHUP` to managed processes during a reload, dicode will shut down, not stay running.
+- **Docker** — set `STOPSIGNAL SIGTERM` in your `Dockerfile` (already the default).
+- **Kubernetes** — Kubernetes sends `SIGTERM` directly to PID 1 when a pod terminates. dicode will drain in-flight runs and exit cleanly within the `terminationGracePeriodSeconds` window.
+:::
 
 ### MCP server daemons
 
