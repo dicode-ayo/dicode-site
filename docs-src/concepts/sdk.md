@@ -360,6 +360,8 @@ Toggle dev mode on a configured taskset source. Two modes:
 - **local-path:** point the source at a local checkout for live edits
 - **clone-mode:** clone the remote into a per-fix directory checked out on a feature branch (used by auto-fix; cloned at `${data}/dev-clones/<source>/<run_id>/`)
 
+  Clone-mode supports **multiple concurrent sessions** — each keyed by a distinct `run_id`. Passing the same `run_id` a second time returns an error. The registry surfaces the **most-recently-activated session as primary** (the one the reconciler reads; only the primary session's changes are reflected while other sessions remain isolated). A targeted disable removes only the named session — if the removed session was the primary, the next most-recently-created session is promoted. Use a UUID or the triggering run's ID as `run_id` to avoid collisions with other sessions.
+
 ::: code-group
 
 ```ts [Deno]
@@ -377,7 +379,10 @@ await dicode.sources.set_dev_mode("infra", {
   run_id: "abc123",
 });
 
-// Disable
+// Disable targeted session (leaves other sessions running)
+await dicode.sources.set_dev_mode("infra", { enabled: false, run_id: "abc123" });
+
+// Disable all sessions (backward-compatible — omit run_id)
 await dicode.sources.set_dev_mode("infra", { enabled: false });
 ```
 
@@ -396,6 +401,10 @@ dicode.sources.set_dev_mode(
     run_id="abc123",
 )
 
+# Disable targeted session
+dicode.sources.set_dev_mode("infra", enabled=False, run_id="abc123")
+
+# Disable all sessions
 dicode.sources.set_dev_mode("infra", enabled=False)
 ```
 
