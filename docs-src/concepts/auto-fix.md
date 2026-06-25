@@ -82,7 +82,7 @@ The trigger engine enforces hard caps before every `on_failure_chain` fire — t
 | `--force` push | always refused | not configurable |
 
 ::: tip Concurrent sessions across the same source
-Since dicode-core #444, multiple auto-fix sessions targeting different tasks from the **same source** run concurrently, up to the global cap. Previously, the dev-mode layer serialised them (returning `ErrDevModeBusy` for any second session), making the global cap unreachable for same-source failures. If you set the global cap lower than 3 as a workaround, you may now raise it.
+Since dicode-core #444, multiple dev-mode clone sessions on the **same source** run concurrently as long as each uses a distinct `run_id` — whether they target the same task or different ones. Previously, a second `SetDevMode` call on the same source was rejected regardless of `run_id`, making source-level serialization the effective limit (below the engine's global cap). If you set the global cap lower than 3 as a workaround, you may now raise it.
 :::
 
 `max_concurrent_global` and `storm` are **operator policy** — only honored at the defaults level. Per-task blocks that set them get a config-load WARN and the fields are zeroed.
