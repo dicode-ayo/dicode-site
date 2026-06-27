@@ -86,7 +86,7 @@ params:
     required: true
 
 permissions:
-  env_read_exposed: false        # Deno only: set true to grant bare --allow-env (off by default)
+  env_read_exposed: false        # Deno and Python: set true to bypass env filter (off by default)
   env:
     - HOME                       # allowlist host env var
     - name: API_KEY              # rename from host env
@@ -317,7 +317,7 @@ The `permissions` block declares what the task is allowed to access. Nothing is 
 See [Secrets](./secrets.md) for details on `permissions.env` and secret injection.
 
 ::: tip
-For Deno tasks, permissions map directly to Deno's `--allow-*` flags. Python and Docker tasks use env injection only (`permissions.env`).
+For Deno tasks, permissions map directly to Deno's `--allow-*` flags. Python tasks enforce `permissions.env` via an `os.environ` filter; Docker tasks use env injection only.
 :::
 
 ### Permissions field reference
@@ -325,7 +325,7 @@ For Deno tasks, permissions map directly to Deno's `--allow-*` flags. Python and
 | Field | Type | Description |
 |-------|------|-------------|
 | `env` | list | Env vars the task may read; each entry is a bare name, `from:` rename, `secret:` injection, or literal `value:`. See [Secrets](./secrets.md). |
-| `env_read_exposed` | bool | **Deno only.** Grant bare `--allow-env` (read any env var). Default `false`. See below. |
+| `env_read_exposed` | bool | **Deno and Python.** Grant bare `--allow-env` (Deno) or disable the `os.environ` read filter (Python). Default `false`. See below. |
 | `fs` | list | **Deno (read + write); Python (write mode only).** Filesystem paths and access modes (`r`, `w`, `rw`). See write-protection note below. |
 | `run` | list | Executables the script may spawn (`Deno.Command` / Python `subprocess`). Use `["*"]` for all; omit to deny all. |
 | `net` | list | Outbound network hostnames. Use `["*"]` for all; omit to deny all. |
@@ -356,7 +356,7 @@ permissions:
 
 - Only settable in the task's own `task.yaml`. Taskset `overrides:` blocks cannot set `env_read_exposed`.
 - Toggling the flag changes the task's content hash, which re-pends the task at the approval gate.
-- Deno only. Python tasks read env through the SDK (`env.get()`), which is not gated by `--allow-env`; this flag is silently ignored on Python, Docker, and Podman runtimes.
+- **Deno**: passes bare `--allow-env`. **Python**: disables the `os.environ` read filter (by default Python tasks can only read env vars listed in `env:` plus a runtime-essential set). Docker and Podman runtimes ignore this flag.
 
 ::: warning Validation error for `env: ["*"]`
 A bare `"*"` entry in the `env:` list is now a **validation error**. Use `env_read_exposed: true` instead.
