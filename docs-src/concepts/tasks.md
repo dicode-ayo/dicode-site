@@ -317,7 +317,7 @@ The `permissions` block declares what the task is allowed to access. Nothing is 
 See [Secrets](./secrets.md) for details on `permissions.env` and secret injection.
 
 ::: tip
-For Deno tasks, permissions map directly to Deno's `--allow-*` flags. Python and Docker tasks use env injection only (`permissions.env`).
+For Deno tasks, `permissions.net`, `permissions.fs`, `permissions.run`, and `permissions.sys` map directly to Deno's `--allow-*` flags. Python tasks enforce only `permissions.env`. Docker and Podman tasks enforce `permissions.env` (env injection) and `permissions.net` (network isolation — see the `net` row below); the fs/run/sys fields are not yet enforced for container runtimes.
 :::
 
 ### Permissions field reference
@@ -328,7 +328,7 @@ For Deno tasks, permissions map directly to Deno's `--allow-*` flags. Python and
 | `env_read_exposed` | bool | **Deno only.** Grant bare `--allow-env` (read any env var). Default `false`. See below. |
 | `fs` | list | **Deno (read + write); Python (write mode only).** Filesystem paths and access modes (`r`, `w`, `rw`). See write-protection note below. |
 | `run` | list | Executables the script may spawn (`Deno.Command` / Python `subprocess`). Use `["*"]` for all; omit to deny all. |
-| `net` | list | Outbound network hostnames. Use `["*"]` for all; omit to deny all. |
+| `net` | list | Outbound network hostnames. Use `["*"]` for unrestricted; omit or use `[]` to deny all. **Docker/Podman**: empty list → container starts with `network_mode: none`; specific hosts are informational only today (per-host filtering not yet implemented; a warning is logged). |
 | `sys` | list | **Deno only.** System-info APIs (`hostname`, `osRelease`, …). |
 | `dicode` | object | dicode runtime API access (`tasks`, `mcp`, `list_tasks`, `get_runs`, `secrets_write`). |
 
