@@ -290,6 +290,16 @@ docker:
   pull_policy: missing
 ```
 
+::: warning Container security floor
+By default, dicode rejects Docker and Podman task configurations that use host networking, dangerous Linux capabilities, insecure `security_opt` values, or bind mounts to sensitive system paths. Tasks with such configuration will fail at start time with a descriptive error.
+
+To opt in to a specific exception, add a `container_security:` block to `dicode.yaml` — see [Container Security](/getting-started/configuration#container-security). Named and anonymous volumes (not host bind-mounts) are always allowed.
+:::
+
+::: info Network isolation
+When `permissions.net` is empty and the task publishes no `docker.ports`, the container starts with `network_mode: none` — no outbound network access. Declare `permissions.net: ["*"]` for unrestricted network, or list specific hosts (allowed but not yet per-host enforced; a warning is logged). An explicit `docker.network_mode` always takes precedence.
+:::
+
 ---
 
 ## Podman
@@ -300,6 +310,7 @@ A rootless, daemonless alternative to Docker. Uses the same `docker:` config blo
 - **Same config**: Uses the identical `docker:` block in task.yaml -- just change `runtime: podman`.
 - **Drop-in replacement**: If you can run it with Docker, you can run it with Podman.
 - **Security floor**: Certain host-facing options (`network_mode: host`, dangerous `cap_add`, insecure `security_opt`, sensitive bind mounts) are rejected by default. See [Container Security](/getting-started/configuration#container-security) for details and opt-in configuration.
+- **Network isolation**: Same zero-default as Docker — containers with empty `permissions.net` and no published ports start with `network_mode: none`. See the Docker section above.
 
 ```yaml
 apiVersion: dicode/v1
