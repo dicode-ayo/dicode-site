@@ -36,7 +36,7 @@ spec:
         - production
 
 database:
-  type: sqlite
+  type: sqlite              # see Database section below
   path: ${DATADIR}/data.db
 
 secrets:
@@ -143,6 +143,12 @@ database:
 ```
 
 SQLite is the default and requires no setup. The database stores run history, logs, KV data, and task metadata.
+
+::: warning postgres/mysql are not yet implemented
+`postgres` and `mysql` are recognized `database.type` values in the config schema, but neither backend is actually implemented yet — only `sqlite` works today. Setting `database.type: postgres` or `mysql` causes the daemon to fail at startup with a typed `NotImplementedError` rather than starting successfully.
+
+[dicode-core#453](https://github.com/dicode-ayo/dicode-core/pull/453) changed this failure from an unhandled panic to a clean, typed error, but that PR did not add either backend — both remain future work. Stick with `sqlite` until postgres/mysql support ships.
+:::
 
 ## Secrets
 
