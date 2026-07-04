@@ -92,6 +92,8 @@ tasks/
 
 **Missing lockfile entry**: If an import is not present in the lockfile (for example, after adding a new `npm:` dependency without updating the lockfile), Deno fails at task startup with a lockfile integrity error. Fix it by running `deno install` (or `deno cache task.ts` for older Deno versions) inside the task directory to regenerate the lockfile, then commit the updated `deno.lock`.
 
+**Unified relock**: `dicode relock [--check] [dir]` runs this Deno pass together with the Python lock pass (documented below) in one shot, skipping whichever task kind isn't present under the tree -- one command, and one CI step, that covers both `deno.lock` and every `task.py.lock` sidecar.
+
 ---
 
 ## Python
@@ -159,6 +161,36 @@ from bs4 import BeautifulSoup
 ```
 
 uv resolves and installs these dependencies automatically before running the script.
+
+### Dependency pinning
+
+If a `task.py.lock` sidecar exists next to `task.py` (written by `uv lock --script`), dicode stages it alongside the run and invokes `uv run --locked`. This pins every dependency to the exact versions and hashes recorded in the sidecar -- a stale lock fails the run loudly instead of silently re-resolving. Tasks without a sidecar (including tasks with no PEP 723 block at all) run exactly as before, unlocked -- the same degrade behavior as the Deno runtime when no `deno.lock` is present.
+
+Unlike Deno's single shared `deno.lock`, uv locks scripts individually -- each `task.py` gets its own sidecar next to it:
+
+```
+my-task/
+  task.yaml
+  task.py
+  task.py.lock       # committed sidecar, detected automatically
+```
+
+When a task's dependencies change, regenerate the sidecar with `dicode python relock [dir]` (dir defaults to `tasks`). It provisions the pinned uv version dicode itself runs tasks with and runs `uv lock --script` for every `task.py` under the tree that carries a PEP 723 block, so the lock is deterministic regardless of any system uv. A `task.py.lock` left behind by a script that no longer has a PEP 723 block is orphaned -- it's deleted automatically.
+
+**`--check` mode**: `dicode python relock --check` verifies without writing. It fails fast -- before uv is even provisioned -- on any missing lock sidecar or orphaned sidecar, then runs `uv lock --script --check` per script and exits non-zero on drift. Run it in CI to catch stale locks before they reach the runtime.
+
+**Unified relock**: `dicode relock [--check] [dir]` runs this Python pass together with the Deno pass above in one shot, skipping whichever task kind isn't present under the tree -- one command, and one CI step, that covers both `deno.lock` and every `task.py.lock` sidecar.
+
+::: warning Pin `requires-python` for a reproducible lock
+Without a `requires-python` constraint in the PEP 723 block, uv resolves against whatever Python version is the environment default -- which can differ between a dev machine and CI -- so the lock it generates won't reproduce elsewhere. `dicode python relock` prints a warning when a lockable script omits it:
+
+```python
+# /// script
+# requires-python = ">=3.11"
+# dependencies = ["httpx>=0.27"]
+# ///
+```
+:::
 
 ### Logging
 
