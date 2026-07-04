@@ -379,7 +379,10 @@ Daemons cycle through a small set of states observable in the dashboard and via 
 | `running` | The daemon body launched successfully and is up. |
 | `stopping` | A restart is in flight -- the engine is tearing down the current run before re-firing the daemon. |
 | `failed_after_preflight` | The daemon body's **launch** errored (binary missing, port already bound, runtime resource exhaustion -- `fireAsync` returned an error before the body ran). Terminal -- re-fire the daemon to retry. |
+| `crashlooping`\* | The body has failed 3 consecutive quick starts (each dying within ~10s). Self-clearing, **not** terminal like `crashed`/`failed_after_preflight` -- it clears once a run finally sustains past the window, exits cleanly, is cancelled by an operator, or the task is unregistered. |
 | `crashed` | The body started, then exited non-success (`failure`, `cancelled`, ...) **and** the restart policy will not restart it (`restart: never`, or `restart: on-failure` with a status not treated as a failure). Terminal -- re-fire the daemon to retry. |
+
+\* Unlike the other rows, `crashlooping` isn't a state the daemon "enters" in its own right -- it's a masking override the engine reports on top of whatever the point-in-time state would otherwise be. A hard-failing `restart: always` daemon still briefly shows `running` during each spawn-before-crash window; once 3 consecutive quick failures accumulate, `crashlooping` is reported in place of that misleading `running` reading until the daemon recovers.
 
 `failed_after_preflight` means "body launch failed" -- the daemon body's launch errored before the body ran.
 
