@@ -92,7 +92,7 @@ tasks/
 
 **Missing lockfile entry**: If an import is not present in the lockfile (for example, after adding a new `npm:` dependency without updating the lockfile), Deno fails at task startup with a lockfile integrity error. Fix it by running `deno install` (or `deno cache task.ts` for older Deno versions) inside the task directory to regenerate the lockfile, then commit the updated `deno.lock`.
 
-**Unified relock**: `dicode relock [--check] [dir]` runs this Deno pass together with the Python lock pass (documented below) in one shot, skipping whichever task kind isn't present under the tree -- one command, and one CI step, that covers both `deno.lock` and every `task.py.lock` sidecar.
+**Unified relock**: See "Unified relock" in the Python section below for how `dicode relock` combines this pass with the Python one.
 
 ---
 
@@ -179,7 +179,7 @@ When a task's dependencies change, regenerate the sidecar with `dicode python re
 
 **`--check` mode**: `dicode python relock --check` verifies without writing. It fails fast -- before uv is even provisioned -- on any missing lock sidecar or orphaned sidecar, then runs `uv lock --script --check` per script and exits non-zero on drift. Run it in CI to catch stale locks before they reach the runtime.
 
-**Unified relock**: `dicode relock [--check] [dir]` runs this Python pass together with the Deno pass above in one shot, skipping whichever task kind isn't present under the tree -- one command, and one CI step, that covers both `deno.lock` and every `task.py.lock` sidecar.
+**Unified relock**: `dicode relock [--check] [dir]` runs this Python pass together with the Deno pass above in one shot, skipping whichever task kind isn't present under the tree -- one command, and one CI step, that covers both `deno.lock` and every `task.py.lock` sidecar. If the tree under `dir` has neither `task.ts` nor `task.py` files at all, `dicode relock` errors instead of silently doing nothing.
 
 ::: warning Pin `requires-python` for a reproducible lock
 Without a `requires-python` constraint in the PEP 723 block, uv resolves against whatever Python version is the environment default -- which can differ between a dev machine and CI -- so the lock it generates won't reproduce elsewhere. `dicode python relock` prints a warning when a lockable script omits it:
