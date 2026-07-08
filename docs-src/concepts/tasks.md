@@ -86,7 +86,7 @@ params:
     required: true
 
 permissions:
-  env_read_exposed: false        # Deno only: set true to grant bare --allow-env (off by default)
+  env_read_exposed: false        # Deno + Python: set true to lift the env-read allowlist (off by default)
   env:
     - HOME                       # allowlist host env var
     - "GITHUB_*"                 # pattern: forwards + grants read for every matching host env var
@@ -326,7 +326,7 @@ For Deno tasks, `permissions.net`, `permissions.fs`, `permissions.run`, and `per
 | Field | Type | Description |
 |-------|------|-------------|
 | `env` | list | Env vars the task may read; each entry is a bare name, a trailing-`*` prefix **pattern** (e.g. `"GITHUB_*"`), a `from:` rename, `secret:` injection, or literal `value:`. See [Secrets](./secrets.md) and "Pattern entries" below. |
-| `env_read_exposed` | bool | **Deno only.** Grant bare `--allow-env` (read any env var). Default `false`. See below. |
+| `env_read_exposed` | bool | **Deno and Python.** Lift the runtime's env-read allowlist (Deno: bare `--allow-env`; Python: disables the `os.environ` read filter). Silently ignored on Docker/Podman. Default `false`. See below. |
 | `fs` | list | **Deno (read + write); Python (write mode only).** Filesystem paths and access modes (`r`, `w`, `rw`). See write-protection note below. |
 | `run` | list | Executables the script may spawn (`Deno.Command` / Python `subprocess`). Use `["*"]` for all; omit to deny all. |
 | `net` | list | Outbound network hostnames. Use `["*"]` for unrestricted; omit or use `[]` to deny all. **Docker/Podman**: empty list → container starts with `network_mode: none`; specific hosts are informational only today (per-host filtering not yet implemented; a warning is logged). |
@@ -337,9 +337,9 @@ For Deno tasks, `permissions.net`, `permissions.fs`, `permissions.run`, and `per
 `dicode.lock` and `dicode.yaml` are unconditionally write-protected for all tasks, regardless of declared `permissions.fs` grants. A task with `permissions.fs: [{path: /home/user/.dicode, permission: w}]` covering the config directory will still receive `NotCapable` (Deno) or `PermissionError` (Python) when it tries to write or remove either file. This protection cannot be overridden via taskset `overrides:` — it is enforced by the runtime at the flag / audit-hook level to guard the approval-gate state.
 :::
 
-### `env_read_exposed` — grant unrestricted env read (Deno / npm escape hatch)
+### `env_read_exposed` — grant unrestricted env read (Deno + Python)
 
-`permissions.env_read_exposed: true` grants the Deno subprocess bare `--allow-env`, allowing it to read **any** env var. It exists for tasks that import npm packages via `npm:` specifiers: transitive dependencies often read `process.env` keys (such as `NODE_ENV`) at module-init time, before `main()` runs. Because that set of keys is unpredictable per dependency, listing individual names in `env:` is fragile — the import will still throw `NotCapable` for any key not declared.
+`permissions.env_read_exposed: true` lifts each runtime's env-read allowlist, allowing the task to read **any** env var. On Deno this grants the subprocess bare `--allow-env`; it exists for tasks that import npm packages via `npm:` specifiers, since transitive dependencies often read `process.env` keys (such as `NODE_ENV`) at module-init time, before `main()` runs — that set of keys is unpredictable per dependency, so listing individual names in `env:` is fragile and the import will still throw `NotCapable` for any key not declared. On Python it disables the `os.environ` read filter that otherwise restricts reads to the declared `env:` names plus a runtime-essential set (`PATH`, locale/timezone vars, cache/proxy roots, the uv interpreter/cache vars, and the IPC handshake coordinates) — useful for a script that reads env vars dynamically (e.g. by a computed key) rather than through the SDK's `env.get()`.
 
 `env_read_exposed` widens *read permission* only and is independent of the `env:` list. Named `env:` entries already grant per-variable read permission (they appear in `--allow-env=FOO,BAR,...`) and inject values into the subprocess env. The flag is needed only when a transitive dependency reads env vars that are **not** declared in `env:`. Keep named/`secret:`/`from:` entries for variables the task explicitly declares; add the flag only if npm-compat imports still fail:
 
@@ -357,7 +357,7 @@ permissions:
 
 - Only settable in the task's own `task.yaml`. Taskset `overrides:` blocks cannot set `env_read_exposed`.
 - Toggling the flag changes the task's content hash, which re-pends the task at the approval gate.
-- Deno only. Python tasks read env through the SDK (`env.get()`), which is not gated by `--allow-env`; this flag is silently ignored on Python, Docker, and Podman runtimes.
+- Applies to Deno and Python. Silently ignored on Docker and Podman runtimes, which don't gate env reads in-process.
 
 ::: warning Validation error for `env: ["*"]`
 A bare `"*"` entry in the `env:` list (no prefix) is a **validation error**. Use `env_read_exposed: true` instead. A *prefixed* pattern like `"GITHUB_*"` is a different, newly-accepted form -- see below.
