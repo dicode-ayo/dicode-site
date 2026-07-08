@@ -185,6 +185,7 @@ The daemon clones the repo, polls for changes at the configured interval, and re
 | `dicode list` | List all registered tasks with their trigger type and last status. |
 | `dicode logs <run-id>` | Show log output for a specific run. |
 | `dicode status [task-id]` | Show daemon health, or the latest run for a specific task. |
+| `dicode resume [run-id] [field=value ...]` | Resume a suspended run. With no arguments, lists runs currently awaiting resume and the form fields each expects. With a run ID, submits the given `field=value` pairs and spawns the continuation run. See [Suspend & Resume](/concepts/suspend-resume). |
 | `dicode secrets list` | List all secret keys in the local store. |
 | `dicode secrets set <key> <value>` | Store a secret value. |
 | `dicode secrets delete <key>` | Delete a secret. |

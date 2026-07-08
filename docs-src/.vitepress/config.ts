@@ -66,6 +66,7 @@ export default defineConfig({
           { text: "Triggers", link: "/concepts/triggers" },
           { text: "Pipelines", link: "/concepts/pipelines" },
           { text: "SDK Globals", link: "/concepts/sdk" },
+          { text: "Suspend & Resume", link: "/concepts/suspend-resume" },
           { text: "Secrets", link: "/concepts/secrets" },
           { text: "Sources & TaskSets", link: "/concepts/sources" },
           { text: "Task Sharing & Registry", link: "/concepts/sharing" },

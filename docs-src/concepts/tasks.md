@@ -332,6 +332,10 @@ For Deno tasks, `permissions.net`, `permissions.fs`, `permissions.run`, and `per
 | `sys` | list | **Deno only.** System-info APIs (`hostname`, `osRelease`, …). |
 | `dicode` | object | dicode runtime API access (`tasks`, `mcp`, `list_tasks`, `get_runs`, `secrets_write`). |
 
+::: tip `dicode.suspend()` is not a permissions flag
+[`dicode.suspend()`](./sdk#dicode-suspend) (pause a run for human input, then [resume](./suspend-resume) it) is granted automatically to **Deno and Python** tasks -- it isn't opted into via `permissions.dicode` like the rows above. Docker and Podman tasks never receive it, since a container runtime can't pause mid-execution and read the payload back. See [Suspend & Resume -- Runtime scope](./suspend-resume#runtime-scope).
+:::
+
 ::: warning Write-protected daemon files
 `dicode.lock` and `dicode.yaml` are unconditionally write-protected for all tasks, regardless of declared `permissions.fs` grants. A task with `permissions.fs: [{path: /home/user/.dicode, permission: w}]` covering the config directory will still receive `NotCapable` (Deno) or `PermissionError` (Python) when it tries to write or remove either file. This protection cannot be overridden via taskset `overrides:` — it is enforced by the runtime at the flag / audit-hook level to guard the approval-gate state.
 :::
