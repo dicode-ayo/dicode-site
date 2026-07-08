@@ -89,6 +89,7 @@ permissions:
   env_read_exposed: false        # Deno only: set true to grant bare --allow-env (off by default)
   env:
     - HOME                       # allowlist host env var
+    - "GITHUB_*"                 # pattern: forwards + grants read for every matching host env var
     - name: API_KEY              # rename from host env
       from: GH_TOKEN
     - name: DB_PASS              # inject from secrets store
@@ -324,7 +325,7 @@ For Deno tasks, `permissions.net`, `permissions.fs`, `permissions.run`, and `per
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `env` | list | Env vars the task may read; each entry is a bare name, `from:` rename, `secret:` injection, or literal `value:`. See [Secrets](./secrets.md). |
+| `env` | list | Env vars the task may read; each entry is a bare name, a trailing-`*` prefix **pattern** (e.g. `"GITHUB_*"`), a `from:` rename, `secret:` injection, or literal `value:`. See [Secrets](./secrets.md) and "Pattern entries" below. |
 | `env_read_exposed` | bool | **Deno only.** Grant bare `--allow-env` (read any env var). Default `false`. See below. |
 | `fs` | list | **Deno (read + write); Python (write mode only).** Filesystem paths and access modes (`r`, `w`, `rw`). See write-protection note below. |
 | `run` | list | Executables the script may spawn (`Deno.Command` / Python `subprocess`). Use `["*"]` for all; omit to deny all. |
@@ -359,8 +360,35 @@ permissions:
 - Deno only. Python tasks read env through the SDK (`env.get()`), which is not gated by `--allow-env`; this flag is silently ignored on Python, Docker, and Podman runtimes.
 
 ::: warning Validation error for `env: ["*"]`
-A bare `"*"` entry in the `env:` list is now a **validation error**. Use `env_read_exposed: true` instead.
+A bare `"*"` entry in the `env:` list (no prefix) is a **validation error**. Use `env_read_exposed: true` instead. A *prefixed* pattern like `"GITHUB_*"` is a different, newly-accepted form -- see below.
 :::
+
+### permissions.env pattern entries: forward a family of host vars
+
+A bare `env:` entry ending in `*` (e.g. `"GITHUB_*"`) is a **pattern**, not a literal name. At launch, dicode expands it against the host environment and forwards every matching variable's value into the task subprocess, granting read access to each matched name -- without needing `env_read_exposed: true` or enumerating every variable individually:
+
+```yaml
+permissions:
+  env:
+    - "GITHUB_*"      # pattern: forwards + grants read for every matching host env var
+```
+
+This matches `GITHUB_TOKEN`, `GITHUB_SHA`, `GITHUB_REPOSITORY`, and any other host var sharing the `GITHUB_` prefix -- the task never has to name each one.
+
+**Matching semantics:**
+
+- Matching is a **trailing-`*` prefix glob only** (e.g. `GITHUB_*` matches names starting with `GITHUB_`) -- not shell globbing and not regex.
+- A pattern is only recognized on a **bare** entry (a plain string, no `name:`/`from:`/`secret:`/`value:` keys). An entry carrying `from:`, `secret:`, or `value:` keeps its literal name and is never treated as a pattern, even if that name ends in `*`.
+- A lone `"*"` (no prefix) is still rejected at validation -- see the warning above. Use `env_read_exposed: true` for unrestricted read access instead.
+
+**Security exclusion.** A pattern can never forward a daemon credential or the per-run IPC coordinates, even if the pattern would otherwise match them: `DICODE_MASTER_KEY`, `DICODE_API_KEY`, `DICODE_MCP_API_KEY`, `DICODE_SOCKET`, and `DICODE_TOKEN` are always excluded from pattern expansion. For example, a task declaring `"DICODE_*"` forwards none of those five -- only other host vars sharing the `DICODE_` prefix, if any.
+
+**Not the same as `env_read_exposed`.** These two knobs solve different problems and are not interchangeable:
+
+- A **pattern** entry (`"GITHUB_*"`) narrows *which contents* are forwarded into the subprocess env and made readable, scoped to a matched name family. It's a least-privilege lever: pull in a related group of vars without enumerating each one.
+- **`env_read_exposed: true`** widens *read permission* over the entire already-curated subprocess env (Deno only) -- it grants bare `--allow-env` so the script can read any var already present in that env, but does not by itself forward anything new. See "`env_read_exposed` -- grant unrestricted env read" above.
+
+Both the Deno and Python runtimes consume the same expansion for forwarding and for granting read access (Deno `--allow-env`; the Python env-read guardrail), so the set of vars a pattern forwards is always exactly the set it makes readable.
 
 ## Template variables
 

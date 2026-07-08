@@ -20,13 +20,18 @@ When the task runs, dicode resolves `github_token` from the secrets store and in
 
 ### All env entry forms
 
-The `permissions.env` block supports four forms:
+The `permissions.env` block supports five forms:
 
 ```yaml
 permissions:
   env:
     # Bare name: allowlist a host env var (task reads it at runtime)
     - HOME
+
+    # Pattern: bare entry ending in "*" forwards + grants read for every
+    # matching host env var (a trailing-prefix glob, e.g. GITHUB_TOKEN,
+    # GITHUB_SHA, ...)
+    - "GITHUB_*"
 
     # Rename from host env: read $GH_TOKEN, inject as API_KEY
     - name: API_KEY
@@ -40,6 +45,8 @@ permissions:
     - name: LOG_LEVEL
       value: info
 ```
+
+A pattern entry is distinct from `env_read_exposed` (a Deno-only flag that grants unrestricted `--allow-env` over the whole subprocess env): a pattern narrows *which contents* are forwarded and readable to a matched name family, and works on every runtime. Daemon credentials (`DICODE_MASTER_KEY`, `DICODE_API_KEY`, `DICODE_MCP_API_KEY`) and the per-run IPC vars (`DICODE_SOCKET`, `DICODE_TOKEN`) are always excluded from pattern expansion, even when the pattern would otherwise match them. See [Tasks: `permissions.env` pattern entries](./tasks.md#permissions-env-pattern-entries-forward-a-family-of-host-vars) for the full matching rules.
 
 ### Running a prereq task when a secret is missing
 
