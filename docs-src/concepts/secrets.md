@@ -46,7 +46,7 @@ permissions:
       value: info
 ```
 
-A pattern entry is distinct from `env_read_exposed` (a Deno-only flag that grants unrestricted `--allow-env` over the whole subprocess env): a pattern narrows *which contents* are forwarded and readable to a matched name family, and works on every runtime. Daemon credentials (`DICODE_MASTER_KEY`, `DICODE_API_KEY`, `DICODE_MCP_API_KEY`) and the per-run IPC vars (`DICODE_SOCKET`, `DICODE_TOKEN`) are always excluded from pattern expansion, even when the pattern would otherwise match them. See [Tasks: `permissions.env` pattern entries](./tasks.md#permissions-env-pattern-entries-forward-a-family-of-host-vars) for the full matching rules.
+A pattern entry is distinct from `env_read_exposed` (a Deno-only flag that grants unrestricted `--allow-env` over the whole subprocess env): a pattern narrows *which contents* are forwarded and readable to a matched name family, for both the Deno and Python subprocess runtimes (Docker and Podman tasks are not subprocess-based and do not consume pattern entries). Daemon credentials (`DICODE_MASTER_KEY`, `DICODE_API_KEY`, `DICODE_MCP_API_KEY`) and the per-run IPC vars (`DICODE_SOCKET`, `DICODE_TOKEN`) are always excluded from pattern expansion, even when the pattern would otherwise match them. See [Tasks: `permissions.env` pattern entries](./tasks.md#permissions-env-pattern-entries-forward-a-family-of-host-vars) for the full matching rules.
 
 ### Running a prereq task when a secret is missing
 

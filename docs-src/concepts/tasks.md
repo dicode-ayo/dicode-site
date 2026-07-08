@@ -378,7 +378,7 @@ This matches `GITHUB_TOKEN`, `GITHUB_SHA`, `GITHUB_REPOSITORY`, and any other ho
 **Matching semantics:**
 
 - Matching is a **trailing-`*` prefix glob only** (e.g. `GITHUB_*` matches names starting with `GITHUB_`) -- not shell globbing and not regex.
-- A pattern is only recognized on a **bare** entry (a plain string, no `name:`/`from:`/`secret:`/`value:` keys). An entry carrying `from:`, `secret:`, or `value:` keeps its literal name and is never treated as a pattern, even if that name ends in `*`.
+- A pattern is only recognized when the entry has no `from:`, `secret:`, or `value:` key — a plain string (`- "GITHUB_*"`) and an equivalent `- name: "GITHUB_*"` mapping with no other keys are both recognized as patterns. An entry carrying `from:`, `secret:`, or `value:` keeps its literal name and is never treated as a pattern, even if that name ends in `*`.
 - A lone `"*"` (no prefix) is still rejected at validation -- see the warning above. Use `env_read_exposed: true` for unrestricted read access instead.
 
 **Security exclusion.** A pattern can never forward a daemon credential or the per-run IPC coordinates, even if the pattern would otherwise match them: `DICODE_MASTER_KEY`, `DICODE_API_KEY`, `DICODE_MCP_API_KEY`, `DICODE_SOCKET`, and `DICODE_TOKEN` are always excluded from pattern expansion. For example, a task declaring `"DICODE_*"` forwards none of those five -- only other host vars sharing the `DICODE_` prefix, if any.
@@ -386,9 +386,9 @@ This matches `GITHUB_TOKEN`, `GITHUB_SHA`, `GITHUB_REPOSITORY`, and any other ho
 **Not the same as `env_read_exposed`.** These two knobs solve different problems and are not interchangeable:
 
 - A **pattern** entry (`"GITHUB_*"`) narrows *which contents* are forwarded into the subprocess env and made readable, scoped to a matched name family. It's a least-privilege lever: pull in a related group of vars without enumerating each one.
-- **`env_read_exposed: true`** widens *read permission* over the entire already-curated subprocess env (Deno only) -- it grants bare `--allow-env` so the script can read any var already present in that env, but does not by itself forward anything new. See "`env_read_exposed` -- grant unrestricted env read" above.
+- **`env_read_exposed: true`** widens *read permission* over the already-curated subprocess env — it grants bare `--allow-env` so the script can read any var already present in that env, but does not by itself forward anything new. See "`env_read_exposed` -- grant unrestricted env read" above for the exact per-runtime scope.
 
-Both the Deno and Python runtimes consume the same expansion for forwarding and for granting read access (Deno `--allow-env`; the Python env-read guardrail), so the set of vars a pattern forwards is always exactly the set it makes readable.
+Both the Deno and Python runtimes consume the same expansion for forwarding and for granting read access (Deno `--allow-env`; the Python env-read guardrail), so the set of vars a pattern forwards is always exactly the set it makes readable. Pattern entries apply to Deno and Python only: Docker and Podman tasks are not subprocess-based and do not consume pattern entries.
 
 ## Template variables
 
