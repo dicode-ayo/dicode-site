@@ -90,7 +90,9 @@ tasks/
 
 **Opt-out**: If the task directory contains its own `deno.json` (note: `deno.jsonc` is not detected), the walk is skipped entirely. Deno respects whatever lock configuration that file declares.
 
-**Missing lockfile entry**: If an import is not present in the lockfile (for example, after adding a new `npm:` dependency without updating the lockfile), Deno fails at task startup with a lockfile integrity error. Fix it by running `deno install` (or `deno cache task.ts` for older Deno versions) inside the task directory to regenerate the lockfile, then commit the updated `deno.lock`.
+**Stale-lock auto-recovery**: If the dependency graph has drifted from the committed `deno.lock` (for example, after adding a new `npm:` import without updating the lockfile), the `--frozen` run is rejected with a "lockfile is out of date" error. By default, dicode detects that exact signature, regenerates `deno.lock` across every `task.ts` entrypoint under the shared tree, and retries the run once automatically -- the run only fails if the regeneration itself errors or the retry still fails afterward. Every automatic regeneration emits an audit log line (task, lockfile path, before/after content-hash) to both the structured daemon log and the run log, and recovery is bounded to a single relock+retry per run, so a genuinely broken lock can't thrash.
+
+Set `DICODE_DISABLE_LOCK_AUTORECOVERY=1` to opt out and restore the old hard-failure behavior -- useful for deployments that want to treat any lock drift as a supply-chain signal to investigate rather than silently heal. With auto-recovery disabled (or when it can't recover), fix the drift manually: run `deno install` (or `deno cache task.ts` for older Deno versions) inside the task directory to regenerate the lockfile, then commit the updated `deno.lock`.
 
 **Unified relock**: See "Unified relock" in the Python section below for how `dicode relock` combines this pass with the Python one.
 
@@ -164,7 +166,7 @@ uv resolves and installs these dependencies automatically before running the scr
 
 ### Dependency pinning
 
-If a `task.py.lock` sidecar exists next to `task.py` (written by `uv lock --script`), dicode stages it alongside the run and invokes `uv run --locked`. This pins every dependency to the exact versions and hashes recorded in the sidecar -- a stale lock fails the run loudly instead of silently re-resolving. Tasks without a sidecar (including tasks with no PEP 723 block at all) run exactly as before, unlocked -- the same degrade behavior as the Deno runtime when no `deno.lock` is present.
+If a `task.py.lock` sidecar exists next to `task.py` (written by `uv lock --script`), dicode stages it alongside the run and invokes `uv run --locked`. This pins every dependency to the exact versions and hashes recorded in the sidecar. By default, a drifted sidecar doesn't hard-fail the run: dicode detects uv's `` `--locked` was provided `` rejection, regenerates the `task.py.lock` sidecar for the failing script with `uv lock --script`, and retries the run once automatically -- only a failed regeneration or a still-failing retry surfaces as an error. This is the same stale-lock auto-recovery mechanism described in "Stale-lock auto-recovery" in the Deno section above; set `DICODE_DISABLE_LOCK_AUTORECOVERY=1` to opt out for both runtimes and restore the old hard-failure behavior. Every automatic regeneration emits an audit log line with the before/after lock content-hash, and recovery is bounded to a single relock+retry per run so a genuinely broken lock can't thrash. Tasks without a sidecar (including tasks with no PEP 723 block at all) run exactly as before, unlocked -- the same degrade behavior as the Deno runtime when no `deno.lock` is present.
 
 Unlike Deno's single shared `deno.lock`, uv locks scripts individually -- each `task.py` gets its own sidecar next to it:
 
