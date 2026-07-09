@@ -85,6 +85,7 @@ export default defineConfig({
           { text: "Webhook with UI", link: "/examples/webhook-task" },
           { text: "Docker Task", link: "/examples/docker-task" },
           { text: "Throwaway UIs", link: "/examples/throwaway-ui" },
+          { text: "Suspend Wizard", link: "/examples/suspend-wizard" },
         ],
       },
     ],

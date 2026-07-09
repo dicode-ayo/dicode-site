@@ -1,146 +1,329 @@
 # Suspend & Resume
 
-A task can pause itself mid-run, hand a human a form to fill in, and pick up later exactly where it left off. This is **human-in-the-loop** automation: approval steps, "confirm before you proceed" wizards, multi-stage onboarding flows, or anything that needs a person's judgment before a task continues.
+A task can **pause mid-run to ask a human for input**, then continue once the form is filled in. Call `dicode.suspend({ schema })`: the run ends as `suspended`, dicode collects the input via the web UI or the `dicode resume` CLI, validates it against the schema, and the task runs again -- this time with the answers in hand, dispatched to a **resume handler you export** so you never hand-write an `if (state)` switch.
 
-Under the hood, suspension is a distinct, non-terminal run status (`suspended`) rather than a failure or a blocking wait. The task's process exits, freeing the runtime immediately; the run resumes later as a brand-new continuation run.
+Use it for approval gates, multi-step wizards, "which of these do you mean?" disambiguation, or any step that can't proceed without a person.
 
-## Why not just block?
+The form is described with a **[JSON Schema](https://json-schema.org)** (draft 2020-12). That's a standard, portable vocabulary: the same schema drives the default web UI form, the CLI prompts, and the **server-side validation** that guarantees `ctx.input` conforms before your task re-runs.
 
-A naive approach -- have the task `await` a promise that resolves when a human responds -- would hold a subprocess (and its runtime slot) open indefinitely, for hours or days, waiting on a person. `dicode.suspend()` avoids that: the task exits cleanly, the daemon persists everything needed to continue, and no process sits idle. Resuming spawns a fresh run rather than un-blocking the old one.
+::: tip Supported runtimes: Deno and Python only
+`dicode.suspend()` is granted automatically to Deno and Python tasks -- it needs no `permissions.dicode` declaration. Docker and Podman tasks cannot suspend; see [Runtime scope](#runtime-scope).
+:::
 
-## The state / form / deadline contract
+## The model -- re-run, not freeze
 
-A task suspends by calling `dicode.suspend()` (Deno and Python both supported) with three pieces of information:
+Suspend is **not** VM-style suspension. Nothing sits frozen in memory.
+
+1. The task calls `dicode.suspend(...)`.
+2. dicode records the carried `state` blob and the `schema`, then the process **exits cleanly** (exit code 0). The run row is marked `suspended`.
+3. When someone submits the form, dicode **validates the submission against the schema**, then starts a **brand-new process** for the same task and re-runs the script **from the top**.
+4. On that re-run, the runner **dispatches the right handler** and hands it `ctx.state` (the blob you carried) and `ctx.input` (the submitted values).
+
+Because the whole file re-runs from the top, any side effect at module top level runs again on every resume -- keep top-level code idempotent and put real work inside a handler. You don't write a step switch yourself; the runner picks the handler for you (see [Auto-dispatch](#the-handlers-auto-dispatch) below).
+
+A first (non-resume) run sees `ctx.state` as `undefined` (Deno) / `None` (Python) inside `main`; a resumed handler sees the real carried blob.
+
+## `dicode.suspend(req)`
+
+Pauses the run. It records `req` over IPC, then **never returns** -- internally it throws a control signal that the runtime catches to exit the process cleanly. Code written after `suspend()` in the same function does not run on the suspending pass; it runs on the resume pass instead, inside whichever handler the runner dispatches to.
 
 ::: code-group
 
 ```ts [Deno]
-await dicode.suspend({
-  state: { step: "ask_name" },      // opaque -- echoed back on resume
-  form: {
-    title: "What's the project name?",
-    fields: [
-      { name: "project_name", type: "string", label: "Name", required: true },
-    ],
-  },
-  deadline: Date.now() + 60 * 60 * 1000,   // optional; defaults to 24h
-});
+interface SuspendRequest {
+  schema: JSONSchema;  // JSON Schema (draft 2020-12) for the input to collect
+  to?: string;         // name of the steps[] handler to run on resume (wizard shape)
+  state?: unknown;      // JSON-serializable blob carried to the resume as ctx.state
+  deadline?: number;    // optional Unix-ms instant; resumable until then (default 24h)
+}
+
+await dicode.suspend(req: SuspendRequest): Promise<never>
 ```
 
 ```python [Python]
-dicode.suspend(
-    state={"step": "ask_name"},
-    form={
-        "title": "What's the project name?",
-        "fields": [
-            {"name": "project_name", "type": "string", "label": "Name", "required": True},
-        ],
-    },
-    deadline=None,   # optional; defaults to 24h
-)
+dicode.suspend(schema=<dict>, to=<str>, state=<json>, deadline=<unix_ms>)
 ```
 
 :::
 
-- **`state`** -- an opaque, JSON-serializable value the task chooses. It's persisted server-side and handed back as `resume_state` / `ctx.resume_state` when the task re-enters. Use it to remember which step of a multi-step wizard the run was on.
-- **`form`** -- a `FormSchema` (`title`, `description`, `fields[]`) describing what to collect from the human. The WebUI renders it; the CLI lists the field names as a hint for what to pass.
-- **`deadline`** -- an optional Unix-ms timestamp. If omitted, the suspension is resumable for **24 hours** from the `suspend()` call. Past the deadline, the [automatic sweep](#automatic-deadline-sweep) cancels the run.
+- **`to`** names the `steps` handler to dispatch on resume -- the wizard shape. Omit it for the two-function (`main` + `resume`) shape.
+- **`state`** is your own carried blob, handed back as `ctx.state` on the resume. The runner persists it wrapped with an internal step marker (so first-vs-resume stays unambiguous) -- you never see or manage that marker yourself.
+- **`deadline`** is an optional Unix-ms instant; the run stays resumable until then. Omit it (or pass `0`) for the default **24-hour** window.
 
-See the [`dicode.suspend()` SDK reference](./sdk.md#dicode-suspend) for the full field-by-field signature, and [`resume_state` / `resume_input`](./sdk.md#resume-state-resume-input) for how the task reads back state and the human's answer.
+## The handlers -- auto-dispatch
 
-`dicode.suspend()` never returns: in Deno it's typed `Promise<never>`, and in Python it raises an internal control-flow signal that unwinds the task. Either way the subprocess exits with code 0 -- **this is a clean exit, not a failure.** The run's status becomes `suspended`, a status distinct from `success`, `failure`, and `cancelled`. Don't wrap the call in a `try`/`catch` (Deno) or `try`/`except` (Python) that swallows it and keeps executing; both SDKs detect a swallowed suspend signal and turn it into a loud run failure instead of silently continuing.
+You export handlers; the runner decides which one runs based on the resume:
 
-## The three resume paths
+| You export | First run | Resume |
+|---|---|---|
+| `main` only | `main` | `main` again -- branch on `ctx.state` by hand |
+| `main` + `resume` | `main` | `resume` |
+| `main` + `steps` map | `main` | `steps[to]` -- the handler named by `suspend({ to })` |
 
-A suspended run can be resumed three ways.
+`main` is always the entry (first) step. Each handler receives the resume context -- in **Deno**, destructure the argument (`async function resume({ state, input, dicode })`); in **Python**, read the module-global `ctx` (`ctx.state`, `ctx.input`) or accept it as an argument (`async def resume(ctx):`).
 
-### 1. WebUI form
+| | First run | Resume run |
+|---|---|---|
+| `ctx.state` | `undefined` / `None` | the `state` you passed to `suspend()` (unwrapped) |
+| `ctx.input` | the trigger input | the submitted values, keyed by property name |
 
-The run-detail page for a `suspended` run renders the persisted `form` and lets the operator fill it in and submit. Submitting posts to:
+`ctx.input` on a resume is validated against the schema before your task re-runs, and its values arrive with the **declared JSON types** -- a `number`/`integer` property is a number, a `boolean` is a bool. Coerce defensively anyway.
 
-```
-POST /api/runs/{runID}/resume
-```
-
-with the collected values as a JSON body. The server validates required fields (a missing required field returns `400`), then spawns the continuation run and returns its ID. The raw resume token is never sent to the browser -- it's resolved server-side from the stored run record, so the session (or API key) is the authorization, not a client-supplied secret.
-
-### 2. `dicode resume` CLI
-
-```bash
-# List every run currently awaiting resume, with the fields each expects
-dicode resume
-
-# Resume one, supplying the form values as field=value pairs
-dicode resume <run-id> approve=yes note="looks good"
-```
-
-Bare `dicode resume` (no run ID) prints a table of suspended runs -- run ID, task, suspended-at time, and the field names from each run's persisted form -- so you know what to pass. `dicode resume <run-id> [field=value ...]` submits those values and prints the continuation run's ID.
-
-### 3. Automatic deadline sweep
-
-If nobody resumes a suspended run before its `deadline` (or the 24h default), a periodic sweep cancels it automatically. The swept run transitions `suspended` -> `cancelled`. Crucially, the timeout is **not silent**:
-
-- The run's `run:finished` hook fires, so anything watching for completion (a live run-detail page, a webhook subscriber) learns the suspension expired instead of the page going stale forever.
-- **`on: always` and `on: failure` chain edges fire**, exactly as they would for any other cancellation. A downstream cleanup or alert task chained on this task's failure/always outcome still runs when a suspension times out -- it is not silently dropped.
-
-::: tip
-If you want an operator to be notified when a human-in-the-loop step goes unanswered, chain an alert task with `on: always` (or `on: failure`) off the suspending task -- the deadline sweep will fire it.
+::: warning `suspend({ to })` must name a real step
+If `to` names a handler that isn't present in the exported `steps` map (a typo, or a step removed while a run was mid-wizard), the resume **fails loudly** with a clear error rather than silently falling back to `main`/`resume`. The single-`main` and `main` + `resume` shapes, which export no `steps` map, are unaffected.
 :::
 
-## Single-use resume tokens
+## The form -- JSON Schema
 
-Each suspension mints an unguessable, single-use resume token server-side; it's never exposed to callers (not in the WebUI JSON, not in the CLI listing). Resuming consumes the token atomically, so:
+`schema` is a JSON Schema object describing the input object the user fills in. Server-side validation rejects a submission that doesn't conform (web UI: `400` with the failing property; CLI: a clear error) before the task resumes.
 
-- Resubmitting the same suspended run a second time (double-click, retried request) fails with `409 Conflict` / "run is not suspended" -- the first resume already consumed the token.
-- Resuming past the deadline fails with `410 Gone` / "resume deadline expired", and sweeps the run to `cancelled` as a side effect if the periodic sweep hasn't gotten to it yet.
-- If the task was edited (and is pending re-admission) between suspend and resume, the resume attempt is rejected but the token is **not** consumed -- the run stays suspended and resumable once the task is admitted again.
+The daemon compiles the schema the moment you call `dicode.suspend`, so a malformed schema surfaces as an error to the task **immediately** -- while it can still react -- instead of silently suspending and then failing every resume attempt. External or `file://` `$ref`s are refused; a suspend schema must be self-contained.
 
-## Params and chain depth carry over
+Use an `object` schema whose `properties` are the fields to collect:
 
-The continuation run sees the same `params` the original run was fired with -- not the task's static `task.yaml` defaults -- and inherits the original run's chain-depth budget. A task suspended midway through a chain doesn't get a fresh chain-depth ceiling on resume, so the chain-depth guard against runaway loops still applies across a suspend/resume hop.
-
-## Pipeline-stage suspend behavior
-
-A `kind: PipelineTask` stage **cannot** suspend. If a stage task calls `dicode.suspend()`, the pipeline treats it as a stage failure: the pipeline run fails with an explanatory reason (`pipeline_stage_suspended`), and the orphaned suspended stage run is finalized (cancelled) immediately rather than left dangling as an unresumable `suspended` row. This keeps a stray suspend from wedging the parent pipeline indefinitely -- there is no pipeline-level resume path, only task-level.
-
-If a pipeline's **terminal stage** is a daemon task (see [Pipelines -- Daemon terminal stage](./pipelines.md#daemon-terminal-stage)), that daemon body suspending is a normal, supported suspend -- the "cannot suspend" restriction applies only to non-terminal pipeline stages. A suspended daemon body keeps its daemon run slot reserved for the duration of the suspension, so a reconciler reload can't start a second body alongside the parked one; the slot is released correctly whichever way the suspension resolves (resumed or swept).
-
-## Runtime scope
-
-Suspend/resume is supported on the **Deno and Python** runtimes only. **Docker and Podman tasks cannot suspend** -- a container runtime runs an opaque image and has no way to intercept a mid-execution pause request and read the payload back, so granting the capability there would let a suspend attempt be acknowledged and then silently dropped. Calling `dicode.suspend()` (or the equivalent) from a Docker/Podman task fails with a permission-denied error instead.
-
-Unlike the rest of `dicode.*`, this isn't something you opt into per task with a `permissions.dicode` flag -- the capability is granted automatically based on the task's `runtime:`, the same way other self-affecting primitives like `dicode.set_group()` are granted by default. See [Tasks -- Permissions](./tasks.md#permissions).
-
-## Worked example
-
-```ts
-// task.ts
-export default async function main({ dicode, resume_state, resume_input }: DicodeSdk) {
-  if (!resume_state) {
-    await dicode.suspend({
-      state: { step: "ask_name" },
-      form: {
-        title: "What's the project name?",
-        fields: [
-          { name: "project_name", type: "string", label: "Name", required: true },
-        ],
-      },
-    });
-  }
-  return { created: resume_input?.project_name };
+```jsonc
+{
+  "type": "object",
+  "title": "Deploy", // heading shown above the form
+  "description": "Pick a target.", // sub-text under the title
+  "properties": {
+    "project": { "type": "string", "title": "Project name" },
+    "notes": { "type": "string", "title": "Notes", "format": "textarea" },
+    "count": { "type": "integer", "title": "How many?", "default": 10 },
+    "notify": { "type": "boolean", "title": "Send a notification?", "default": true },
+    "env": { "type": "string", "title": "Environment", "enum": ["staging", "prod"] }
+  },
+  "required": ["project", "env"]
 }
 ```
 
-```yaml
-# task.yaml
-apiVersion: dicode/v1
-kind: Task
-name: Suspend Wizard
-description: A one-step suspend/resume wizard.
-runtime: deno
-trigger:
-  manual: true
-timeout: 10s
+### What the default renderer maps
+
+The built-in web UI form renders the common JSON Schema subset with zero author effort. Each property in `properties` becomes one control:
+
+| Schema | Control |
+|---|---|
+| `type: "string"` | text input |
+| `type: "string"`, `format: "textarea"` (or `"multiline"`) | textarea |
+| `enum: [...]` (any type) | select |
+| `type: "boolean"` | checkbox |
+| `type: "number"` / `"integer"` | number input |
+
+Honored keywords: `title` (label -- falls back to the property name), `description` (help text), `default` (pre-filled value), `enum` (choices), and the top-level `required` array (marks a field required and drives missing-field validation). Standard constraint keywords (`minimum`, `maxLength`, `pattern`, ...) are enforced by the server-side validator even when the default renderer has no special widget for them.
+
+## Worked example -- a two-step wizard (`steps`)
+
+Collect a project name, then a target environment, then finish. `suspend({ to })` names the next handler; the runner dispatches it and hands it `ctx.input` (the submission) and `ctx.state` (the blob you carried). No step switch to write.
+
+::: code-group
+
+```ts [Deno]
+export default async function main({ dicode }: DicodeSdk) {
+  // First run -- ask for the project name, resume into the "env" step.
+  await dicode.suspend({
+    to: "env",
+    schema: {
+      type: "object",
+      title: "New project",
+      description: "What should we call it?",
+      properties: { project: { type: "string", title: "Project name" } },
+      required: ["project"],
+    },
+  });
+  // unreachable -- suspend() never returns
+}
+
+export const steps = {
+  // Runs on the first resume: the name is in ctx.input; ask for the
+  // environment, carrying the name forward in state.
+  async env({ dicode, input }: DicodeSdk) {
+    await dicode.suspend({
+      to: "finish",
+      state: { name: input.project },
+      schema: {
+        type: "object",
+        title: `Deploy ${input.project}`,
+        properties: {
+          env: { type: "string", title: "Target environment", enum: ["staging", "prod"] },
+        },
+        required: ["env"],
+      },
+    });
+  },
+  // Runs on the second resume: both answers in hand; finish.
+  async finish({ state, input }: DicodeSdk) {
+    return { project: state.name, env: input.env ?? "staging" };
+  },
+};
 ```
 
-Firing this task suspends it immediately, asking for a project name. Resuming via any of the three paths above (WebUI form, `dicode resume <run-id> project_name=my-app`, or letting it time out) either completes the run with `{ "created": "my-app" }` or -- on a timeout sweep -- cancels it and fires any chained `on: always` / `on: failure` follow-up.
+```python [Python]
+async def main():
+    # First run -- ask for the project name, resume into the "env" step.
+    dicode.suspend(
+        to="env",
+        schema={
+            "type": "object",
+            "title": "New project",
+            "description": "What should we call it?",
+            "properties": {"project": {"type": "string", "title": "Project name"}},
+            "required": ["project"],
+        },
+    )
+    # unreachable -- suspend() raises and the process exits
+
+
+async def env(ctx):
+    # First resume: the name is in ctx.input; ask for the environment,
+    # carrying the name forward in state.
+    dicode.suspend(
+        to="finish",
+        state={"name": ctx.input["project"]},
+        schema={
+            "type": "object",
+            "title": f"Deploy {ctx.input['project']}",
+            "properties": {
+                "env": {"type": "string", "title": "Target environment", "enum": ["staging", "prod"]},
+            },
+            "required": ["env"],
+        },
+    )
+
+
+async def finish(ctx):
+    # Second resume: both answers in hand; finish.
+    return {"project": ctx.state["name"], "env": ctx.input.get("env", "staging")}
+
+
+steps = {"env": env, "finish": finish}
+```
+
+:::
+
+Each `suspend()` mints its own resume, so a task can suspend any number of times -- chaining wizard steps together, one named handler per pause.
+
+## Simpler -- ask once, then finish (`resume`)
+
+When you only pause once, skip the `steps` map: export `main` and `resume`. The runner runs `main` on the first pass and `resume` on the continuation.
+
+::: code-group
+
+```ts [Deno]
+export default async function main({ dicode }: DicodeSdk) {
+  await dicode.suspend({
+    schema: {
+      type: "object",
+      title: "Approve deploy?",
+      properties: { ok: { type: "boolean", title: "Ship it?" } },
+      required: ["ok"],
+    },
+  });
+}
+
+export async function resume({ input }: DicodeSdk) {
+  return { shipped: input.ok };
+}
+```
+
+```python [Python]
+async def main():
+    dicode.suspend(
+        schema={
+            "type": "object",
+            "title": "Approve deploy?",
+            "properties": {"ok": {"type": "boolean", "title": "Ship it?"}},
+            "required": ["ok"],
+        },
+    )
+
+
+async def resume(ctx):
+    return {"shipped": ctx.input.get("ok")}
+```
+
+:::
+
+A task that exports **only `main`** still works: on resume the runner re-runs `main`, and you branch on `ctx.state` by hand (`undefined`/`None` on the first run, your carried blob on the resume). Pass a `state` when you go this route so the two passes are distinguishable.
+
+## Try the shipped example
+
+dicode-core ships a ready-to-run wizard under [`tasks/examples/suspend-wizard/`](https://github.com/dicode-ayo/dicode-core/tree/main/tasks/examples/suspend-wizard) -- a manually-triggered, three-step "new project" wizard built on the `steps` map and the JSON Schema resume form. It's the same shape as the worked example above, one hop longer, and the easiest way to copy-paste your way into a wizard of your own.
+
+1. In the web UI, open the **Suspend Wizard (example)** task and **Run** it. The run immediately goes `suspended` and its detail page renders a form.
+2. **Step 1 -- Project name.** `main` suspends `to: "chooseFramework"`, asking for a `project_name` (string, required). Fill it in and submit.
+3. **Step 2 -- Framework.** `chooseFramework` reads the name from `ctx.input`, carries it in `state`, and suspends `to: "confirm"`, asking for a `framework` (an `enum` of `deno` / `node` / `bun`, rendered as a select).
+4. **Step 3 -- Confirm.** `confirm` suspends `to: "summarize"` with a `confirmed` boolean (a checkbox), carrying name + framework forward.
+5. **Finish.** `summarize` returns `{ project, framework, confirmed }` -- the run ends `resumed` and the continuation's result shows on its run detail page.
+
+Each pause auto-renders from the schema, so there's no form code to write; the runner dispatches the next handler by the `to` name with no step switch. The same flow works from the CLI: `dicode resume` lists the suspended run, and `dicode resume <run-id> project_name=acme` (etc.) submits each step in turn.
+
+## Rules and gotchas
+
+- **`state` must be JSON-serializable.** It's persisted as JSON, so functions, class instances, `Map`/`Set`, and the like won't survive the round trip. Keep it to plain objects, arrays, strings, numbers, and booleans.
+- **Never swallow the suspend signal.** `suspend()` throws (Deno) / raises (Python) a control signal *after* the payload is recorded; the runtime wrapper catches it to end the run cleanly. If your own `try`/`catch` (or bare `except:`) swallows it and the task keeps running or returns normally, the wrapper detects the contradiction -- a run that both suspended and returned -- and **fails the run loudly**. Don't wrap `suspend()` in a catch-all, or re-throw the signal if you must catch broadly.
+- **`params` survive a resume; the original trigger input does not.** The continuation is a fresh run that restores the suspended run's `params` (so `ctx.params` is unchanged). On a resume, `ctx.input` is the **form submission**, not the payload that fired the *original* run (the webhook body, the chain payload) -- that isn't replayed. Stash anything you'll need from the original input into `state` before you suspend.
+- **`deadline` is optional.** Omit it (or pass `0`) for the default **24-hour** window. Once the deadline lapses, the sweep cancels the run (status `cancelled`, fail reason `resume_timeout`) and any later resume attempt is rejected.
+- **A suspended run resumes exactly once.** The resume handle is single-use and consumed atomically -- a second resume of the same run fails with "already resumed".
+
+## Runtime scope
+
+Suspend/resume is supported on the **Deno and Python** runtimes only. Docker and Podman tasks cannot suspend -- a container runtime runs an opaque image and has no way to intercept a mid-execution pause request and read the payload back, so granting the capability there would let a suspend attempt be silently dropped instead. Calling `dicode.suspend()` from a Docker/Podman task fails with a permission-denied error.
+
+Unlike the rest of `dicode.*`, this isn't something you opt into per task with a `permissions.dicode` flag -- the capability is granted automatically based on the task's `runtime:`. See [Tasks -- Permissions](./tasks.md#permissions).
+
+## Lifecycle and statuses
+
+```
+running --suspend()--> suspended --resume--> resumed        (terminal)
+                            |
+                            +--deadline lapse--> cancelled   (fail_reason: resume_timeout)
+```
+
+| Status | Terminal? | Meaning |
+|---|---|---|
+| `suspended` | no | Paused awaiting input. `finished_at` stays `NULL`. |
+| `resumed` | yes | The resume handle was consumed and a continuation run was spawned. Set exactly once. |
+| `cancelled` (`resume_timeout`) | yes | The `deadline` lapsed before anyone resumed. |
+
+The **continuation is a new run** with its own run ID, taken through the normal execution path -- which is why it can suspend again. The original suspended run does not itself "become" the continuation; it transitions to `resumed`, and the continuation carries on from the handler the runner dispatches, with `ctx.state` restored.
+
+## How to resume
+
+### Web UI
+
+Open the suspended run's detail page. It renders a form from the JSON Schema the task declared; fill it in and submit. That posts the collected values to `/api/runs/{runID}/resume`, which **validates them against the stored schema** and spawns the continuation run. The raw resume handle is resolved server-side from the stored run -- the browser session (or API key) is the authorization, not a client-supplied secret.
+
+### CLI
+
+List what's waiting (the `FIELDS` column shows the schema's required properties):
+
+```console
+$ dicode resume
+RUN ID                               TASK                     SUSPENDED AT         FIELDS
+b1c2...                              examples/suspend-wizard   2026-07-08T09:12:00Z project_name
+```
+
+Resume interactively -- dicode reads the schema and prompts for each property, honoring its type, `enum` choices, `required`, and `default`:
+
+```console
+$ dicode resume b1c2...
+Project name (required): acme-api
+resumed: continuation run 7f8a...
+```
+
+Or pass the answers as `field=value` pairs -- each value is coerced to the property's declared type and validated against the schema before submit:
+
+```console
+$ dicode resume b1c2... project_name=acme-api
+resumed: continuation run 7f8a...
+follow: dicode logs 7f8a...
+```
+
+The continuation runs asynchronously; follow it with `dicode logs <run-id>`.
+
+## See also
+
+- [Tasks](./tasks.md) -- `task.yaml`, params, permissions
+- [Triggers](./triggers.md) -- how a run is fired in the first place
+- [SDK Globals](./sdk.md) -- the rest of the `dicode` surface
+- [Example: Suspend Wizard](/examples/suspend-wizard) -- the shipped `tasks/examples/suspend-wizard/` walkthrough

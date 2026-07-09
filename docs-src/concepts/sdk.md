@@ -125,38 +125,52 @@ if input:
 
 ---
 
-## resume_state / resume_input
+## ctx.state / ctx.input
 
-When a run is the **continuation of a suspended run** (see [Suspend & Resume](./suspend-resume.md)), the SDK carries forward the state the task persisted before pausing, plus the input a human supplied to resume it. On a first (non-resumed) run, both are absent.
+When a run is a **resume handler dispatched from a suspended run** (see [Suspend & Resume](./suspend-resume.md)), the SDK carries forward the state the task persisted before pausing, plus the input a human supplied to resume it. On the first (non-resumed) run of `main`, both are absent -- that's the unambiguous first-vs-resume signal.
 
 ::: code-group
 
 ```ts [Deno]
-export default async function main({ resume_state, resume_input }: DicodeSdk) {
-  if (!resume_state) {
-    // First run -- nothing to resume yet.
-    return;
+export default async function main({ dicode, state }: DicodeSdk) {
+  if (!state) {
+    // First run -- ask for input, then pause.
+    await dicode.suspend({
+      schema: { type: "object", properties: { approved: { type: "boolean" } } },
+    });
   }
-  // resume_state is the exact value passed to dicode.suspend({ state }).
-  // resume_input is the form submission, keyed by field name.
-  const step = (resume_state as { step: string }).step;
-  const approved = resume_input?.approved;
+}
+
+export async function resume({ state, input }: DicodeSdk) {
+  // state is the exact value passed to dicode.suspend({ state }).
+  // input is the validated form submission, keyed by schema property name.
+  const approved = input.approved;
+  return { approved };
 }
 ```
 
 ```python [Python]
-# Available on the module-level `ctx` object.
-if ctx.resume_state:
-    step = ctx.resume_state["step"]
-    approved = ctx.resume_input.get("approved") if ctx.resume_input else None
+# Available on the module-level `ctx` object, or as a handler argument.
+async def main():
+    if ctx.state is None:
+        dicode.suspend(
+            schema={"type": "object", "properties": {"approved": {"type": "boolean"}}},
+        )
+
+
+async def resume(ctx):
+    approved = ctx.input.get("approved")
+    return {"approved": approved}
 ```
 
 :::
 
 | Field | Deno | Python | Description |
 |---|---|---|---|
-| Prior state | `resume_state` (destructured from the SDK argument) | `ctx.resume_state` | The opaque value the task passed as `state` to its own `dicode.suspend()` call. `undefined` / `None` on a first run. |
-| Resume input | `resume_input` (destructured from the SDK argument) | `ctx.resume_input` | The human's form submission (WebUI) or `field=value` pairs (CLI `dicode resume`), keyed by field name. `undefined` / `None` on a first run. |
+| Prior state | `state` (destructured from the handler's argument) | `ctx.state` | The value the task passed as `state` to its own `dicode.suspend()` call. `undefined` / `None` on the first run of `main`. |
+| Resume input | `input` (destructured from the handler's argument) | `ctx.input` | On a resume: the submitted form values (web UI) or `field=value` pairs (CLI `dicode resume`), keyed by schema property name, validated against the schema and coerced to its declared JSON types. On the first run of `main`: the trigger input (chain payload, webhook body, etc.), same as the [`input` global](#input). |
+
+The runner picks which handler receives this context for you -- `main`, `resume`, or `steps[to]` -- based on how the run was suspended. See [Suspend & Resume -- Auto-dispatch](./suspend-resume.md#the-handlers-auto-dispatch).
 
 ---
 
@@ -298,7 +312,7 @@ permissions:
 
 ## dicode.suspend
 
-Pause the run mid-execution to collect human input, then resume later. The task hands the daemon an opaque `state` blob and a `form` schema describing what to ask for; the daemon persists both, ends the run as **`suspended`** (not a failure), and a human resumes it through the [WebUI, the `dicode resume` CLI, or lets it expire](./suspend-resume.md#the-three-resume-paths). See [Suspend & Resume](./suspend-resume.md) for the full contract, resume paths, and timeout/chain behavior.
+Pause the run mid-execution to collect human input, then resume later. The task hands the daemon a JSON Schema describing what to ask for, plus an optional carried `state` blob; the daemon persists both, ends the run as **`suspended`** (not a failure), and validates the eventual submission against the schema before spawning a continuation run that the SDK **auto-dispatches** to the right handler -- no hand-written `if (state)` switch. A human resumes it through the [web UI, the `dicode resume` CLI, or lets it expire](./suspend-resume.md#lifecycle-and-statuses). See [Suspend & Resume](./suspend-resume.md) for the full contract, auto-dispatch rules, resume paths, and timeout/chain behavior.
 
 ::: tip Deno and Python only
 Unlike the rest of `dicode.*`, `suspend` is **not** gated by a `permissions.dicode` flag -- it is granted automatically to Deno and Python tasks (the only runtimes that can pause a subprocess and read the payload back). Docker and Podman tasks do not receive the capability; calling `dicode.suspend()` there fails with a permission error. See [Suspend & Resume -- Runtime scope](./suspend-resume.md#runtime-scope).
@@ -307,47 +321,49 @@ Unlike the rest of `dicode.*`, `suspend` is **not** gated by a `permissions.dico
 ::: code-group
 
 ```ts [Deno]
-export default async function main({ dicode, resume_state, resume_input }: DicodeSdk) {
-  if (!resume_state) {
-    // First run: ask a human for the project name, then pause.
-    await dicode.suspend({
-      state: { step: "ask_name" },
-      form: {
-        title: "What's the project name?",
-        fields: [
-          { name: "project_name", type: "string", label: "Name", required: true },
-        ],
+export default async function main({ dicode }: DicodeSdk) {
+  // First run: ask a human for the project name, then pause.
+  await dicode.suspend({
+    schema: {
+      type: "object",
+      title: "What's the project name?",
+      properties: {
+        project_name: { type: "string", title: "Name" },
       },
-      // Optional: Unix-ms deadline. Defaults to 24h from now if omitted.
-      deadline: Date.now() + 60 * 60 * 1000,
-    });
-    // suspend() never resolves -- the process exits here.
-  }
+      required: ["project_name"],
+    },
+    // Optional: Unix-ms deadline. Defaults to 24h from now if omitted.
+    deadline: Date.now() + 60 * 60 * 1000,
+  });
+  // suspend() never resolves -- the process exits here.
+}
 
-  // Second run (after resume): resume_input carries the submitted form.
-  return { created: resume_input?.project_name };
+// Runs on the resume, with the schema-validated submission in `input`.
+export async function resume({ input }: DicodeSdk) {
+  return { created: (input as { project_name: string }).project_name };
 }
 ```
 
 ```python [Python]
-if not ctx.resume_state:
+async def main():
     # First run: ask a human for the project name, then pause.
     dicode.suspend(
-        state={"step": "ask_name"},
-        form={
+        schema={
+            "type": "object",
             "title": "What's the project name?",
-            "fields": [
-                {"name": "project_name", "type": "string", "label": "Name", "required": True},
-            ],
+            "properties": {"project_name": {"type": "string", "title": "Name"}},
+            "required": ["project_name"],
         },
         # Optional: Unix-ms deadline. Defaults to 24h from now if omitted.
         deadline=None,
     )
     # suspend() raises internally -- nothing after this line in the same
     # invocation runs.
-else:
-    # Second run (after resume): ctx.resume_input carries the submitted form.
-    result = {"created": ctx.resume_input.get("project_name")}
+
+
+# Runs on the resume, with the schema-validated submission on ctx.input.
+async def resume(ctx):
+    return {"created": ctx.input.get("project_name")}
 ```
 
 :::
@@ -356,35 +372,19 @@ else:
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `state` | `unknown` (JSON-serializable) | no | Opaque value echoed back as `resume_state` / `ctx.resume_state` on resume. Use it to remember which step of a multi-step wizard the task was on. |
-| `form` | `FormSchema` | yes | Describes the input to collect. Rendered by the WebUI; the CLI lists field names as a hint for `field=value` args. |
+| `schema` | `JSONSchema` (draft 2020-12) | yes | Describes the input object to collect. Drives the default web UI form, the CLI prompts, and server-side validation of the submission. |
+| `to` | `string` | no | Name of the `steps[]` handler to dispatch on resume (the wizard shape). Omit it for the two-function (`main` + `resume`) or single-`main` shape. |
+| `state` | `unknown` (JSON-serializable) | no | Opaque value echoed back as `state` / `ctx.state` on resume. Use it to carry answers or remember which step of a wizard the task was on. |
 | `deadline` | `number` (Unix ms) | no | When the suspension stops being resumable. Defaults to **24 hours** from the `suspend()` call if omitted. |
 
-**`FormSchema`:**
-
-| Field | Type | Description |
-|---|---|---|
-| `title` | string? | Form heading |
-| `description` | string? | Helper text under the heading |
-| `fields` | `FormField[]` | The fields to render/collect |
-
-**`FormField`:**
-
-| Field | Type | Description |
-|---|---|---|
-| `name` | string | Key under which the value appears in `resume_input` / `ctx.resume_input` |
-| `type` | `"string"` \| `"text"` \| `"number"` \| `"boolean"` \| `"select"` | Input widget the WebUI renders |
-| `label` | string | Human-readable label |
-| `required` | boolean? | Enforced server-side on WebUI submit -- a missing required field returns HTTP 400 |
-| `default` | string \| number \| boolean? | Pre-filled value |
-| `options` | `{ value, label }[]` | Required when `type` is `"select"` |
-| `placeholder` | string? | Placeholder text |
+See [Suspend & Resume -- The form (JSON Schema)](./suspend-resume.md#the-form-json-schema) for the schema keywords the default renderer understands (`title`, `description`, `default`, `enum`, `format: "textarea"`, top-level `required`), and [The handlers -- auto-dispatch](./suspend-resume.md#the-handlers-auto-dispatch) for how `main`, `resume`, and `steps` map to first-run vs. resume.
 
 ### Behavior
 
 - **Clean exit, not a failure.** `dicode.suspend()` never returns -- in Deno it's typed `Promise<never>`, and in Python it raises an internal control-flow signal. The task's subprocess exits with code 0 and the run's terminal status (for this invocation) is `suspended`, distinct from `success`/`failure`/`cancelled`.
 - **Do not swallow it.** Don't wrap the call in a `try`/`catch` (Deno) or `try`/`except` (Python) that suppresses the signal and keeps executing -- both SDKs detect a swallowed suspend and turn it into a loud run failure rather than silently continuing.
-- **Re-entry on resume.** The continuation is a brand-new run (`parent_run_id` set to the suspended run's ID) that starts the task from the top with `resume_state` / `ctx.resume_state` and `resume_input` / `ctx.resume_input` populated. Structure the task as an `if (!resume_state) { ...suspend... } else { ...continue... }` branch, as in the example above.
+- **Re-entry on resume via auto-dispatch.** The continuation is a brand-new run that re-runs the script from the top, and the runner dispatches `steps[to]` (if the suspend named a `to`), else the exported `resume`, else re-runs `main` -- with `state` / `ctx.state` and `input` / `ctx.input` populated. See [ctx.state / ctx.input](#ctx-state-ctx-input) above.
+- **Submissions are validated server-side.** The daemon compiles the schema eagerly at `suspend()` time (a malformed schema fails the run immediately, not on resume) and validates the eventual submission against it before spawning the continuation -- an invalid submission is rejected with `400` (web UI) rather than reaching the task.
 - **Params and chain depth carry over.** The continuation sees the same `params` the original run was fired with (not the task's static defaults), and inherits the original run's chain-depth budget, so a suspended task in the middle of a chain doesn't reset the chain-depth ceiling on resume.
 
 ---
