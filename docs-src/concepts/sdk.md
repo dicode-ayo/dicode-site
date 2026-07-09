@@ -144,7 +144,7 @@ export default async function main({ dicode, state }: DicodeSdk) {
 export async function resume({ state, input }: DicodeSdk) {
   // state is the exact value passed to dicode.suspend({ state }).
   // input is the validated form submission, keyed by schema property name.
-  const approved = input.approved;
+  const approved = (input as { approved: boolean }).approved;
   return { approved };
 }
 ```

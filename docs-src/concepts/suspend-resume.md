@@ -37,7 +37,7 @@ interface SuspendRequest {
   deadline?: number;    // optional Unix-ms instant; resumable until then (default 24h)
 }
 
-await dicode.suspend(req: SuspendRequest): Promise<never>
+function suspend(req: SuspendRequest): Promise<never>
 ```
 
 ```python [Python]
