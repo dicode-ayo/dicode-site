@@ -31,7 +31,7 @@ Set `base_url` and `api_key_env` in your config. Use a free local model for deve
 
 ### Or use your Claude.ai subscription
 
-If you already pay for Claude Pro/Max, the [`buildin/ai-agent-claude-cli`](#subscription-backed-alternative-buildin-ai-agent-claude-cli) task wraps the official `claude` CLI so dicode runs against your subscription quota instead of charging per-token via the API. Mint a one-year OAuth token, drop it into secrets, and any task that calls `dicode.run_task("ai-agent-claude-cli", ...)` runs on your subscription.
+If you already pay for Claude Pro/Max, the [`buildin/ai-agent-claude-cli`](#subscription-backed-alternative-buildin-ai-agent-claude-cli) task wraps the official `claude` CLI so dicode runs against your subscription quota instead of charging per-token via the API. Install the `claude` binary on the daemon host and any task that calls `dicode.run_task("ai-agent-claude-cli", ...)` runs on your subscription — mint a `CLAUDE_CODE_OAUTH_TOKEN` if you want, or let it fall back to a local `claude` login. See [Setup](#setup-three-steps) below.
 
 ### What happens when AI is wrong?
 
@@ -296,11 +296,11 @@ This is how the **AI at every stage** table's "Create" row works end-to-end unde
 | | `buildin/ai-agent` | `buildin/ai-agent-claude-cli` |
 |---|---|---|
 | Backend | OpenAI-compatible HTTPS endpoint | Local `claude` CLI subprocess |
-| Auth | Per-task `*_API_KEY` env or secret | One-year OAuth token (`CLAUDE_CODE_OAUTH_TOKEN`) |
+| Auth | Per-task `*_API_KEY` env or secret | `CLAUDE_CODE_OAUTH_TOKEN` — optional; falls back to the daemon host's logged-in `~/.claude/.credentials.json` |
 | Billing | Per-token via the chosen provider's API | Counts against subscription rate windows (Pro/Max: 5-hour) |
 | Model selection | `model` param | `model` param (`sonnet`, `opus`, …) |
-| Tool use | dicode tasks via `tools` param | Disabled in `claude -p` print mode (no agentic tools) |
-| Setup | Provide an API key | Mint OAuth token + install `claude` binary on the daemon host |
+| Tool use | dicode tasks via `tools` param | `mcp__dicode` only, when MCP is wired (`enable_mcp: true` + a `DICODE_MCP_API_KEY`) — no other Claude tools (Bash, Read, Write, …) |
+| Setup | Provide an API key | Install `claude` binary on the daemon host; OAuth token is optional |
 
 If your dicode workload fits inside a 5-hour Pro/Max window — typical for auto-fix loops or occasional ad-hoc agent calls — the CLI path is free of marginal cost. For non-Anthropic models, predictable per-token billing, or workloads that exceed the subscription rate cap, stay on `buildin/ai-agent`.
 
@@ -308,7 +308,9 @@ Both can coexist: nothing prevents one task from using the API path and another 
 
 ### Setup (three steps)
 
-1. **Mint a Claude OAuth token.** On any machine where you've signed into Claude Code with your Pro/Max account, run `claude setup-token`. Store the result as a dicode secret named `CLAUDE_CODE_OAUTH_TOKEN`.
+1. **Auth: optional OAuth token, with a local-login fallback.** `task.yaml` declares `CLAUDE_CODE_OAUTH_TOKEN` under `permissions.env` with `optional: true` — the task's pre-flight no longer hard-fails when it's unset. Pick whichever fits your deployment:
+   - **Portable / headless daemons**: on any machine where you've signed into Claude Code with your Pro/Max account, run `claude setup-token` and store the result as a dicode secret named `CLAUDE_CODE_OAUTH_TOKEN`.
+   - **Local daemon, already-logged-in host**: skip the secret. When `CLAUDE_CODE_OAUTH_TOKEN` is unset, the task omits it from the `claude` subprocess's env entirely, and the CLI falls back to reading `~/.claude/.credentials.json` — the same credential cache your interactive `claude` login already writes. dicode can't inspect that file from inside the Deno sandbox, so a genuine no-auth situation surfaces as the CLI's own auth error rather than a pre-flight failure.
 
 2. **Install the `claude` binary on the daemon host.** Three paths depending on your deployment shape:
    - **Plain host** (laptops, single VMs): `curl -fsSL https://install.claude.ai | bash`. Make sure `~/.local/bin` is on the daemon's PATH.
@@ -324,6 +326,16 @@ Both can coexist: nothing prevents one task from using the API path and another 
      -d '{"prompt":"In one sentence, what is dicode?"}'
    ```
    Response includes a `session_id` you pass back to continue the conversation.
+
+### MCP tool access (no setup step needed)
+
+Unlike the OAuth token above, MCP tool access isn't a step you have to perform: `DICODE_MCP_API_KEY` (also declared `optional: true` in `permissions.env`) is minted fresh by the daemon for every run of this task and revoked when the run ends — there's no [`dicode mcp install`](./mcp-server.md) to run first. As long as `enable_mcp` stays at its default `true`, each run gets `.claude/mcp.json` wired to dicode's `/mcp` endpoint and `--allowedTools mcp__dicode` automatically, on by default. Set `enable_mcp: false` to turn it off.
+
+### Interactive chat
+
+Calling the task with no `prompt` opens a multi-turn chat instead of the one-shot request/response shape: a fresh `dicode run buildin/ai-agent-claude-cli` (or a webhook POST with an empty/absent `prompt`) suspends into a `turn` step that reads one message, runs it through Claude, and suspends back to `turn` with the reply as the next prompt banner — a terminal-style chat built entirely on dicode's existing suspend/resume mechanism (`decideEntryMode`, `isChatEnd`), no changes to the `dicode` CLI itself. Send a blank message to end the chat. Claude's own CLI session — not a dicode KV entry — carries the conversation across turns; the per-chat working directory stays fixed across turns so `--resume` can find it.
+
+A non-empty `prompt` on the initial call still bypasses the chat loop and runs the original one-shot path, returning `{ ok, reply, session_id, ... }` immediately — that behavior is unchanged.
 
 ### Plumbing into the auto-fix loop
 
@@ -344,7 +356,7 @@ Then point `on_failure_chain` at `buildin/auto-fix-claude` instead of `buildin/a
 
 ### Limitations (current)
 
-- **No tool-use beyond `claude -p` defaults.** Print mode disables Claude's filesystem / bash tools; the wrapper is purely chat-completion-style.
+- **Tool use is dicode-only.** `claude -p` print mode still disables Claude's own filesystem/bash tools. MCP is wired by default (see [MCP tool access](#mcp-tool-access-no-setup-step-needed)), giving Claude `mcp__dicode`-scoped tool access via `--allowedTools`; set `enable_mcp: false` to fall back to the purely chat-completion-style wrapper.
 - **No streaming.** The wrapper waits for the full response before returning. Plumbing `--output-format stream-json` through `dicode.output()` is a tracked follow-up.
 - **No subscription-aware queueing.** Hitting the 5-hour cap returns an error; the task has no built-in retry or backpressure.
 - **One subscription per dicode instance.** OAuth tokens belong to one Claude account — fine for personal/team setups, less suited to multi-tenant.
@@ -355,7 +367,7 @@ The v1 buildin is deliberately minimal. Tracked follow-ups:
 
 - **Streaming tokens** — the dashboard already WebSocket-broadcasts run logs; a streaming chat UI is an additive change.
 - **History rehydration on reload** — needs a way for the browser to read the task's KV.
-- **CLI chat** — `dicode chat [preset]` as a REPL, `session_id` persisted in a dotfile.
+- **Generic `dicode chat` REPL** — `buildin/ai-agent-claude-cli` already has an interactive chat mode today (see [Interactive chat](#interactive-chat)): an empty `prompt` opens a suspend/resume loop over `dicode run`, ending on a blank message. What's still open is a *generic* `dicode chat [preset]` command that gives the same REPL experience against any `ai-agent`-shaped task (including the OpenAI-compatible `buildin/ai-agent`), with `session_id` persisted in a dotfile instead of carried in suspend state.
 
 ### Zero-paste onboarding with `if_missing`
 
