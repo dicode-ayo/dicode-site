@@ -31,7 +31,7 @@ Set `base_url` and `api_key_env` in your config. Use a free local model for deve
 
 ### Or use your Claude.ai subscription
 
-If you already pay for Claude Pro/Max, the [`buildin/ai-agent-claude-cli`](#subscription-backed-alternative-buildin-ai-agent-claude-cli) task wraps the official `claude` CLI so dicode runs against your subscription quota instead of charging per-token via the API. Mint a one-year OAuth token, drop it into secrets, and any task that calls `dicode.run_task("ai-agent-claude-cli", ...)` runs on your subscription.
+If you already pay for Claude Pro/Max, the [`buildin/ai-agent-claude-cli`](#subscription-backed-alternative-buildin-ai-agent-claude-cli) task wraps the official `claude` CLI so dicode runs against your subscription quota instead of charging per-token via the API. Install the `claude` binary on the daemon host and any task that calls `dicode.run_task("ai-agent-claude-cli", ...)` runs on your subscription — mint a `CLAUDE_CODE_OAUTH_TOKEN` if you want, or let it fall back to a local `claude` login. See [Setup](#setup-three-steps) below.
 
 ### What happens when AI is wrong?
 
@@ -310,7 +310,7 @@ Both can coexist: nothing prevents one task from using the API path and another 
 
 1. **Auth: optional OAuth token, with a local-login fallback.** `task.yaml` declares `CLAUDE_CODE_OAUTH_TOKEN` under `permissions.env` with `optional: true` — the task's pre-flight no longer hard-fails when it's unset. Pick whichever fits your deployment:
    - **Portable / headless daemons**: on any machine where you've signed into Claude Code with your Pro/Max account, run `claude setup-token` and store the result as a dicode secret named `CLAUDE_CODE_OAUTH_TOKEN`.
-   - **Local daemon, already-logged-in host**: skip the secret. When `CLAUDE_CODE_OAUTH_TOKEN` is unset, the task omits it from the `claude` subprocess's env entirely, and the CLI falls back to reading `$HOME/.claude/.credentials.json` — the same credential cache your interactive `claude` login already writes. dicode can't inspect that file from inside the Deno sandbox, so a genuine no-auth situation surfaces as the CLI's own auth error rather than a pre-flight failure.
+   - **Local daemon, already-logged-in host**: skip the secret. When `CLAUDE_CODE_OAUTH_TOKEN` is unset, the task omits it from the `claude` subprocess's env entirely, and the CLI falls back to reading `~/.claude/.credentials.json` — the same credential cache your interactive `claude` login already writes. dicode can't inspect that file from inside the Deno sandbox, so a genuine no-auth situation surfaces as the CLI's own auth error rather than a pre-flight failure.
 
 2. **Install the `claude` binary on the daemon host.** Three paths depending on your deployment shape:
    - **Plain host** (laptops, single VMs): `curl -fsSL https://install.claude.ai | bash`. Make sure `~/.local/bin` is on the daemon's PATH.
@@ -327,7 +327,9 @@ Both can coexist: nothing prevents one task from using the API path and another 
    ```
    Response includes a `session_id` you pass back to continue the conversation.
 
-MCP tool access needs no setup step of its own: unlike the OAuth token above, `DICODE_MCP_API_KEY` (also declared `optional: true`) is minted fresh by the daemon for every run of this task and revoked when the run ends — there's no `dicode mcp install` to run first. As long as `enable_mcp` stays at its default `true`, each run gets `.claude/mcp.json` wired to dicode's `/mcp` endpoint and `--allowedTools mcp__dicode` automatically. Set `enable_mcp: false` to opt out.
+### MCP tool access (no setup step needed)
+
+Unlike the OAuth token above, MCP tool access isn't a step you have to perform: `DICODE_MCP_API_KEY` (also declared `optional: true` in `permissions.env`) is minted fresh by the daemon for every run of this task and revoked when the run ends — there's no [`dicode mcp install`](./mcp-server.md) to run first. As long as `enable_mcp` stays at its default `true`, each run gets `.claude/mcp.json` wired to dicode's `/mcp` endpoint and `--allowedTools mcp__dicode` automatically, on by default. Set `enable_mcp: false` to turn it off.
 
 ### Interactive chat
 
@@ -354,7 +356,7 @@ Then point `on_failure_chain` at `buildin/auto-fix-claude` instead of `buildin/a
 
 ### Limitations (current)
 
-- **Tool use is dicode-only, and opt-in.** `claude -p` print mode still disables Claude's own filesystem/bash tools. When MCP is wired (see [Setup](#setup-three-steps)) Claude gets `mcp__dicode`-scoped tool access via `--allowedTools`; without it, the wrapper is purely chat-completion-style.
+- **Tool use is dicode-only.** `claude -p` print mode still disables Claude's own filesystem/bash tools. MCP is wired by default (see [MCP tool access](#mcp-tool-access-no-setup-step-needed)), giving Claude `mcp__dicode`-scoped tool access via `--allowedTools`; set `enable_mcp: false` to fall back to the purely chat-completion-style wrapper.
 - **No streaming.** The wrapper waits for the full response before returning. Plumbing `--output-format stream-json` through `dicode.output()` is a tracked follow-up.
 - **No subscription-aware queueing.** Hitting the 5-hour cap returns an error; the task has no built-in retry or backpressure.
 - **One subscription per dicode instance.** OAuth tokens belong to one Claude account — fine for personal/team setups, less suited to multi-tenant.
