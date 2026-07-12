@@ -73,6 +73,10 @@ console.error("error");         // level: error
 console.debug("debug");         // level: debug
 ```
 
+### Pausing for human input
+
+A Deno task can call `dicode.suspend({ schema })` to pause mid-run and ask a human to fill in a JSON-Schema-described form, then resume later with the runner auto-dispatching to a `resume` function or a `steps` map -- no hand-rolled resume switch. See [Suspend & Resume](./suspend-resume.md).
+
 ### Dependency pinning
 
 If a `deno.lock` file exists at or near the task directory, dicode automatically enforces it. The runtime walks up to two parent directories from the task directory looking for `deno.lock`. When found, Deno is invoked with `--lock=<path> --frozen`, which prevents per-run resolution of newer package versions — all imports are pinned to the exact versions recorded in the lockfile.
@@ -163,6 +167,10 @@ from bs4 import BeautifulSoup
 ```
 
 uv resolves and installs these dependencies automatically before running the script.
+
+### Pausing for human input
+
+Like Deno, Python tasks can call `dicode.suspend(schema=...)` to pause mid-run for a human-filled JSON-Schema form, then resume via an auto-dispatched `resume` function or a `steps` map. See [Suspend & Resume](./suspend-resume.md).
 
 ### Dependency pinning
 

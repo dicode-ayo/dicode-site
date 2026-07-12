@@ -67,6 +67,11 @@ features:
     details: "Five trigger types: cron schedules, HTTP webhooks (with optional HMAC auth), manual execution, task chaining (on success/failure/always), and persistent daemon mode. Chain tasks into multi-step workflows — one task's return value becomes the next task's input. Or call tasks programmatically with dicode.run_task()."
     link: /concepts/triggers
     linkText: Trigger docs
+  - icon: "\U0001F9CD"
+    title: Human-in-the-Loop Suspend & Resume
+    details: "Any Deno or Python task can pause mid-run with dicode.suspend() to ask a person for input, then continue exactly where it left off. Forms are plain JSON Schema — auto-rendered in the web UI and the dicode resume CLI, and server-side validated before the task resumes. main/resume/steps auto-dispatch means no hand-rolled resume switch, even for multi-step wizards."
+    link: /concepts/suspend-resume
+    linkText: Suspend & Resume docs
   - icon: "\U0001F4E6"
     title: Task Sharing & Community Registry
     details: "Community tasks are git repos. Reference any task via a TaskSet git URL, override params for your environment, fork and customize. The registry is itself a TaskSet — no new format, no separate system. dicode task search and dicode task install from the CLI. Git is the package manager."
@@ -179,6 +184,7 @@ return { prCount: prs.length };
 | [**Runtimes**](/concepts/runtimes) | Deno, Python, Docker, Podman — setup and features |
 | [**Triggers**](/concepts/triggers) | Cron, webhook (with HTML UIs), manual, chain, daemon |
 | [**SDK Globals**](/concepts/sdk) | params, kv, input, output, dicode, mcp — Deno & Python |
+| [**Suspend & Resume**](/concepts/suspend-resume) | Pause for human input, JSON-Schema forms, main/resume/steps auto-dispatch |
 | [**Secrets**](/concepts/secrets) | Encrypted store, provider chain, CLI management |
 | [**Sources & TaskSets**](/concepts/sources) | Git sources, local sources, TaskSet composition, dev mode |
 | [**Task Sharing**](/concepts/sharing) | Community registry, overrides, multi-machine deployment |
@@ -186,7 +192,7 @@ return { prCount: prs.length };
 | [**Webhook Relay & OAuth**](/concepts/relay) | NAT traversal, ECDSA identity, zero-setup OAuth |
 | [**AI Agent**](/concepts/ai-agent) | Built-in AI chat, MCP server, skills, BYO provider |
 | [**Throwaway UIs**](/examples/throwaway-ui) | Webhook visualizers, polls, approval gates, dashboards |
-| [**Examples**](/examples/cron-task) | Cron task, webhook form, Docker container |
+| [**Examples**](/examples/cron-task) | Cron task, webhook form, Docker container, suspend wizard |
 
 </div>
 
