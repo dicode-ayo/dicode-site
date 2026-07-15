@@ -118,7 +118,7 @@ HTML explainer (browser)  |  JSON error (API client)
 - Browser GETs (`Accept: text/html`) receive a `401` with a small HTML explainer page -- it points at the daemon's own address, or a tunnel such as Tailscale or cloudflared, for interactive access.
 - API callers receive `401 JSON`, the same machine-readable shape as the direct-path rejection above.
 
-This is by design, not a bug: the relay only forwards `/hooks/*` and `/dicode.js` and strips every credential header (see [Path whitelist](./relay.md#path-whitelist) and [Hop-by-hop header filtering](./relay.md#hop-by-hop-header-filtering)), so a session cookie minted by `/login` could never reach it -- the `/login` redirect would land on a page whose assets 404 and whose login POST has nowhere to go. Rejecting the relay hop outright avoids that dead end.
+This is by design, not a bug: the relay only forwards `/hooks/*` and `/dicode.js` and strips every credential header (see [Path whitelist](./relay.md#path-whitelist) and [Hop-by-hop header filtering](./relay.md#hop-by-hop-header-filtering)), so a session cookie minted by `/login` could never reach it -- `/login` itself falls outside the relay's path whitelist and is rejected with `403` before any login form can load or POST. Rejecting the relay hop outright with a clear `401` explainer avoids that dead end.
 
 If you need interactive remote access to a session-gated page like the dashboard, use a tunnel (Tailscale, cloudflared, etc.) that reaches the daemon directly instead of routing through the relay.
 
