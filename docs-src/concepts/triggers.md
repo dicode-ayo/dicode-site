@@ -104,6 +104,28 @@ The login page resolves the task's `name` and `description` from the registry wh
 
 **API clients** (requests without `Accept: text/html`) receive `401 JSON` instead of a redirect, preserving machine-readable behaviour for curl, fetch, and SDK callers.
 
+#### Relay behavior
+
+The login flow above only applies to the **direct** path (hitting the daemon at its own address). Reached through the [webhook relay](./relay.md) instead, a protected webhook never gets that far: the daemon detects the relay hop via the trusted `X-Relay-Base` header (set by the relay client itself; any copy on an inbound request is stripped) and rejects the request *before* evaluating a session at all.
+
+```
+GET https://relay.dicode.app/u/<uuid>/hooks/dashboard
+  ↓ X-Relay-Base present → session check skipped
+  ↓ 401
+HTML explainer (browser)  |  JSON error (API client)
+```
+
+- Browser GETs (`Accept: text/html`) receive a `401` with a small HTML explainer page -- it points at the daemon's own address, or a tunnel such as Tailscale or cloudflared, for interactive access.
+- API callers receive `401 JSON`, the same machine-readable shape as the direct-path rejection above.
+
+This is by design, not a bug: the relay only forwards `/hooks/*` and `/dicode.js` (see [Path whitelist](./relay.md#path-whitelist)) and strips every credential header on the way in, so a session cookie minted by `/login` could never reach the daemon -- `/login` itself falls outside the relay's path whitelist and is rejected with `403` before any login form can load or POST. Rejecting the relay hop outright with a clear `401` explainer avoids that dead end.
+
+If you need interactive remote access to a session-gated page like the dashboard, use a tunnel (Tailscale, cloudflared, etc.) that reaches the daemon directly instead of routing through the relay.
+
+::: tip
+This only affects `auth: true` webhooks. HMAC-authenticated and open webhooks work through the relay exactly as described in [What works through the relay](./relay.md#what-works-through-the-relay).
+:::
+
 #### Safety
 
 The `next` parameter is validated as a same-origin path. Values that don't start with `/`, contain protocol-relative prefixes (`//`, `/\`), include backslashes or CR/LF, or parse to anything with a scheme/host/opaque component are rejected. Unsafe values fall back to `/hooks/webui` (form POST) or are dropped from the response (JSON POST). Open-redirect abuse attempts like `?next=//evil.com`, `?next=https://evil.com`, or `?next=javascript:…` cannot escape the same origin.
