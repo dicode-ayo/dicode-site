@@ -120,6 +120,10 @@ When the relay client forwards a request to the local daemon, it sets the `X-Rel
 
 The relay strips hop-by-hop headers (`Connection`, `Keep-Alive`, `Transfer-Encoding`, `Upgrade`, etc.) and sensitive headers (`Set-Cookie`) from responses before forwarding them to the external caller.
 
+::: tip Session-gated webhooks aren't reachable via the relay
+`auth: true` webhooks are rejected outright when reached through the relay, rather than falling back to the usual `/login` redirect -- the relay only forwards `/hooks/*` and strips every credential header, so a session set via `/login` could never arrive anyway. Browsers get a `401` HTML explainer; API callers get `401` JSON. See [Relay behavior](./triggers.md#relay-behavior) in the triggers reference for details and a tunnel-based alternative for interactive remote access.
+:::
+
 ### Size and timeout limits
 
 - **Request body limit**: 5 MB maximum. Requests exceeding this are rejected with `413 Request Entity Too Large`.
