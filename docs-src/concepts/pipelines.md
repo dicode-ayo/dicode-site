@@ -47,7 +47,7 @@ stages:
 | `trigger.cron` | string | no | Standard 5-field cron expression |
 | `trigger.webhook` | string | no | Webhook path, e.g. `/deploy` |
 | `trigger.webhook_secret` | string | no | HMAC secret for the webhook (supports `${VAR}` expansion) |
-| `trigger.auth` | bool | no | Require a valid dicode session for the webhook (same semantics as `kind: Task`) |
+| `trigger.auth` | bool \| `"session"` \| `"any"` | no | Gate the webhook (same semantics as `kind: Task`): `true`/`"session"` requires a dicode session, `"any"` accepts a session **or** a valid HMAC signature (requires `webhook_secret`), absent/`false` is public. See [Session authentication](./triggers.md#session-authentication) for the full breakdown. |
 | `trigger.chain` | object | no | Chain trigger — fire the pipeline when an upstream task/pipeline completes |
 | `stages` | list | yes | Ordered list of stages; at least one required |
 | `stages[].task` | string | yes | Task ID of an existing `kind: Task` to run as this stage |

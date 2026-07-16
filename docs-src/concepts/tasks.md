@@ -71,6 +71,7 @@ trigger:
   webhook_secret: "${SECRET}"    # HMAC-SHA256 secret (env var interpolation)
   replay_protection: false       # nonce-cache replay guard (default true when secret set)
   auth: true                     # require dicode session — see /concepts/triggers#session-authentication
+                                  # auth: any also accepts a valid HMAC signature instead of a session (needs webhook_secret) — see /concepts/triggers#session-or-hmac-auth-any
   manual: true                   # only triggered explicitly
   daemon: true                   # long-running process
   restart: always                # daemon only: always | on-failure | never
