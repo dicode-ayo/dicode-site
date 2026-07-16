@@ -123,7 +123,7 @@ trigger:
 
 - **`POST`** — authenticates with **either** a valid dicode session **or** a valid HMAC signature (per [HMAC authentication](#hmac-authentication) above). A browser with a session works directly against the daemon; a machine caller that only has the shared secret can sign its request and reach the same endpoint over the relay.
 - **`GET`** and static asset requests always require a session — never a signature. This mirrors `auth: true`'s login flow and keeps the task's UI itself session-gated even when its POST endpoint accepts signed callers.
-- `webhook_secret` is **required** for `auth: any` — without it there's no HMAC path, and the option provides nothing over plain `auth: true`.
+- `webhook_secret` is **required** for `auth: any` — a task with `auth: any` and no `webhook_secret` fails to load with a validation error, since the HMAC path would otherwise have nothing to verify against.
 
 Because a relayed request is never evaluated for a session (see [Relay behavior](#relay-behavior) below), the practical effect is: a browser authenticates directly against the daemon via its session, while a signed machine caller authenticates over the relay via HMAC. Neither path lets an unsigned, session-less caller through.
 
