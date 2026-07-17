@@ -313,6 +313,24 @@ The relay allows your local dicode instance to receive webhooks from external se
 
 See [Webhook Relay](/concepts/relay) for details.
 
+## Approval Gate
+
+```yaml
+approval:
+  enabled: false                   # enable trust-on-change gate (default: false)
+  sources:
+    my-source:
+      trust: always                # trust all tasks from this source without approval
+  tasks:
+    buildin/alert:
+      trust: always                # trust specific tasks
+  notify_task: ""                  # task to fire when a task goes pending (optional)
+```
+
+When `enabled: true`, new or changed tasks are held pending until approved — their triggers are not armed and they cannot be fired. Builtin tasks (`buildin/*`) are always trusted. Tasks or sources configured with `trust: always` bypass the gate. All other tasks must be explicitly approved via the web UI, `dicode task approve <task-id>`, or a tokenized link.
+
+See [Task Approval Gate](/concepts/approval) for the full reference.
+
 ## Audit Log
 
 ```yaml
