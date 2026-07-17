@@ -146,6 +146,42 @@ claude mcp add --transport http dicode http://localhost:8080/mcp \
   --header "Authorization: Bearer dck_..."
 ```
 
+## Ephemeral per-run MCP tokens
+
+Everything above is a human provisioning one durable key up front. There's a second path aimed at tasks rather than people: a task can opt in to an **automatic, per-run token** that the daemon mints and revokes for it, with no `dicode mcp install` step and no key to copy anywhere.
+
+### Opt in via `permissions.env`
+
+Declare an env entry named `DICODE_MCP_API_KEY` in the task's `task.yaml`. In practice this is written as a `secret:` entry, typically with `optional: true` so the run doesn't fail before the daemon has a chance to inject the ephemeral token — this is exactly how `buildin/ai-agent-claude-cli` declares it:
+
+```yaml
+permissions:
+  env:
+    - name: DICODE_MCP_API_KEY
+      secret: DICODE_MCP_API_KEY
+      optional: true
+```
+
+A task that declares an env entry named `DICODE_MCP_API_KEY` gets special handling: instead of resolving the value normally, the daemon mints a fresh, single-run dicode API key when the run starts, injects it as `DICODE_MCP_API_KEY` (overriding whatever the entry would otherwise have resolved to), and unconditionally revokes it when the run ends — on success, on error, and on timeout. The task hands that key to whatever MCP client it drives (its own HTTP call, or a wrapped CLI) to reach dicode's `/mcp` surface with zero setup. This is the mechanism `buildin/ai-agent-claude-cli` uses — see [AI Agent](./ai-agent).
+
+If no minter is wired (no database configured — the case in some test/dev setups), the ephemeral mint is skipped and the entry resolves normally instead: a `secret:` entry falls back through the secrets chain, and `optional: true` degrades a missing secret to an empty string rather than failing the run. A **bare** `DICODE_MCP_API_KEY` entry (no `secret:`/`from:`/`value:`) does *not* fall back to anything — dicode always excludes this name from bare host-env passthrough as a daemon control-plane credential, so with no minter wired it would resolve to nothing. Use the `secret:` + `optional: true` form shown above, not a bare entry.
+
+### How it differs from `dicode mcp install`
+
+| | `dicode mcp install` | Ephemeral per-run token |
+|---|---|---|
+| Lifetime | Durable — lives until re-run or `dicode mcp uninstall` | Single run — minted at start, revoked at end |
+| Scope of the key itself | One shared key, reused by every call that has it | Private to one run; a new run gets a new key |
+| Who provisions it | An operator, once, from a terminal | The daemon, automatically, on every run |
+| Key name | `mcp-dicode` (or your own via `--key`) | `ephemeral/run/<runID>` |
+| Cleanup | Manual — rotate or uninstall | Automatic revoke on run end, plus a daemon-startup sweep that revokes any token orphaned by a run that was still in flight when the daemon last stopped |
+
+Reach for `dicode mcp install` when a human is sitting at a `claude` CLI session. Reach for the ephemeral path — via `permissions.env` — when a task itself needs to call dicode's MCP tools as part of its own run.
+
+::: warning Scope limitation (current)
+The minted token is **full-surface** — the same permissions as an operator-managed key — not yet scoped down to the task's declared `dicode.*` capabilities. A task that opts in can call `run_task` on any registered task via MCP, regardless of what it declares under `permissions.dicode.tasks`. Per-capability scoping is a tracked follow-on, not yet shipped.
+:::
+
 ## Try it from the shell
 
 ```sh
