@@ -354,6 +354,35 @@ auto-fix-claude:
 
 Then point `on_failure_chain` at `buildin/auto-fix-claude` instead of `buildin/auto-fix`. Same loop, different LLM backend, no marginal cost while you're under the 5-hour rate window.
 
+### Webhook auth (session or HMAC)
+
+`/hooks/ai-claude` ships with `trigger.auth: any`: a request authenticates with **either** a valid dicode session **or** a valid HMAC signature. See [Session authentication](/concepts/triggers#session-authentication) and [HMAC authentication](/concepts/triggers#hmac-authentication) for how each half works on its own — this section only covers what's specific to this builtin. (The general `trigger.auth: "any"` session-OR-HMAC mechanism is tracked separately in [dicode-site#140](https://github.com/dicode-ayo/dicode-site/issues/140); dicode-core [#615](https://github.com/dicode-ayo/dicode-core/pull/615) is what activates it on this particular webhook.)
+
+- **Browser / WebUI chat** authenticates with your dicode session, directly on the daemon's own address. Session cookies never travel over the relay, so the chat UI is **not** reachable through the public relay URL — open it on the daemon's host, or reach the host with a tunnel (Tailscale, cloudflared). The UI assets (`index.html`, `chat.js`, `style.css`) always require a session; they never fall through to HMAC.
+- **Machine / programmatic callers** sign a POST with a shared secret and can authenticate over the public [relay](./relay.md) URL, where session cookies can't reach.
+
+Enable the HMAC path by setting the secret in the daemon environment:
+
+```bash
+export AI_CLAUDE_WEBHOOK_SECRET="$(openssl rand -hex 32)"
+```
+
+**Leaving it unset is safe.** A naive `webhook_secret: "${AI_CLAUDE_WEBHOOK_SECRET}"` would otherwise resolve, after template expansion, to the literal placeholder string when the variable is unset — a publicly-readable HMAC key shipped by default on an enabled-out-of-the-box webhook. dicode-core's `normalizeWebhookAuth` runs *after* template expansion (the only point a real secret is distinguishable from an unresolved one) and downgrades any `auth: any` webhook whose secret is empty or still `${...}`-shaped to plain **session-only** auth, clearing the placeholder and logging a load-time warning instead. So:
+
+- `AI_CLAUDE_WEBHOOK_SECRET` **set** → `auth: any`, real HMAC, relay-reachable.
+- **unset** → safe session-only fallback (today's original, unchanged behavior) — never a public-literal secret.
+
+`require_timestamp: true` is also set on this webhook, so every signed request must carry a fresh `X-Dicode-Timestamp` alongside `X-Hub-Signature-256`. It's mandatory here — not just optional, as on a typical HMAC webhook — because this endpoint points an MCP-capable agent at the untrusted relay, and the timestamp closes the replay window:
+
+```
+X-Hub-Signature-256: sha256=HMAC-SHA256(secret, "<unix_ts>\n<body>")
+X-Dicode-Timestamp: <unix_ts>
+```
+
+::: warning Relay caveat — short/programmatic turns only
+The relay forwarder aborts at **25s**, but a chat turn can run up to 5 minutes, and `?wait=false` can't be selected over the relay (the broker drops query strings). A long synchronous turn over the relay will still 502 regardless of auth — enabling the HMAC path makes the webhook *reachable*, not necessarily *completable* for long turns. Use it for short or fire-and-forget turns until an async, pollable surface lands.
+:::
+
 ### Limitations (current)
 
 - **Tool use is dicode-only.** `claude -p` print mode still disables Claude's own filesystem/bash tools. MCP is wired by default (see [MCP tool access](#mcp-tool-access-no-setup-step-needed)), giving Claude `mcp__dicode`-scoped tool access via `--allowedTools`; set `enable_mcp: false` to fall back to the purely chat-completion-style wrapper.
