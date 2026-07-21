@@ -377,3 +377,19 @@ relay:
 ::: warning
 Always use `wss://` (TLS) in production. The relay client accepts `ws://` for local development but logs a warning.
 :::
+
+### Status endpoint password
+
+dicode also ships an in-process self-hosting option: the built-in `buildin/relay-server` task runs the same `dicode-relay` service directly under the daemon's own Deno runtime, so you don't have to deploy and operate a separate Node.js process. Whichever self-hosting path you use, the relay's `/status` endpoint is protected by a password (`STATUS_PASSWORD` in `relay.yaml`, sourced from the `RELAY_STATUS_PASSWORD` secret).
+
+If you don't set `RELAY_STATUS_PASSWORD`, it falls back to a documented dev default (`dicode-relay-dev`) so `buildin/relay-server` still stands up locally without any extra configuration.
+
+::: warning The default status password is dev-only
+At startup, `buildin/relay-server` **always warns loudly** if the status password is still the `dicode-relay-dev` default. If that default is in effect *and* `base_url` is not a loopback address (`localhost`, `127.0.0.1`/`127.0.0.0/8`, `::1`/`[::1]`, or `*.localhost`), the task **refuses to start** — a publicly-known credential must never be the only thing guarding a status endpoint that's reachable from outside the local machine.
+
+Set a real password before exposing the relay beyond localhost:
+
+```sh
+dicode secrets set RELAY_STATUS_PASSWORD <password>
+```
+:::
