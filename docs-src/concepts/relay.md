@@ -43,8 +43,29 @@ relay:
 That is all. On next startup, the daemon connects to the relay and logs the assigned public URL.
 
 ::: info How relay startup works
-The relay connection is managed by an internal daemon task (`buildin/relay-server-body`). It is automatically **disabled** at registration unless **both** `relay.enabled: true` and `relay.server_url` are set — if either is missing, the task never starts and produces no log output. Once you add both values, the reconciler picks them up within ~30 seconds; no daemon restart is needed.
+The relay connection is managed by an internal daemon task (`buildin/relay-server-body`). It is automatically **disabled** at registration unless **both** `relay.enabled: true` and one of `relay.server_url` / `relay.server_urls` are set — if either is missing, the task never starts and produces no log output. Once you add both values, the reconciler picks them up within ~30 seconds; no daemon restart is needed.
 :::
+
+### High availability: `relay.server_urls`
+
+For a high-availability deployment — multiple broker instances behind one public origin — set `relay.server_urls` instead of `relay.server_url`:
+
+```yaml
+relay:
+  enabled: true
+  server_urls:
+    - wss://relay-a.dicode.app
+    - wss://relay-b.dicode.app
+    - wss://relay-c.dicode.app
+```
+
+The daemon opens one independent mTLS control connection per instance, all sharing the daemon's identity/client cert. Any instance can forward an inbound webhook locally, so failover is instant — there's no directory lookup or mesh coordination between instances.
+
+::: warning `server_url` and `server_urls` are mutually exclusive
+Exactly one of `relay.server_url` or `relay.server_urls` must be set when `relay.enabled: true`. Setting both, or neither, is a config-load error. Every entry in `server_urls` must be `wss://` (mTLS-only — no `ws://` fallback for HA deployments), and duplicate or empty entries are also rejected at config load.
+:::
+
+The corresponding environment variable overrides follow the same split: `DICODE_RELAY_SERVER_URL` carries the single/primary URL for `server_url` deployments, while `DICODE_RELAY_SERVER_URLS` carries the comma-joined full list for `server_urls` deployments.
 
 ---
 
@@ -393,3 +414,15 @@ Set a real password before exposing the relay beyond localhost:
 dicode secrets set RELAY_STATUS_PASSWORD <password>
 ```
 :::
+
+### Multi-instance brokers
+
+To run your own high-availability broker deployment (multiple `dicode-relay` instances behind one origin) and consume it with `relay.server_urls` as described in [High availability](#high-availability-relay-server-urls) above, the broker side needs `server.multi_instance: true` in its own config, plus a shared broker signing key and mTLS certificate distributed to every instance — this is what lets any instance validate connections and forward inbound webhooks without a directory or mesh. See the [dicode-relay repository](https://github.com/dicode-ayo/dicode-relay) for the multi-instance broker setup. Point your daemon at all instances:
+
+```yaml
+relay:
+  enabled: true
+  server_urls:
+    - wss://relay-a.example.com/ws
+    - wss://relay-b.example.com/ws
+```
