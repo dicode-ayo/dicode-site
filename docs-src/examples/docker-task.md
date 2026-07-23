@@ -152,7 +152,7 @@ docker:
   command:
     - sh
     - -c
-    - curl -s -X POST -H 'Content-Type: application/json' -d '{"text":"hello from dicode"}' "$SLACK_WEBHOOK_URL"
+    - "curl -s -X POST -H 'Content-Type: application/json' -d '{\"text\":\"hello from dicode\"}' \"$SLACK_WEBHOOK_URL\""
 ```
 
 dicode resolves `slack_webhook_url` from the secrets store and injects it into
