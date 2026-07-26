@@ -246,6 +246,38 @@ it adds real-time streaming and in-page rendering without a full page reload.
 
 ### Testing with curl
 
+Use the `dicode webhook sign` CLI to compute the required headers -- it's pure
+local crypto, no running daemon required, so it works from any shell that has
+the `dicode` binary on its `PATH`:
+
+```bash
+BODY='{"message":"Great tool!","name":"Alice"}'
+HEADERS=$(dicode webhook sign --secret "$SECRET" --data "$BODY")
+
+curl -X POST http://localhost:8080/hooks/feedback \
+  -H "Content-Type: application/json" \
+  -H "$(echo "$HEADERS" | grep '^X-Hub-Signature-256:')" \
+  -H "$(echo "$HEADERS" | grep '^X-Dicode-Timestamp:')" \
+  -d "$BODY"
+```
+
+`dicode webhook sign` prints the two header lines to stdout:
+
+```text
+X-Hub-Signature-256: sha256=<hex>
+X-Dicode-Timestamp: <unix_ts>
+```
+
+See [Signing with the `dicode webhook sign` CLI](https://github.com/dicode-ayo/dicode-core/blob/main/docs/webhooks.md#signing-with-the-dicode-webhook-sign-cli)
+in dicode-core for the full flag reference (`--data-file`, `--timestamp`, `--no-timestamp`).
+
+#### How it works under the hood
+
+`dicode webhook sign` computes the same digest dicode itself verifies --
+`HMAC-SHA256(secret, "<timestamp>\n<body>")`. If you don't have the `dicode`
+binary handy, you can reproduce the bare-body form (no `X-Dicode-Timestamp`
+header, equivalent to `dicode webhook sign --no-timestamp`) with `openssl`:
+
 ```bash
 BODY='{"message":"Great tool!","name":"Alice"}'
 SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$SECRET" | awk '{print "sha256="$2}')

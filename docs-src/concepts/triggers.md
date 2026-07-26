@@ -58,6 +58,11 @@ The secret value supports `${ENV_VAR}` interpolation -- the actual secret is rea
 You never need to verify the HMAC signature in your task script. dicode handles this automatically when `webhook_secret` is configured.
 :::
 
+To call a protected webhook yourself (from a shell script, CI job, or another
+service), use the `dicode webhook sign` CLI to compute a valid signature
+instead of hand-rolling the HMAC -- see [Testing with curl](/examples/webhook-task#testing-with-curl)
+for a worked example.
+
 ### Replay protection
 
 When `webhook_secret` is set, dicode automatically rejects duplicate webhook bodies within a 1-hour window. This prevents replay attacks -- the task fires once and subsequent identical requests return HTTP 409 Conflict.
