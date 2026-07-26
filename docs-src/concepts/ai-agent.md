@@ -299,7 +299,7 @@ This is how the **AI at every stage** table's "Create" row works end-to-end unde
 | Auth | Per-task `*_API_KEY` env or secret | `CLAUDE_CODE_OAUTH_TOKEN` — optional; falls back to the daemon host's logged-in `~/.claude/.credentials.json` |
 | Billing | Per-token via the chosen provider's API | Counts against subscription rate windows (Pro/Max: 5-hour) |
 | Model selection | `model` param | `model` param (`sonnet`, `opus`, …) |
-| Tool use | dicode tasks via `tools` param | `mcp__dicode` only, when MCP is wired (`enable_mcp: true` + a `DICODE_MCP_API_KEY`) — no other Claude tools (Bash, Read, Write, …) |
+| Tool use | dicode tasks via `tools` param | Partially governed: Claude's dangerous built-in tools (Bash, Read, Write, Edit, NotebookEdit, WebFetch, WebSearch, Glob, Grep, Task, KillShell) are always denied via `--disallowedTools`, fail-closed regardless of MCP wiring; `mcp__dicode` is additionally granted via `--allowedTools` only when MCP is wired (`enable_mcp: true` + a `DICODE_MCP_API_KEY`) |
 | Setup | Provide an API key | Install `claude` binary on the daemon host; OAuth token is optional |
 
 If your dicode workload fits inside a 5-hour Pro/Max window — typical for auto-fix loops or occasional ad-hoc agent calls — the CLI path is free of marginal cost. For non-Anthropic models, predictable per-token billing, or workloads that exceed the subscription rate cap, stay on `buildin/ai-agent`.
@@ -330,6 +330,8 @@ Both can coexist: nothing prevents one task from using the API path and another 
 ### MCP tool access (no setup step needed)
 
 Unlike the OAuth token above, MCP tool access isn't a step you have to perform: `DICODE_MCP_API_KEY` (also declared `optional: true` in `permissions.env`) is minted fresh by the daemon for every run of this task and revoked when the run ends — there's no [`dicode mcp install`](./mcp-server.md) to run first. As long as `enable_mcp` stays at its default `true`, each run gets `.claude/mcp.json` wired to dicode's `/mcp` endpoint and `--allowedTools mcp__dicode` automatically, on by default. Set `enable_mcp: false` to turn it off.
+
+Independent of that switch, the task also always passes `--disallowedTools` denying Claude's built-in filesystem/bash/network tools (Bash, Read, Write, Edit, NotebookEdit, WebFetch, WebSearch, Glob, Grep, Task, KillShell) — fail-closed, whether or not MCP is wired. Turning `enable_mcp` off removes the `mcp__dicode` grant; it does not reopen access to Claude's own built-in tools. See [Limitations](#limitations-current).
 
 ### Interactive chat
 
@@ -385,7 +387,7 @@ The relay forwarder aborts at **25s**, but a chat turn can run up to 5 minutes, 
 
 ### Limitations (current)
 
-- **Tool use is dicode-only.** `claude -p` print mode still disables Claude's own filesystem/bash tools. MCP is wired by default (see [MCP tool access](#mcp-tool-access-no-setup-step-needed)), giving Claude `mcp__dicode`-scoped tool access via `--allowedTools`; set `enable_mcp: false` to fall back to the purely chat-completion-style wrapper.
+- **Partially governed tool access (security).** `claude -p` print mode actually runs with Claude's full default toolset (Read/Write/Edit/Bash/etc.) — it is not tool-free, contrary to an earlier assumption in this doc. The wrapper compensates by always passing `--disallowedTools` denying the dangerous built-ins (Bash, Read, Write, Edit, NotebookEdit, WebFetch, WebSearch, Glob, Grep, Task, KillShell), fail-closed, regardless of whether MCP wiring succeeded. When MCP is wired (the default; see [MCP tool access](#mcp-tool-access-no-setup-step-needed)), the task additionally passes `--allowedTools mcp__dicode` so Claude can call dicode's governed tool surface; setting `enable_mcp: false` drops that grant, but the built-in denylist still applies either way. As a subprocess, `claude` is still not confined by dicode's Deno sandbox, so the `run: ["claude"]` permission still understates what the binary itself can do at the OS level — but it can no longer reach host filesystem/bash/network tools through Claude's own tool-call interface. Growing the MCP surface to more governed authoring tools (write-into-clone, test, commit/PR) is still open, tracked in dicode-core [#560](https://github.com/dicode-ayo/dicode-core/issues/560).
 - **No streaming.** The wrapper waits for the full response before returning. Plumbing `--output-format stream-json` through `dicode.output()` is a tracked follow-up.
 - **No subscription-aware queueing.** Hitting the 5-hour cap returns an error; the task has no built-in retry or backpressure.
 - **One subscription per dicode instance.** OAuth tokens belong to one Claude account — fine for personal/team setups, less suited to multi-tenant.
