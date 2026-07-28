@@ -137,6 +137,13 @@ docker:                          # docker/podman runtime only
 timeout: 30s                     # default 60s for script tasks; no default for docker/daemon
 mcp_exposed: true                # visible to MCP clients via list_tasks / tools/call
 mcp_port: 3000                   # daemon exposes MCP server on this port
+
+webui:                           # contribute a link to the main WebUI header nav — see "WebUI navigation" below
+  nav:
+    label: "Auth Providers"      # required if webui.nav is set; empty label is a validation error
+    order: 10                    # optional; default 0, ascending, ties break by task ID
+    icon: "🔑"                   # optional; rendered literally before the label
+
 on_failure_chain: buildin/alert  # short form — task to run on failure
 # or the structured form:
 # on_failure_chain:
@@ -167,6 +174,7 @@ on_failure_chain: buildin/alert  # short form — task to run on failure
 | `timeout` | duration | no | Max execution time (default `60s` for scripts) |
 | `mcp_exposed` | bool | no | Default `false`. When `true`, the task is visible to MCP clients via `list_tasks` and can be invoked via `tools/call`. When `false` (default), the task is hidden from MCP. See [MCP Server](./mcp-server.md). |
 | `mcp_port` | int | no | Port where a daemon task exposes an MCP server |
+| `webui` | object | no | Contribute a link to the main WebUI header nav. Requires `trigger.webhook`. See [WebUI navigation](#webui-navigation) below. |
 | `on_failure_chain` | string \| object | no | Task ID (short form) or structured block to trigger on failure. Used for notifications, auto-fix, and any other side-effect chain. See [Auto-fix loop](./auto-fix.md). |
 
 ### Trigger types
@@ -251,6 +259,25 @@ By default, dicode rejects Docker and Podman task configurations that use host n
 
 To opt in to a specific exception, add a `container_security:` block to `dicode.yaml` — see [Container Security](/getting-started/configuration#container-security). Named and anonymous volumes (not host bind-mounts) are always allowed.
 :::
+
+## WebUI navigation
+
+Any task with a `trigger.webhook` can contribute a link in the main WebUI header nav by setting `webui.nav` in its `task.yaml`:
+
+```yaml
+trigger:
+  webhook: /hooks/auth-providers
+  auth: true
+webui:
+  nav:
+    label: "Auth Providers"      # required if webui.nav is set; empty label is a validation error
+    order: 10                    # optional; default 0, ascending, ties break by task ID
+    icon: "🔑"                   # optional; rendered literally before the label
+```
+
+The `dc-nav` component reads `GET /api/tasks` and picks the entries that have `webui.nav.label` set, rendering one link per matching task in the header. Links are sorted by `order` ascending (default `0`); ties break by task ID.
+
+A task with `webui.nav` set but **no** `trigger.webhook` is skipped — `dc-nav` cannot link to a task with no HTTP endpoint. This is not a hard failure: the task still loads and runs normally, but a warning is logged to the browser console instead of a nav entry being rendered. An empty `webui.nav.label`, on the other hand, is a `task.yaml` validation error at load time.
 
 ## Return values
 
