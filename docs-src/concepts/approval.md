@@ -106,18 +106,18 @@ task my-task/processor is pending approval (hash: a3f2…); approve via UI, CLI,
 
 ### 1. Web UI
 
-The task list badges each pending task; approving happens on the task detail page, not inline in the list.
+The task list badges each pending task but does not approve inline — clicking through takes you to the task detail page.
 
-Approving is a two-step flow:
+Approving there is a two-step flow:
 
-1. Click **Approve** to expand a per-file diff panel — changed files, a unified-style diff for each, and a highlighted warning banner if any file touches a security-relevant field (permissions, env, net, run, runtime, trigger/webhook/cron keys — see [Content hash scope](#content-hash-scope)). The button relabels to **Confirm approve**.
-2. Click **Confirm approve** to actually approve. Collapsing the panel reverts the button back to **Approve** — nothing is approved while the panel is closed.
+1. The button starts labeled **Review changes**. Click it to load and open a per-file diff panel — changed files, a unified-style diff for each, and a highlighted warning banner if any file touches a security-relevant field (permissions, env, net, run, runtime, trigger/webhook/cron keys — see [Content hash scope](#content-hash-scope)). Once the diff is loaded, the button relabels to **Approve**.
+2. Click **Approve** to actually approve. Closing the panel reverts the button back to **Review changes** — nothing is approved while the panel is closed.
 
-A separate **View diff** toggle shows the same panel read-only, for reviewing a pending change without arming approval.
+A separate **View diff** / **Hide diff** toggle opens or closes the same panel independently, for reading a pending change without going through the approve button.
 
 Authentication is required (session cookie).
 
-Under the hood, the diff panel calls `GET /api/tasks/{id}/pending-diff` and **Confirm approve** calls `POST /api/tasks/{id}/approve`.
+Under the hood, the diff panel calls `GET /api/tasks/{id}/pending-diff` and **Approve** calls `POST /api/tasks/{id}/approve`.
 
 ### 2. CLI
 
