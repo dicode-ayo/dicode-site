@@ -52,6 +52,8 @@ The hash covers:
 
 A taskset override that adds a network host to `permissions.net`, grants `permissions.run`, changes `runtime` from `deno` to `docker`, or removes `trigger.auth: true` will produce a new hash and re-pend the task.
 
+The pending-change diff (see [Approving tasks](#approving-tasks) below) flags files as security-relevant using a related but broader field set — it also calls out trigger keys like `cron`, `manual`, `daemon`, `chain`, and `webhook`, not just `trigger.auth` — as a "worth a careful look" signal. Only the fields in the table above actually change the content hash and re-pend the task; the diff's flagging is intentionally wider so an operator's eye is drawn to any trigger rewire, even ones that don't by themselves invalidate approval.
+
 ## Configuration
 
 ```yaml
@@ -104,9 +106,18 @@ task my-task/processor is pending approval (hash: a3f2…); approve via UI, CLI,
 
 ### 1. Web UI
 
-The task list badges each pending task. Click the **Approve** button in the row (or in the task detail panel) to approve immediately. Authentication is required (session cookie).
+The task list badges each pending task; approving happens on the task detail page, not inline in the list.
 
-Under the hood, the UI calls `POST /api/tasks/{id}/approve`.
+Approving is a two-step flow:
+
+1. Click **Approve** to expand a per-file diff panel — changed files, a unified-style diff for each, and a highlighted warning banner if any file touches a security-relevant field (permissions, env, net, run, runtime, trigger/webhook/cron keys — see [Content hash scope](#content-hash-scope)). The button relabels to **Confirm approve**.
+2. Click **Confirm approve** to actually approve. Collapsing the panel reverts the button back to **Approve** — nothing is approved while the panel is closed.
+
+A separate **View diff** toggle shows the same panel read-only, for reviewing a pending change without arming approval.
+
+Authentication is required (session cookie).
+
+Under the hood, the diff panel calls `GET /api/tasks/{id}/pending-diff` and **Confirm approve** calls `POST /api/tasks/{id}/approve`.
 
 ### 2. CLI
 
@@ -129,7 +140,7 @@ The daemon can generate a single-use tokenized approve URL — typically deliver
 https://your-dicode-host/approve/<token>
 ```
 
-- `GET /approve/<token>` — renders a confirmation page. Safe for link prefetchers; does **not** consume the token.
+- `GET /approve/<token>` — renders a confirmation page that includes the same diff shown in the web UI: changed files, a unified-style diff per file, and a security-relevant warning banner when applicable — so a remote operator can review the change before approving, not just see a task ID and hash. No session is required; the token itself is the auth boundary. If no prior-approved snapshot is available to diff against (e.g. right after a daemon restart), the page says so and lists the pending files as newly added instead. Safe for link prefetchers; does **not** consume the token.
 - `POST /approve/<token>` — redeems the token and approves the task.
 
 Token properties:
@@ -249,6 +260,19 @@ Returns the task state. When the task is held by the approval gate, the response
 ```
 
 A task with `pending_approval: true` cannot be fired — manual fire, chain fire, and trigger dispatch are all blocked.
+
+### `GET /api/tasks/{id}/pending-diff`
+
+Returns the diff for a task's pending change: changed files, a unified-style diff per file, and a flag on any file whose diff touches a security-relevant key (see the note under [Content hash scope](#content-hash-scope)). This is what powers the diff panel in the web UI and the tokenized approve-link page.
+
+**Auth:** session cookie or Bearer API key — same auth group as `POST /api/tasks/{id}/approve`.
+
+| Status | Meaning |
+|---|---|
+| `200` | Diff returned |
+| `404` | Task ID not found in the registry |
+| `409` | Task is not in a pending state |
+| `503` | Approval gate not wired up |
 
 ### `POST /api/tasks/{id}/approve`
 
