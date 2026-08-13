@@ -205,10 +205,38 @@ The reconciler is the component that consumes events from all sources and keeps 
 
 **Error handling:**
 
-- If a task's `task.yaml` fails validation on `added` or `updated`, the error is logged and the task is not registered (or the old version is kept for `updated`).
+- If a task's `task.yaml` fails to resolve, parse, or validate on `added` or `updated`, the entry's **prior (last-good) registration is carried forward unchanged** — no spurious `removed` event fires, so the task never looks like it silently vanished. The failure itself is tracked as first-class state instead of only being logged; see [Load failures](#load-failures) below.
 - Source errors (git clone failure, auth failure) are logged and retried on the next poll cycle. The reconciler does not crash.
 
 **Local sources** use `fsnotify` with ~150ms debounce to handle editors that write via tmp-rename. **Git sources** are cloned to a cache directory under `data_dir` and pulled at `poll_interval`.
+
+### Load failures
+
+A load failure is surfaced instead of silently dropping the task ([dicode-core#656](https://github.com/dicode-ayo/dicode-core/pull/656)). TaskSet sources expose their current failures via `Source.LoadFailures()`; the direct-load path (tasks registered outside a taskset) uses `Registry.SetLoadFailure` / `ClearLoadFailure` / `LoadFailures()`. Both feed the same API fields and dashboard signals below.
+
+#### `GET /api/sources`
+
+Each source in the response now includes:
+
+| Field | Type | Description |
+|---|---|---|
+| `failed_count` | int | Number of task entries under this source currently failing to load |
+| `failures` | array | One entry per failing task, with its ID and the load error |
+
+A source can report `failed_count > 0` even when its most recent git pull succeeded — a bad `task.yaml` is an independent failure mode from a bad fetch/clone.
+
+#### `GET /api/tasks`
+
+Load failures are merged onto the task list:
+
+- A task that was **previously registered** and is now failing to load keeps its existing row, with a new `load_error` field set to the parse/validation error.
+- A task that has **never** registered (its `task.yaml` was broken from the first commit that introduced it) gets a **synthesized** minimal row — `kind: "LoadError"`, with `load_error` populated — so it's still discoverable via the API even though it has no prior good state to fall back on.
+
+#### Dashboard signals
+
+- The task list renders a red **"load error"** badge on any row with `load_error` set; its tooltip shows the parse error.
+- A source group's status dot in the task list turns red when that source's `failed_count > 0`.
+- The **Sources** page shows an equivalent status dot plus an **"N failed to load"** badge per source.
 
 ### Task ownership
 

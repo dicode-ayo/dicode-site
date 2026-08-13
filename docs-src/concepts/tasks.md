@@ -195,6 +195,10 @@ To run an ordered sequence of stages before a daemon or body — render a config
 
 Tasks held by the approval gate show `"pending_approval": true` in the `GET /api/tasks/{id}` API response. A pending task is visible in the registry and web UI but its triggers are not armed — it cannot be scheduled, receive webhooks, or be fired manually. Approve it via `dicode task approve <task-id>` in the CLI, the **Approve** button in the web UI, or a tokenized link delivered by the notification task. See [Task Approval Gate](/concepts/approval).
 
+### Load errors
+
+A task whose `task.yaml` fails to load no longer disappears from `GET /api/tasks` — its row gains a `load_error` field (or, for a task that never registered, a synthesized row with `kind: "LoadError"`), and the dashboard renders a red "load error" badge on it. See [Sources & TaskSets — Load failures](./sources#load-failures) for the full behavior, including the corresponding `GET /api/sources` fields.
+
 ### Enable / disable
 
 Every task has an `enabled` flag (default `true`). Disabled tasks remain visible in the API and the registry but are **not** scheduled, **not** spawned (daemons), and **not** routed (webhooks).
