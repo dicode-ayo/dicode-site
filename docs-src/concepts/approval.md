@@ -244,14 +244,26 @@ Returns the task state. When the task is held by the approval gate, the response
 {
   "id": "my-source/my-task",
   "pending_approval": true,
-  "pending_hash": "a3f2…",
   ...
 }
 ```
 
 A task with `pending_approval: true` cannot be fired — manual fire, chain fire, and trigger dispatch are all blocked.
 
-`pending_hash` is the exact content hash that the diff/files in this response describe (from `Gate.Diff()`). Pass it back on `POST /api/tasks/{id}/approve` to bind the approval to the reviewed content — see below.
+### `GET /api/tasks/{id}/pending-diff`
+
+Returns the file-level diff (`Gate.Diff()`) between a pending task's last-approved content and its current pending content, so an operator can review what changed before approving:
+
+```json
+{
+  "task_id": "my-source/my-task",
+  "pending_hash": "a3f2…",
+  "files": [ ... ],
+  ...
+}
+```
+
+`pending_hash` is the exact content hash that `files` describe. Pass it back as `hash` on `POST /api/tasks/{id}/approve` to bind the approval to the reviewed content — see below.
 
 ### `POST /api/tasks/{id}/approve`
 
@@ -270,6 +282,7 @@ When a `hash` is supplied, the approval is bound to that exact content hash (`Ga
 | Status | Body | Meaning |
 |---|---|---|
 | `200` | — | Task approved and armed |
+| `400` | — | Malformed JSON body, or a `hash` field that is present but empty/null |
 | `404` | — | Task ID not found in the registry |
 | `409` | — | Task is not in a pending state (already approved or trust-always) |
 | `409` | `{"stale": true}` | A `hash` was supplied but no longer matches the task's current pending hash; the task stays pending — refetch and re-review before retrying |
