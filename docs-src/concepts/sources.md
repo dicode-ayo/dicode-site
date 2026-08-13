@@ -212,7 +212,7 @@ The reconciler is the component that consumes events from all sources and keeps 
 
 ### Load failures
 
-A load failure is surfaced instead of silently dropping the task ([dicode-core#656](https://github.com/dicode-ayo/dicode-core/pull/656)). TaskSet sources expose their current failures via `Source.LoadFailures()`; the direct-load path (tasks registered outside a taskset) uses `Registry.SetLoadFailure` / `ClearLoadFailure` / `LoadFailures()`. Both feed the same API fields and dashboard signals below.
+A load failure is surfaced instead of silently dropping the task ([dicode-core#656](https://github.com/dicode-ayo/dicode-core/pull/656)). TaskSet sources expose their current failures via `Source.LoadFailures()`; the direct-load path (tasks registered outside a taskset) uses `Registry.SetLoadFailure` / `Registry.LoadFailures()`, with a failure cleared automatically whenever the task successfully `Register`s (or is `Unregister`ed) again — no separate "clear" call needed. Both feed the same API fields and dashboard signals below.
 
 #### `GET /api/sources`
 
