@@ -19,7 +19,7 @@ Anything that changes what code runs or what the sandbox can do produces a new h
 
 ### `dicode.lock`
 
-`dicode.lock` is a daemon-owned YAML file written in the same directory as `dicode.yaml`. It maps task ID to `{hash, approved_at, approved_by}` and is the source of truth for approval records.
+`dicode.lock` is a daemon-owned YAML file written in the same directory as `dicode.yaml`. It maps task ID to `{hash, approved_at, approved_by, commit}` and is the source of truth for approval records.
 
 ```
 ~/.dicode/
@@ -28,6 +28,16 @@ Anything that changes what code runs or what the sandbox can do produces a new h
 ```
 
 Do not hand-edit `dicode.lock` while the daemon is running. The daemon reads and writes it atomically; concurrent edits will be overwritten on the next reconcile.
+
+`commit` is an informational-only field — no gate decision reads it:
+
+| | |
+|---|---|
+| Captured | At pend time, not re-read from HEAD when the task is later approved, so a recorded commit always matches the tree that produced the approved hash |
+| Populated on | Every path that writes a lock entry, manual approval and auto-approve alike (trust-always source/task, gate disabled, bootstrap) |
+| Left empty when | The task's directory isn't tracked by the resolved repository's HEAD — e.g. the source isn't a git repo, has no commits, or the task is a dir-less inline taskset entry |
+
+A task directory that merely happens to sit inside an unrelated version-controlled folder does not get a `commit` recorded — the directory has to be tracked by the *resolved* repository's HEAD. Pre-existing lock records written before this field was added remain valid; `commit` is simply absent on them.
 
 ### Pending state
 
