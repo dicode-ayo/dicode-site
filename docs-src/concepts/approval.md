@@ -10,7 +10,7 @@ dicode watches git sources and reconciles tasks on every poll. Without the appro
 
 The decision is made once per `(task_id, content_hash)` pair:
 
-1. The daemon computes the task's **content hash** (`sha256("dicode-approval-content-v2" || dir_hash || resolved_permissions_JSON)`) where `resolved_permissions_JSON` covers `Permissions`, `Runtime`, and `Trigger.WebhookAuth`.
+1. The daemon computes the task's **content hash** (`sha256("dicode-approval-content-v1" || dir_hash || resolved_permissions_JSON)`) where `resolved_permissions_JSON` covers `Permissions`, `Runtime`, and `Trigger.WebhookAuth`.
 2. It looks up the task ID in `dicode.lock`.
 3. If the stored hash matches, the task re-arms immediately — no user action needed.
 4. If there is no entry, or the hash has changed, the task is held **pending**.
