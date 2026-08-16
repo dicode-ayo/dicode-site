@@ -18,11 +18,11 @@ Speaks JSON-RPC 2.0 over a single POST per call. The same shape every MCP client
 
 `/mcp` requires a `dck_` API key (Bearer) when `server.auth: true`:
 
-| Mechanism | Header | Use case |
-|---|---|---|
-| **Bearer API key** | `Authorization: Bearer dck_...` | Every MCP client — machine clients, agents, CI, and browser-based tooling alike |
+```
+Authorization: Bearer dck_...
+```
 
-**A Bearer API key is the only supported mechanism** for `/mcp` — there is no session-cookie fallback, even for browser-based callers. Generate one in the WebUI:
+**A Bearer API key is the only supported mechanism** for `/mcp` — every MCP client uses it, machine clients, agents, CI, and browser-based tooling alike, with no session-cookie fallback even for browser-based callers. Generate one in the WebUI:
 
 1. Open the dashboard, go to **Security**
 2. Click **Create API Key**, give it a name
