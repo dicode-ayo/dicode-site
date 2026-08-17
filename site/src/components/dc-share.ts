@@ -28,17 +28,17 @@ export class DcShare extends LitElement {
         }
         dc-share .flow-box h4 {
           margin: 0 0 .5rem;
-          color: var(--heading);
+          color: var(--dicode-heading);
         }
         dc-share .flow-box p {
           margin: 0;
-          color: var(--muted);
+          color: var(--dicode-muted);
           font-size: .9rem;
         }
         dc-share .flow-arrow {
           font-size: 2rem;
           line-height: 1;
-          color: var(--sky);
+          color: var(--dicode-sky);
           font-weight: bold;
           flex-shrink: 0;
           display: flex;
@@ -49,7 +49,7 @@ export class DcShare extends LitElement {
         @media (max-width: 900px) {
           dc-share .flow-diagram {
             flex-direction: column;
-            gap: var(--space-md);
+            gap: var(--dicode-space-md);
           }
           dc-share .flow-arrow::before { content: "↓"; }
           dc-share .flow-box {
@@ -58,7 +58,7 @@ export class DcShare extends LitElement {
           }
         }
       </style>
-      <section id="share" style="background: var(--bg-alt);">
+      <section id="share" style="background: var(--dicode-bg-alt);">
         <div class="container">
           <p class="section-label reveal">Share & Compose</p>
           <h2 class="section-title reveal">Tasks are building blocks</h2>

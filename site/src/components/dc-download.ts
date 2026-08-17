@@ -234,9 +234,9 @@ export class DcDownload extends LitElement {
           margin-bottom: 2rem;
         }
         dc-download .download-card {
-          background: var(--card-bg);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
+          background: var(--dicode-card-bg);
+          border: 1px solid var(--dicode-border);
+          border-radius: var(--dicode-radius);
           padding: 1.6rem 1.4rem;
           transition: border-color .25s, transform .2s, box-shadow .25s;
           display: flex;
@@ -259,7 +259,7 @@ export class DcDownload extends LitElement {
           position: absolute;
           top: .6rem;
           right: .6rem;
-          background: var(--blue);
+          background: var(--dicode-blue);
           color: #fff;
           font-size: .6rem;
           font-weight: 700;
@@ -273,19 +273,19 @@ export class DcDownload extends LitElement {
         }
         dc-download .download-header svg { width: 36px; height: 36px; flex-shrink: 0; }
         dc-download .download-title h4 {
-          color: var(--heading); font-size: 1rem; font-weight: 700; margin: 0;
+          color: var(--dicode-heading); font-size: 1rem; font-weight: 700; margin: 0;
         }
         dc-download .download-title p {
-          color: var(--muted); font-size: .75rem; margin: 0;
+          color: var(--dicode-muted); font-size: .75rem; margin: 0;
         }
         dc-download .download-cmd {
-          background: var(--code-bg);
-          border: 1px solid var(--code-border);
+          background: var(--dicode-code-bg);
+          border: 1px solid var(--dicode-code-border);
           border-radius: 8px;
           padding: .6rem .8rem;
           font-family: 'Fira Code', 'Cascadia Code', monospace;
           font-size: .72rem;
-          color: var(--code-text);
+          color: var(--dicode-code-text);
           overflow-x: auto;
           white-space: nowrap;
           margin: 0;
@@ -298,7 +298,7 @@ export class DcDownload extends LitElement {
           display: inline-flex;
           align-items: center;
           gap: .5rem;
-          background: var(--blue);
+          background: var(--dicode-blue);
           color: #fff;
           font-size: .82rem;
           font-weight: 600;
@@ -309,47 +309,47 @@ export class DcDownload extends LitElement {
           transition: background .2s, transform .15s;
           width: fit-content;
         }
-        dc-download .download-btn:hover { background: var(--blue2); transform: translateY(-1px); }
+        dc-download .download-btn:hover { background: var(--dicode-blue2); transform: translateY(-1px); }
         dc-download .download-btn::before { content: '\u2193 '; }
         dc-download .download-meta {
-          color: var(--muted);
+          color: var(--dicode-muted);
           font-size: .7rem;
           margin-top: .2rem;
         }
         dc-download .download-link {
-          color: var(--sky);
+          color: var(--dicode-sky);
           font-size: .82rem;
           font-weight: 600;
           text-decoration: none;
           margin-top: auto;
           word-break: break-word;
         }
-        dc-download .download-link:hover { color: var(--blue2); }
+        dc-download .download-link:hover { color: var(--dicode-blue2); }
         dc-download .download-link::after { content: ' \u2192'; }
         dc-download .download-cta {
           display: flex; align-items: center; justify-content: center;
           gap: 1rem; flex-wrap: wrap; margin-top: 2rem;
         }
         dc-download .download-cta-note {
-          text-align: center; color: var(--muted); font-size: .85rem;
+          text-align: center; color: var(--dicode-muted); font-size: .85rem;
           margin-top: 1rem;
         }
-        dc-download .download-cta-note a { color: var(--sky); text-decoration: none; }
+        dc-download .download-cta-note a { color: var(--dicode-sky); text-decoration: none; }
         dc-download .download-cta-note a:hover { text-decoration: underline; }
         dc-download .cta-icon { width: 18px; height: 18px; filter: invert(1); }
         dc-download .download-version {
           text-align: center;
-          color: var(--muted);
+          color: var(--dicode-muted);
           font-size: .8rem;
           margin-bottom: .5rem;
         }
         dc-download .download-version code {
-          color: var(--sky);
+          color: var(--dicode-sky);
           font-weight: 600;
         }
         dc-download .download-loading {
           text-align: center;
-          color: var(--muted);
+          color: var(--dicode-muted);
           padding: 3rem 0;
           font-size: .9rem;
         }
@@ -358,7 +358,7 @@ export class DcDownload extends LitElement {
           dc-download .download-cmd { font-size: .65rem; padding: .5rem .6rem; }
         }
       </style>
-      <section id="download" style="background: var(--bg);">
+      <section id="download" style="background: var(--dicode-bg);">
         <div class="container">
           <p class="section-label reveal">Download</p>
           <h2 class="section-title reveal">Get dicode in seconds</h2>
@@ -415,7 +415,7 @@ export class DcDownload extends LitElement {
       <p class="download-cta-note reveal">
         Building from source? Clone
         <a href="${REPO}" target="_blank" rel="noopener">dicode-ayo/dicode-core</a>
-        and run <code style="color: var(--sky);">make build</code>.
+        and run <code style="color: var(--dicode-sky);">make build</code>.
       </p>
     `;
   }
@@ -430,7 +430,7 @@ export class DcDownload extends LitElement {
       <p class="download-cta-note reveal">
         Building from source? Clone
         <a href="${REPO}" target="_blank" rel="noopener">dicode-ayo/dicode-core</a>
-        and run <code style="color: var(--sky);">make build</code>.
+        and run <code style="color: var(--dicode-sky);">make build</code>.
       </p>
     `;
   }

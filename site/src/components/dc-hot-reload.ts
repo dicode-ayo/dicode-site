@@ -17,15 +17,15 @@ export class DcHotReload extends LitElement {
           align-items: start;
         }
         dc-hot-reload .terminal {
-          background: var(--code-bg);
-          border: 1px solid var(--code-border);
-          border-radius: var(--radius);
+          background: var(--dicode-code-bg);
+          border: 1px solid var(--dicode-code-border);
+          border-radius: var(--dicode-radius);
           overflow: hidden;
         }
         dc-hot-reload .terminal-header {
           display: flex; align-items: center; gap: .5rem;
           padding: .6rem 1rem;
-          border-bottom: 1px solid var(--code-border);
+          border-bottom: 1px solid var(--dicode-code-border);
         }
         dc-hot-reload .terminal-header .dot { width: 10px; height: 10px; border-radius: 50%; }
         dc-hot-reload .terminal-header .dot:nth-child(1) { background: #ff5f57; }
@@ -33,7 +33,7 @@ export class DcHotReload extends LitElement {
         dc-hot-reload .terminal-header .dot:nth-child(3) { background: #28c840; }
         dc-hot-reload .terminal-header span:last-child {
           margin-left: auto;
-          color: var(--code-filename);
+          color: var(--dicode-code-filename);
           font-size: .72rem;
           font-family: 'Fira Code', 'Cascadia Code', monospace;
         }
@@ -42,23 +42,23 @@ export class DcHotReload extends LitElement {
           font-family: 'Fira Code', 'Cascadia Code', monospace;
           font-size: .78rem;
           line-height: 1.7;
-          color: var(--code-text);
+          color: var(--dicode-code-text);
           overflow-x: auto;
         }
-        dc-hot-reload .t-muted { color: var(--muted); }
-        dc-hot-reload .t-green { color: var(--green); }
-        dc-hot-reload .t-blue { color: var(--sky); }
-        dc-hot-reload .t-yellow { color: var(--yellow); }
+        dc-hot-reload .t-muted { color: var(--dicode-muted); }
+        dc-hot-reload .t-green { color: var(--dicode-green); }
+        dc-hot-reload .t-blue { color: var(--dicode-sky); }
+        dc-hot-reload .t-yellow { color: var(--dicode-yellow); }
 
         dc-hot-reload .reload-text h3 {
           font-size: 1.6rem;
           font-weight: 800;
-          color: var(--heading);
+          color: var(--dicode-heading);
           letter-spacing: -.02em;
           margin-bottom: .8rem;
         }
         dc-hot-reload .reload-text p {
-          color: var(--muted);
+          color: var(--dicode-muted);
           font-size: .95rem;
           line-height: 1.7;
           margin-bottom: 1rem;
@@ -74,12 +74,12 @@ export class DcHotReload extends LitElement {
         dc-hot-reload .stat-num {
           font-size: 2rem;
           font-weight: 800;
-          color: var(--sky);
+          color: var(--dicode-sky);
           line-height: 1;
         }
         dc-hot-reload .stat-label {
           font-size: .75rem;
-          color: var(--muted);
+          color: var(--dicode-muted);
           text-transform: uppercase;
           letter-spacing: .05em;
           margin-top: .3rem;
@@ -95,7 +95,7 @@ export class DcHotReload extends LitElement {
           dc-hot-reload .stat-num { font-size: 1.5rem; }
         }
       </style>
-      <section id="hot-reload" style="background: var(--bg-alt);">
+      <section id="hot-reload" style="background: var(--dicode-bg-alt);">
         <div class="container">
           <div class="reload-demo">
             <div class="terminal reveal-left">

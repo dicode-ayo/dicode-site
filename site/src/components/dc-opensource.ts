@@ -36,54 +36,54 @@ export class DcOpensource extends LitElement {
     return html`
       <style>
         dc-opensource section {
-          background: linear-gradient(135deg, var(--bg-alt) 0%, var(--bg-accent) 100%);
+          background: linear-gradient(135deg, var(--dicode-bg-alt) 0%, var(--dicode-bg-accent) 100%);
           text-align: center;
         }
-        dc-opensource h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: var(--font-extrabold); color: var(--heading); margin-bottom: var(--space-md); }
-        dc-opensource .os-sub { color: var(--muted); max-width: 540px; margin: 0 auto var(--space-lg); line-height: 1.7; font-size: var(--text-md); }
+        dc-opensource h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: var(--dicode-font-extrabold); color: var(--dicode-heading); margin-bottom: var(--dicode-space-md); }
+        dc-opensource .os-sub { color: var(--dicode-muted); max-width: 540px; margin: 0 auto var(--dicode-space-lg); line-height: 1.7; font-size: var(--dicode-text-md); }
         dc-opensource .os-links {
           display: flex; align-items: center; justify-content: center;
-          gap: var(--space-md); flex-wrap: wrap; margin-bottom: var(--space-lg);
+          gap: var(--dicode-space-md); flex-wrap: wrap; margin-bottom: var(--dicode-space-lg);
         }
         dc-opensource .github-btn {
           display: inline-flex; align-items: center; gap: .6rem;
-          background: #fff; color: #0d0d1a; padding: .8rem var(--space-xl);
-          border-radius: var(--radius-md); font-weight: var(--font-bold); text-decoration: none; font-size: var(--text-md);
-          transition: transform var(--duration-fast), box-shadow var(--duration-fast);
+          background: #fff; color: #0d0d1a; padding: .8rem var(--dicode-space-xl);
+          border-radius: var(--dicode-radius-md); font-weight: var(--dicode-font-bold); text-decoration: none; font-size: var(--dicode-text-md);
+          transition: transform var(--dicode-duration-fast), box-shadow var(--dicode-duration-fast);
           box-shadow: 0 4px 20px rgba(0,0,0,.3);
         }
         dc-opensource .github-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,.4); }
         dc-opensource .github-btn-icon { width: 20px; height: 20px; }
         dc-opensource .star-count {
           background: rgba(13,110,253,.15);
-          color: var(--sky);
+          color: var(--dicode-sky);
           font-size: .75rem;
-          font-weight: var(--font-bold);
-          padding: .15rem var(--space-sm);
-          border-radius: var(--radius-sm);
+          font-weight: var(--dicode-font-bold);
+          padding: .15rem var(--dicode-space-sm);
+          border-radius: var(--dicode-radius-sm);
           margin-left: .2rem;
         }
         dc-opensource .discord-btn {
-          display: inline-flex; align-items: center; gap: var(--space-sm);
-          background: transparent; color: var(--sky);
-          border: 1px solid var(--border); padding: .8rem var(--space-lg);
-          border-radius: var(--radius-md); font-weight: var(--font-semibold); text-decoration: none; font-size: .95rem;
-          transition: border-color var(--duration-fast), transform var(--duration-fast);
+          display: inline-flex; align-items: center; gap: var(--dicode-space-sm);
+          background: transparent; color: var(--dicode-sky);
+          border: 1px solid var(--dicode-border); padding: .8rem var(--dicode-space-lg);
+          border-radius: var(--dicode-radius-md); font-weight: var(--dicode-font-semibold); text-decoration: none; font-size: .95rem;
+          transition: border-color var(--dicode-duration-fast), transform var(--dicode-duration-fast);
         }
-        dc-opensource .discord-btn:hover { border-color: var(--sky); transform: translateY(-2px); }
+        dc-opensource .discord-btn:hover { border-color: var(--dicode-sky); transform: translateY(-2px); }
         dc-opensource .os-who {
-          color: var(--muted);
+          color: var(--dicode-muted);
           font-size: .85rem;
           max-width: 500px;
           margin: 0 auto;
-          line-height: var(--leading-normal);
+          line-height: var(--dicode-leading-normal);
         }
-        dc-opensource .os-who a { color: var(--sky); text-decoration: none; }
+        dc-opensource .os-who a { color: var(--dicode-sky); text-decoration: none; }
         dc-opensource .os-who a:hover { text-decoration: underline; }
         @media (max-width: 640px) {
           dc-opensource h2 { font-size: 1.5rem; }
-          dc-opensource .os-sub { font-size: var(--text-base); }
-          dc-opensource .github-btn { font-size: var(--text-base); padding: .7rem 1.6rem; }
+          dc-opensource .os-sub { font-size: var(--dicode-text-base); }
+          dc-opensource .github-btn { font-size: var(--dicode-text-base); padding: .7rem 1.6rem; }
           dc-opensource .os-links { flex-direction: column; }
         }
       </style>

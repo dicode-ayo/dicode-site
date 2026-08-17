@@ -43,8 +43,8 @@ export class DcThemeToggle extends LitElement {
       <style>
         dc-theme-toggle button {
           background: transparent;
-          border: 1px solid var(--border);
-          color: var(--text);
+          border: 1px solid var(--dicode-border);
+          color: var(--dicode-text);
           width: 36px;
           height: 36px;
           border-radius: 8px;
@@ -52,13 +52,13 @@ export class DcThemeToggle extends LitElement {
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          transition: background .2s, border-color .2s, color .2s;
+          transition: background var(--dicode-duration-fast), border-color var(--dicode-duration-fast), color var(--dicode-duration-fast);
           padding: 0;
         }
         dc-theme-toggle button:hover {
-          background: var(--card-bg);
-          border-color: var(--sky);
-          color: var(--sky);
+          background: var(--dicode-card-bg);
+          border-color: var(--dicode-sky);
+          color: var(--dicode-sky);
         }
         dc-theme-toggle svg {
           width: 18px;

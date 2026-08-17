@@ -9,7 +9,7 @@ export class DcDx extends LitElement {
 
   render() {
     return html`
-      <section id="dx" style="background: var(--bg);">
+      <section id="dx" style="background: var(--dicode-bg);">
         <div class="container">
           <p class="section-label reveal">Developer Experience</p>
           <h2 class="section-title reveal">Built for developers who ship</h2>
@@ -33,7 +33,7 @@ export class DcDx extends LitElement {
             <div class="feature-card">
               <div class="feature-icon">&#x1F510;</div>
               <h3>Secrets Done Right</h3>
-              <p>ChaCha20-Poly1305 encrypted local store with Argon2id key derivation. Provider chain falls back to env vars, then Vault, AWS Secrets Manager, or any custom backend. One command: <code style="color:var(--sky)">dicode secrets set MY_TOKEN xxx</code></p>
+              <p>ChaCha20-Poly1305 encrypted local store with Argon2id key derivation. Provider chain falls back to env vars, then Vault, AWS Secrets Manager, or any custom backend. One command: <code style="color:var(--dicode-sky)">dicode secrets set MY_TOKEN xxx</code></p>
             </div>
             <div class="feature-card">
               <div class="feature-icon">&#x1F4E1;</div>

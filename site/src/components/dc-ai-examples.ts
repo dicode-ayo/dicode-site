@@ -86,16 +86,16 @@ export class DcAiExamples extends LitElement {
 
         /* ── Single example ── */
         dc-ai-examples .example {
-          background: var(--card-bg);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
+          background: var(--dicode-card-bg);
+          border: 1px solid var(--dicode-border);
+          border-radius: var(--dicode-radius);
           padding: 2rem 2.5rem;
           overflow: hidden;
         }
         dc-ai-examples .example-title {
           font-size: .85rem;
           font-weight: 700;
-          color: var(--heading);
+          color: var(--dicode-heading);
           margin-bottom: 1.5rem;
           text-align: center;
           letter-spacing: -.01em;
@@ -136,8 +136,8 @@ export class DcAiExamples extends LitElement {
         dc-ai-examples .flow-step .step-bubble {
           width: 56px; height: 56px;
           border-radius: 50%;
-          background: var(--bg);
-          border: 2px solid var(--border);
+          background: var(--dicode-bg);
+          border: 2px solid var(--dicode-border);
           display: flex; align-items: center; justify-content: center;
           margin: 0 auto .5rem;
           font-size: 1.4rem;
@@ -146,12 +146,12 @@ export class DcAiExamples extends LitElement {
         dc-ai-examples .flow-step h4 {
           font-size: .78rem;
           font-weight: 700;
-          color: var(--heading);
+          color: var(--dicode-heading);
           margin-bottom: .15rem;
         }
         dc-ai-examples .flow-step p {
           font-size: .65rem;
-          color: var(--muted);
+          color: var(--dicode-muted);
           line-height: 1.35;
           white-space: pre-line;
         }
@@ -172,7 +172,7 @@ export class DcAiExamples extends LitElement {
           display: block;
           width: 100%;
           height: 2px;
-          background: linear-gradient(90deg, var(--border), var(--sky), var(--border));
+          background: linear-gradient(90deg, var(--dicode-border), var(--dicode-sky), var(--dicode-border));
           position: relative;
         }
         dc-ai-examples .flow-arrow::after {
@@ -184,7 +184,7 @@ export class DcAiExamples extends LitElement {
           width: 0; height: 0;
           border-top: 5px solid transparent;
           border-bottom: 5px solid transparent;
-          border-left: 8px solid var(--sky);
+          border-left: 8px solid var(--dicode-sky);
         }
 
         /* Traveling dot on each flow */
@@ -193,7 +193,7 @@ export class DcAiExamples extends LitElement {
           top: 25px; /* centered on the connector line */
           width: 8px; height: 8px;
           border-radius: 50%;
-          background: var(--blue);
+          background: var(--dicode-blue);
           box-shadow: 0 0 10px rgba(13,110,253,.6);
           z-index: 2;
           animation-timing-function: ease-in-out;
@@ -242,11 +242,11 @@ export class DcAiExamples extends LitElement {
 
         @keyframes al-step-flash {
           0%, 8%, 100% {
-            border-color: var(--border);
+            border-color: var(--dicode-border);
             box-shadow: none;
           }
           3%, 5% {
-            border-color: var(--blue);
+            border-color: var(--dicode-blue);
             box-shadow: 0 0 14px rgba(13,110,253,.4);
           }
         }
@@ -272,7 +272,7 @@ export class DcAiExamples extends LitElement {
           dc-ai-examples .flow-connector { display: none; }
         }
       </style>
-      <section id="ai-examples" style="background: var(--bg-alt);">
+      <section id="ai-examples" style="background: var(--dicode-bg-alt);">
         <div class="container">
           <p class="section-label reveal">Real-World Flows</p>
           <h2 class="section-title reveal">See the loop in action</h2>

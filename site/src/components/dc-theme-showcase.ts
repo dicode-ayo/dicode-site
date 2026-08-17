@@ -13,101 +13,107 @@ const SWATCHES: { category: string; items: Swatch[] }[] = [
   {
     category: "Backgrounds",
     items: [
-      { name: "--bg", value: "var(--bg)", description: "Page background" },
-      { name: "--bg-alt", value: "var(--bg-alt)", description: "Alternate section" },
-      { name: "--bg-accent", value: "var(--bg-accent)", description: "Third tier / gradient stop" },
-      { name: "--card-bg", value: "var(--card-bg)", description: "Card surface" },
-      { name: "--overlay-bg", value: "var(--overlay-bg)", description: "Modal/sheet overlay" },
+      { name: "--dicode-bg", value: "var(--dicode-bg)", description: "Page background" },
+      { name: "--dicode-bg-alt", value: "var(--dicode-bg-alt)", description: "Alternate section" },
+      { name: "--dicode-bg-accent", value: "var(--dicode-bg-accent)", description: "Third tier / gradient stop" },
+      { name: "--dicode-card-bg", value: "var(--dicode-card-bg)", description: "Card surface" },
+      { name: "--dicode-overlay-bg", value: "var(--dicode-overlay-bg)", description: "Modal/sheet overlay" },
     ],
   },
   {
     category: "Foreground",
     items: [
-      { name: "--text", value: "var(--text)", description: "Body text" },
-      { name: "--heading", value: "var(--heading)", description: "Headings h1-h6" },
-      { name: "--muted", value: "var(--muted)", description: "Secondary text / labels" },
-      { name: "--lavender", value: "var(--lavender)", description: "Tertiary accent text" },
+      { name: "--dicode-text", value: "var(--dicode-text)", description: "Body text" },
+      { name: "--dicode-heading", value: "var(--dicode-heading)", description: "Headings h1-h6" },
+      { name: "--dicode-muted", value: "var(--dicode-muted)", description: "Secondary text / labels" },
+      { name: "--dicode-lavender", value: "var(--dicode-lavender)", description: "Tertiary accent text" },
     ],
   },
   {
     category: "Brand",
     items: [
-      { name: "--blue", value: "var(--blue)", description: "Primary action" },
-      { name: "--blue2", value: "var(--blue2)", description: "Primary hover" },
-      { name: "--sky", value: "var(--sky)", description: "Accent text, pills, tags" },
-      { name: "--green", value: "var(--green)", description: "Success" },
-      { name: "--yellow", value: "var(--yellow)", description: "Warning" },
-      { name: "--red", value: "var(--red)", description: "Error / destructive" },
+      { name: "--dicode-blue", value: "var(--dicode-blue)", description: "Primary action" },
+      { name: "--dicode-blue2", value: "var(--dicode-blue2)", description: "Primary hover" },
+      { name: "--dicode-sky", value: "var(--dicode-sky)", description: "Accent text, pills, tags" },
+      { name: "--dicode-green", value: "var(--dicode-green)", description: "Success" },
+      { name: "--dicode-yellow", value: "var(--dicode-yellow)", description: "Warning" },
+      { name: "--dicode-red", value: "var(--dicode-red)", description: "Error / destructive" },
     ],
   },
   {
     category: "Borders",
     items: [
-      { name: "--border", value: "var(--border)", description: "Default border" },
-      { name: "--border-strong", value: "var(--border-strong)", description: "Hover/focus border" },
-      { name: "--border-dashed", value: "var(--border-dashed)", description: "Special/dashed" },
+      { name: "--dicode-border", value: "var(--dicode-border)", description: "Default border" },
+      { name: "--dicode-border-strong", value: "var(--dicode-border-strong)", description: "Hover/focus border" },
+      { name: "--dicode-border-dashed", value: "var(--dicode-border-dashed)", description: "Special/dashed" },
     ],
   },
   {
     category: "Tints",
     items: [
-      { name: "--blue-tint", value: "var(--blue-tint)", description: "Icon bg, callouts" },
-      { name: "--blue-tint-strong", value: "var(--blue-tint-strong)", description: "Stronger blue tint" },
+      { name: "--dicode-blue-tint", value: "var(--dicode-blue-tint)", description: "Icon bg, callouts" },
+      { name: "--dicode-blue-tint-strong", value: "var(--dicode-blue-tint-strong)", description: "Stronger blue tint" },
     ],
   },
   {
     category: "Code blocks",
     items: [
-      { name: "--code-bg", value: "var(--code-bg)", description: "Code block background" },
-      { name: "--code-text", value: "var(--code-text)", description: "Code block text" },
-      { name: "--code-kw", value: "var(--code-kw)", description: "Keywords" },
-      { name: "--code-str", value: "var(--code-str)", description: "Strings" },
-      { name: "--code-cmt", value: "var(--code-cmt)", description: "Comments" },
-      { name: "--code-fn", value: "var(--code-fn)", description: "Functions" },
-      { name: "--code-num", value: "var(--code-num)", description: "Numbers" },
-      { name: "--code-prop", value: "var(--code-prop)", description: "Properties" },
+      { name: "--dicode-code-bg", value: "var(--dicode-code-bg)", description: "Code block background" },
+      { name: "--dicode-code-text", value: "var(--dicode-code-text)", description: "Code block text" },
+      { name: "--dicode-code-kw", value: "var(--dicode-code-kw)", description: "Keywords" },
+      { name: "--dicode-code-str", value: "var(--dicode-code-str)", description: "Strings" },
+      { name: "--dicode-code-cmt", value: "var(--dicode-code-cmt)", description: "Comments" },
+      { name: "--dicode-code-fn", value: "var(--dicode-code-fn)", description: "Functions" },
+      { name: "--dicode-code-num", value: "var(--dicode-code-num)", description: "Numbers" },
+      { name: "--dicode-code-prop", value: "var(--dicode-code-prop)", description: "Properties" },
     ],
   },
 ];
 
 const SPACING = [
-  { name: "--space-xs", px: "4px" },
-  { name: "--space-sm", px: "8px" },
-  { name: "--space-md", px: "16px" },
-  { name: "--space-lg", px: "24px" },
-  { name: "--space-xl", px: "32px" },
-  { name: "--space-2xl", px: "48px" },
-  { name: "--space-3xl", px: "64px" },
-  { name: "--space-4xl", px: "96px" },
-  { name: "--space-5xl", px: "128px" },
+  { name: "--dicode-space-xs", px: "4px" },
+  { name: "--dicode-space-sm", px: "8px" },
+  { name: "--dicode-space-md", px: "16px" },
+  { name: "--dicode-space-lg", px: "24px" },
+  { name: "--dicode-space-xl", px: "32px" },
+  { name: "--dicode-space-2xl", px: "48px" },
+  { name: "--dicode-space-3xl", px: "64px" },
+  { name: "--dicode-space-4xl", px: "96px" },
+  { name: "--dicode-space-5xl", px: "128px" },
 ];
 
 const RADII = [
-  { name: "--radius-sm", px: "6px" },
-  { name: "--radius-md", px: "10px" },
-  { name: "--radius", px: "14px" },
-  { name: "--radius-lg", px: "20px" },
-  { name: "--radius-pill", px: "9999px" },
+  { name: "--dicode-radius-sm", px: "6px" },
+  { name: "--dicode-radius-md", px: "10px" },
+  { name: "--dicode-radius", px: "14px" },
+  { name: "--dicode-radius-lg", px: "20px" },
+  { name: "--dicode-radius-pill", px: "9999px" },
+];
+
+const CONTROL_SIZES = [
+  { name: "--dicode-control-size-sm", px: "28px", icon: "--dicode-icon-size-sm" },
+  { name: "--dicode-control-size", px: "32px", icon: "--dicode-icon-size" },
+  { name: "--dicode-control-size-lg", px: "40px", icon: "--dicode-icon-size-lg" },
 ];
 
 const SHADOWS = [
-  { name: "--shadow-sm" },
-  { name: "--shadow" },
-  { name: "--shadow-card" },
-  { name: "--shadow-strong" },
-  { name: "--shadow-glow" },
-  { name: "--shadow-glow-lg" },
+  { name: "--dicode-shadow-sm" },
+  { name: "--dicode-shadow" },
+  { name: "--dicode-shadow-card" },
+  { name: "--dicode-shadow-strong" },
+  { name: "--dicode-shadow-glow" },
+  { name: "--dicode-shadow-glow-lg" },
 ];
 
 const TYPOGRAPHY = [
-  { name: "--text-xs", size: "11.5px" },
-  { name: "--text-sm", size: "13px" },
-  { name: "--text-base", size: "14.4px" },
-  { name: "--text-md", size: "16px" },
-  { name: "--text-lg", size: "18.4px" },
-  { name: "--text-xl", size: "22.4px" },
-  { name: "--text-2xl", size: "28.8px" },
-  { name: "--text-3xl", size: "38.4px" },
+  { name: "--dicode-text-xs", size: "11.5px" },
+  { name: "--dicode-text-sm", size: "13px" },
+  { name: "--dicode-text-base", size: "14.4px" },
+  { name: "--dicode-text-md", size: "16px" },
+  { name: "--dicode-text-lg", size: "18.4px" },
+  { name: "--dicode-text-xl", size: "22.4px" },
+  { name: "--dicode-text-2xl", size: "28.8px" },
+  { name: "--dicode-text-3xl", size: "38.4px" },
 ];
 
 // ─── COMPONENT ─────────────────────────────────────────────────────────────
@@ -123,15 +129,15 @@ export class DcThemeShowcase extends LitElement {
       <style>
         dc-theme-showcase .ts-header {
           padding: 100px 2rem 60px; text-align: center;
-          border-bottom: 1px solid var(--border);
+          border-bottom: 1px solid var(--dicode-border);
         }
         dc-theme-showcase .ts-header h1 {
-          font-size: var(--text-5xl); font-weight: var(--font-extrabold);
-          color: var(--heading); letter-spacing: var(--tracking-tight);
+          font-size: var(--dicode-text-5xl); font-weight: var(--dicode-font-extrabold);
+          color: var(--dicode-heading); letter-spacing: var(--dicode-tracking-tight);
           margin-bottom: 1rem;
         }
         dc-theme-showcase .ts-header p {
-          color: var(--muted); font-size: var(--text-lg);
+          color: var(--dicode-muted); font-size: var(--dicode-text-lg);
           max-width: 640px; margin: 0 auto 2rem;
         }
         dc-theme-showcase .ts-header .ts-actions {
@@ -139,191 +145,232 @@ export class DcThemeShowcase extends LitElement {
         }
 
         dc-theme-showcase .ts-section {
-          padding: var(--space-4xl) var(--space-xl);
-          border-bottom: 1px solid var(--border);
+          padding: var(--dicode-space-4xl) var(--dicode-space-xl);
+          border-bottom: 1px solid var(--dicode-border);
         }
         dc-theme-showcase .ts-section:nth-child(even) {
-          background: var(--bg-alt);
+          background: var(--dicode-bg-alt);
         }
         dc-theme-showcase .ts-section > .container { max-width: 1120px; margin: 0 auto; }
         dc-theme-showcase .ts-label {
-          font-size: var(--text-xs); font-weight: var(--font-bold);
-          color: var(--blue); text-transform: uppercase;
-          letter-spacing: var(--tracking-wider); margin-bottom: var(--space-sm);
+          font-size: var(--dicode-text-xs); font-weight: var(--dicode-font-bold);
+          color: var(--dicode-blue); text-transform: uppercase;
+          letter-spacing: var(--dicode-tracking-wider); margin-bottom: var(--dicode-space-sm);
         }
         dc-theme-showcase .ts-title {
-          font-size: var(--text-3xl); font-weight: var(--font-extrabold);
-          color: var(--heading); letter-spacing: var(--tracking-tight);
-          margin-bottom: var(--space-sm);
+          font-size: var(--dicode-text-3xl); font-weight: var(--dicode-font-extrabold);
+          color: var(--dicode-heading); letter-spacing: var(--dicode-tracking-tight);
+          margin-bottom: var(--dicode-space-sm);
         }
         dc-theme-showcase .ts-sub {
-          color: var(--muted); font-size: var(--text-md);
-          max-width: 640px; margin-bottom: var(--space-2xl);
+          color: var(--dicode-muted); font-size: var(--dicode-text-md);
+          max-width: 640px; margin-bottom: var(--dicode-space-2xl);
         }
 
         /* Swatches */
         dc-theme-showcase .ts-swatch-category {
-          margin-bottom: var(--space-2xl);
+          margin-bottom: var(--dicode-space-2xl);
         }
         dc-theme-showcase .ts-swatch-category h3 {
-          font-size: var(--text-lg); font-weight: var(--font-bold);
-          color: var(--heading); margin-bottom: var(--space-md);
+          font-size: var(--dicode-text-lg); font-weight: var(--dicode-font-bold);
+          color: var(--dicode-heading); margin-bottom: var(--dicode-space-md);
         }
         dc-theme-showcase .ts-swatch-grid {
           display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-          gap: var(--space-md);
+          gap: var(--dicode-space-md);
         }
         dc-theme-showcase .ts-swatch {
-          background: var(--card-bg); border: 1px solid var(--border);
-          border-radius: var(--radius); overflow: hidden;
-          transition: var(--transition);
+          background: var(--dicode-card-bg); border: 1px solid var(--dicode-border);
+          border-radius: var(--dicode-radius); overflow: hidden;
+          transition: var(--dicode-transition);
           cursor: pointer;
         }
         dc-theme-showcase .ts-swatch:hover {
-          border-color: var(--border-strong);
+          border-color: var(--dicode-border-strong);
           transform: translateY(-2px);
-          box-shadow: var(--shadow);
+          box-shadow: var(--dicode-shadow);
         }
         dc-theme-showcase .ts-swatch-preview {
           height: 80px;
-          border-bottom: 1px solid var(--border);
+          border-bottom: 1px solid var(--dicode-border);
         }
         dc-theme-showcase .ts-swatch-info {
-          padding: var(--space-md);
+          padding: var(--dicode-space-md);
         }
         dc-theme-showcase .ts-swatch-name {
-          font-family: var(--font-mono); font-size: var(--text-sm);
-          color: var(--sky); font-weight: var(--font-semibold);
-          margin-bottom: var(--space-xs);
+          font-family: var(--dicode-font-mono); font-size: var(--dicode-text-sm);
+          color: var(--dicode-sky); font-weight: var(--dicode-font-semibold);
+          margin-bottom: var(--dicode-space-xs);
         }
         dc-theme-showcase .ts-swatch-desc {
-          font-size: var(--text-xs); color: var(--muted);
+          font-size: var(--dicode-text-xs); color: var(--dicode-muted);
         }
 
         /* Spacing ruler */
         dc-theme-showcase .ts-spacing-row {
-          display: flex; align-items: center; gap: var(--space-md);
-          margin-bottom: var(--space-sm);
+          display: flex; align-items: center; gap: var(--dicode-space-md);
+          margin-bottom: var(--dicode-space-sm);
         }
         dc-theme-showcase .ts-spacing-label {
-          font-family: var(--font-mono); font-size: var(--text-sm);
-          color: var(--sky); min-width: 140px;
+          font-family: var(--dicode-font-mono); font-size: var(--dicode-text-sm);
+          color: var(--dicode-sky); min-width: 140px;
         }
         dc-theme-showcase .ts-spacing-px {
-          color: var(--muted); font-size: var(--text-xs);
-          font-family: var(--font-mono); min-width: 60px;
+          color: var(--dicode-muted); font-size: var(--dicode-text-xs);
+          font-family: var(--dicode-font-mono); min-width: 60px;
         }
         dc-theme-showcase .ts-spacing-bar {
-          height: 20px; background: var(--blue-tint-strong);
-          border: 1px solid var(--blue);
-          border-radius: var(--radius-sm);
+          height: 20px; background: var(--dicode-blue-tint-strong);
+          border: 1px solid var(--dicode-blue);
+          border-radius: var(--dicode-radius-sm);
         }
 
         /* Radii */
         dc-theme-showcase .ts-radius-grid {
           display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-          gap: var(--space-lg);
+          gap: var(--dicode-space-lg);
         }
         dc-theme-showcase .ts-radius-item { text-align: center; }
         dc-theme-showcase .ts-radius-box {
           width: 100%; height: 100px;
-          background: var(--blue-tint);
-          border: 1px solid var(--blue);
-          margin-bottom: var(--space-sm);
+          background: var(--dicode-blue-tint);
+          border: 1px solid var(--dicode-blue);
+          margin-bottom: var(--dicode-space-sm);
         }
         dc-theme-showcase .ts-radius-name {
-          font-family: var(--font-mono); font-size: var(--text-xs);
-          color: var(--sky);
+          font-family: var(--dicode-font-mono); font-size: var(--dicode-text-xs);
+          color: var(--dicode-sky);
         }
         dc-theme-showcase .ts-radius-px {
-          color: var(--muted); font-size: var(--text-xs); display: block;
+          color: var(--dicode-muted); font-size: var(--dicode-text-xs); display: block;
+        }
+
+        /* Controls, borders & focus */
+        dc-theme-showcase .ts-control-row {
+          display: flex; flex-wrap: wrap; align-items: flex-end;
+          gap: var(--dicode-space-xl);
+        }
+        dc-theme-showcase .ts-control-item { text-align: center; }
+        dc-theme-showcase .ts-control-btn {
+          display: flex; align-items: center; justify-content: center;
+          padding: 0; cursor: pointer;
+          background: var(--dicode-card-bg);
+          border: var(--dicode-border-width) solid var(--dicode-border);
+          border-radius: var(--dicode-radius-md);
+          color: var(--dicode-muted);
+          margin-bottom: var(--dicode-space-sm);
+          transition: border-color var(--dicode-duration-fast) var(--dicode-ease);
+        }
+        dc-theme-showcase .ts-control-btn:hover {
+          border-color: var(--dicode-border-strong);
+        }
+        dc-theme-showcase .ts-control-btn:focus-visible {
+          outline: var(--dicode-focus-ring);
+          outline-offset: var(--dicode-focus-ring-offset);
+        }
+        dc-theme-showcase .ts-control-dot {
+          display: block;
+          background: var(--dicode-sky);
+          border-radius: var(--dicode-radius-full);
+        }
+        dc-theme-showcase .ts-border-demo {
+          inline-size: 100px; block-size: var(--dicode-control-size);
+          background: var(--dicode-blue-tint);
+          border-radius: var(--dicode-radius-md);
+          margin-bottom: var(--dicode-space-sm);
+        }
+        dc-theme-showcase .ts-border-thin {
+          border: var(--dicode-border-width) solid var(--dicode-blue);
+        }
+        dc-theme-showcase .ts-border-thick {
+          border: var(--dicode-border-width-thick) solid var(--dicode-blue);
         }
 
         /* Shadows */
         dc-theme-showcase .ts-shadow-grid {
           display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-          gap: var(--space-xl);
+          gap: var(--dicode-space-xl);
         }
         dc-theme-showcase .ts-shadow-item {
-          background: var(--card-bg);
-          border: 1px solid var(--border);
-          padding: var(--space-xl);
-          border-radius: var(--radius);
+          background: var(--dicode-card-bg);
+          border: 1px solid var(--dicode-border);
+          padding: var(--dicode-space-xl);
+          border-radius: var(--dicode-radius);
           text-align: center;
         }
         dc-theme-showcase .ts-shadow-name {
-          font-family: var(--font-mono); font-size: var(--text-sm);
-          color: var(--sky);
+          font-family: var(--dicode-font-mono); font-size: var(--dicode-text-sm);
+          color: var(--dicode-sky);
         }
 
         /* Typography scale */
         dc-theme-showcase .ts-type-row {
-          display: flex; align-items: baseline; gap: var(--space-lg);
-          padding: var(--space-sm) 0;
-          border-bottom: 1px solid var(--border);
+          display: flex; align-items: baseline; gap: var(--dicode-space-lg);
+          padding: var(--dicode-space-sm) 0;
+          border-bottom: 1px solid var(--dicode-border);
         }
         dc-theme-showcase .ts-type-name {
-          font-family: var(--font-mono); font-size: var(--text-sm);
-          color: var(--sky); min-width: 140px;
+          font-family: var(--dicode-font-mono); font-size: var(--dicode-text-sm);
+          color: var(--dicode-sky); min-width: 140px;
         }
         dc-theme-showcase .ts-type-size {
-          color: var(--muted); font-size: var(--text-xs);
-          font-family: var(--font-mono); min-width: 60px;
+          color: var(--dicode-muted); font-size: var(--dicode-text-xs);
+          font-family: var(--dicode-font-mono); min-width: 60px;
         }
         dc-theme-showcase .ts-type-sample {
-          color: var(--heading); font-weight: var(--font-semibold);
+          color: var(--dicode-heading); font-weight: var(--dicode-font-semibold);
           flex: 1;
         }
 
         /* Components */
         dc-theme-showcase .ts-components {
           display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-          gap: var(--space-xl);
+          gap: var(--dicode-space-xl);
         }
         dc-theme-showcase .ts-component-demo {
-          background: var(--card-bg);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          padding: var(--space-xl);
+          background: var(--dicode-card-bg);
+          border: 1px solid var(--dicode-border);
+          border-radius: var(--dicode-radius);
+          padding: var(--dicode-space-xl);
         }
         dc-theme-showcase .ts-component-demo h4 {
-          font-size: var(--text-sm); color: var(--muted);
-          font-weight: var(--font-semibold); text-transform: uppercase;
-          letter-spacing: var(--tracking-wider);
-          margin-bottom: var(--space-md);
+          font-size: var(--dicode-text-sm); color: var(--dicode-muted);
+          font-weight: var(--dicode-font-semibold); text-transform: uppercase;
+          letter-spacing: var(--dicode-tracking-wider);
+          margin-bottom: var(--dicode-space-md);
         }
         dc-theme-showcase .ts-component-demo-row {
-          display: flex; gap: var(--space-sm); flex-wrap: wrap;
+          display: flex; gap: var(--dicode-space-sm); flex-wrap: wrap;
           align-items: center;
         }
 
         /* Code snippet */
         dc-theme-showcase .ts-snippet {
-          background: var(--code-bg);
-          border: 1px solid var(--code-border);
-          border-radius: var(--radius);
-          padding: var(--space-lg);
+          background: var(--dicode-code-bg);
+          border: 1px solid var(--dicode-code-border);
+          border-radius: var(--dicode-radius);
+          padding: var(--dicode-space-lg);
           overflow-x: auto;
-          margin-top: var(--space-xl);
+          margin-top: var(--dicode-space-xl);
         }
         dc-theme-showcase .ts-snippet pre {
-          font-family: var(--font-mono);
-          font-size: var(--text-sm);
-          color: var(--code-text);
-          line-height: var(--leading-normal);
+          font-family: var(--dicode-font-mono);
+          font-size: var(--dicode-text-sm);
+          color: var(--dicode-code-text);
+          line-height: var(--dicode-leading-normal);
         }
         dc-theme-showcase .ts-snippet .hl {
-          color: var(--code-kw);
+          color: var(--dicode-code-kw);
         }
         dc-theme-showcase .ts-snippet .str {
-          color: var(--code-str);
+          color: var(--dicode-code-str);
         }
 
         @media (max-width: 640px) {
           dc-theme-showcase .ts-header { padding: 80px 1rem 40px; }
-          dc-theme-showcase .ts-section { padding: var(--space-3xl) var(--space-md); }
+          dc-theme-showcase .ts-section { padding: var(--dicode-space-3xl) var(--dicode-space-md); }
           dc-theme-showcase .ts-header h1 { font-size: 2rem; }
-          dc-theme-showcase .ts-spacing-label { min-width: 100px; font-size: var(--text-xs); }
+          dc-theme-showcase .ts-spacing-label { min-width: 100px; font-size: var(--dicode-text-xs); }
           dc-theme-showcase .ts-type-name { min-width: 80px; }
         }
       </style>
@@ -446,6 +493,49 @@ export class DcThemeShowcase extends LitElement {
         </div>
       </section>
 
+      <!-- CONTROLS, BORDERS & FOCUS -->
+      <section class="ts-section">
+        <div class="container">
+          <p class="ts-label">Tokens</p>
+          <h2 class="ts-title">Controls, borders &amp; focus</h2>
+          <p class="ts-sub">
+            Hit-target and icon sizes, border widths, and the shared focus ring.
+            Tab into a button below to see the ring — it is
+            <code>:focus-visible</code> only, so a click never triggers it.
+          </p>
+          <div class="ts-control-row">
+            ${CONTROL_SIZES.map(
+              (c) => html`
+                <div class="ts-control-item">
+                  <button
+                    class="ts-control-btn"
+                    style="inline-size: var(${c.name}); block-size: var(${c.name})"
+                    aria-label="${c.name} example"
+                  >
+                    <span
+                      class="ts-control-dot"
+                      style="inline-size: var(${c.icon}); block-size: var(${c.icon})"
+                    ></span>
+                  </button>
+                  <span class="ts-radius-name">${c.name}</span>
+                  <span class="ts-radius-px">${c.px}</span>
+                </div>
+              `,
+            )}
+            <div class="ts-control-item">
+              <div class="ts-border-demo ts-border-thin"></div>
+              <span class="ts-radius-name">--dicode-border-width</span>
+              <span class="ts-radius-px">1px</span>
+            </div>
+            <div class="ts-control-item">
+              <div class="ts-border-demo ts-border-thick"></div>
+              <span class="ts-radius-name">--dicode-border-width-thick</span>
+              <span class="ts-radius-px">2px</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- SHADOWS -->
       <section class="ts-section">
         <div class="container">
@@ -527,7 +617,7 @@ export class DcThemeShowcase extends LitElement {
             Three ways to bring dicode's design system into your project.
           </p>
 
-          <h3 style="color: var(--heading); font-size: var(--text-lg); margin-bottom: var(--space-sm);">
+          <h3 style="color: var(--dicode-heading); font-size: var(--dicode-text-lg); margin-bottom: var(--dicode-space-sm);">
             1. Import from the CDN
           </h3>
           <div class="ts-snippet">
@@ -535,7 +625,7 @@ export class DcThemeShowcase extends LitElement {
       <span class="hl">href</span>=<span class="str">"https://dicode-ayo.github.io/dicode-site/theme.css"</span>&gt;</pre>
           </div>
 
-          <h3 style="color: var(--heading); font-size: var(--text-lg); margin: var(--space-xl) 0 var(--space-sm);">
+          <h3 style="color: var(--dicode-heading); font-size: var(--dicode-text-lg); margin: var(--dicode-space-xl) 0 var(--dicode-space-sm);">
             2. Set the theme on <code>&lt;html&gt;</code>
           </h3>
           <div class="ts-snippet">
@@ -543,17 +633,17 @@ export class DcThemeShowcase extends LitElement {
 <span class="hl">document</span>.documentElement.setAttribute(<span class="str">"data-theme"</span>, <span class="str">"light"</span>);</pre>
           </div>
 
-          <h3 style="color: var(--heading); font-size: var(--text-lg); margin: var(--space-xl) 0 var(--space-sm);">
+          <h3 style="color: var(--dicode-heading); font-size: var(--dicode-text-lg); margin: var(--dicode-space-xl) 0 var(--dicode-space-sm);">
             3. Use the tokens in your CSS
           </h3>
           <div class="ts-snippet">
             <pre>.my-button {
-  <span class="hl">background</span>: <span class="str">var(--blue)</span>;
-  <span class="hl">color</span>: <span class="str">var(--heading)</span>;
-  <span class="hl">padding</span>: <span class="str">var(--space-sm) var(--space-lg)</span>;
-  <span class="hl">border-radius</span>: <span class="str">var(--radius-md)</span>;
-  <span class="hl">transition</span>: <span class="str">var(--transition)</span>;
-  <span class="hl">box-shadow</span>: <span class="str">var(--shadow-glow)</span>;
+  <span class="hl">background</span>: <span class="str">var(--dicode-blue)</span>;
+  <span class="hl">color</span>: <span class="str">var(--dicode-heading)</span>;
+  <span class="hl">padding</span>: <span class="str">var(--dicode-space-sm) var(--dicode-space-lg)</span>;
+  <span class="hl">border-radius</span>: <span class="str">var(--dicode-radius-md)</span>;
+  <span class="hl">transition</span>: <span class="str">var(--dicode-transition)</span>;
+  <span class="hl">box-shadow</span>: <span class="str">var(--dicode-shadow-glow)</span>;
 }</pre>
           </div>
         </div>
