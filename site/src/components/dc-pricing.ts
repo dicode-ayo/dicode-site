@@ -13,81 +13,81 @@ export class DcPricing extends LitElement {
         dc-pricing .pricing-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-          gap: var(--space-lg);
+          gap: var(--dicode-space-lg);
           max-width: 760px;
           margin: 0 auto;
         }
         dc-pricing .pricing-card {
-          background: var(--card-bg);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          padding: var(--space-xl) var(--space-lg);
+          background: var(--dicode-card-bg);
+          border: 1px solid var(--dicode-border);
+          border-radius: var(--dicode-radius);
+          padding: var(--dicode-space-xl) var(--dicode-space-lg);
           position: relative;
           display: flex;
           flex-direction: column;
         }
         dc-pricing .pricing-card.featured {
-          border-color: var(--border-dashed);
-          box-shadow: 0 0 0 1px rgba(13,110,253,.3), var(--shadow-card);
+          border-color: var(--dicode-border-dashed);
+          box-shadow: 0 0 0 1px rgba(13,110,253,.3), var(--dicode-shadow-card);
         }
         dc-pricing .pricing-card:hover {
           transform: translateY(-4px);
-          box-shadow: var(--shadow-strong);
-          transition: transform var(--duration), box-shadow var(--duration);
+          box-shadow: var(--dicode-shadow-strong);
+          transition: transform var(--dicode-duration), box-shadow var(--dicode-duration);
         }
         dc-pricing .pricing-badge {
           position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
-          background: var(--blue); color: #fff; font-size: var(--text-xs); font-weight: var(--font-bold);
-          letter-spacing: .05em; text-transform: uppercase; padding: var(--space-xs) .75rem;
-          border-radius: var(--radius-pill); white-space: nowrap;
+          background: var(--dicode-blue); color: #fff; font-size: var(--dicode-text-xs); font-weight: var(--dicode-font-bold);
+          letter-spacing: .05em; text-transform: uppercase; padding: var(--dicode-space-xs) .75rem;
+          border-radius: var(--dicode-radius-pill); white-space: nowrap;
         }
         dc-pricing .pricing-card h3 {
-          font-size: var(--text-lg); font-weight: var(--font-bold); color: var(--heading);
-          margin-bottom: var(--space-xs); text-align: center;
+          font-size: var(--dicode-text-lg); font-weight: var(--dicode-font-bold); color: var(--dicode-heading);
+          margin-bottom: var(--dicode-space-xs); text-align: center;
         }
         dc-pricing .pricing-price {
-          font-size: 2rem; font-weight: var(--font-extrabold); color: var(--sky);
-          text-align: center; margin: var(--space-sm) 0;
+          font-size: 2rem; font-weight: var(--dicode-font-extrabold); color: var(--dicode-sky);
+          text-align: center; margin: var(--dicode-space-sm) 0;
         }
         dc-pricing .pricing-price span {
-          font-size: var(--text-base); font-weight: var(--font-normal); color: var(--muted);
+          font-size: var(--dicode-text-base); font-weight: var(--dicode-font-normal); color: var(--dicode-muted);
         }
         dc-pricing .pricing-desc {
-          color: var(--muted); font-size: var(--text-sm); line-height: var(--leading-normal);
-          text-align: center; margin-bottom: var(--space-md);
+          color: var(--dicode-muted); font-size: var(--dicode-text-sm); line-height: var(--dicode-leading-normal);
+          text-align: center; margin-bottom: var(--dicode-space-md);
         }
         dc-pricing .pricing-card ul {
           list-style: none;
-          margin: 0 0 var(--space-md) 0;
+          margin: 0 0 var(--dicode-space-md) 0;
         }
         dc-pricing .pricing-card li {
-          color: var(--text); font-size: var(--text-sm); padding: .35rem 0;
-          border-bottom: 1px solid var(--border);
-          display: flex; gap: var(--space-sm); align-items: flex-start;
+          color: var(--dicode-text); font-size: var(--dicode-text-sm); padding: .35rem 0;
+          border-bottom: 1px solid var(--dicode-border);
+          display: flex; gap: var(--dicode-space-sm); align-items: flex-start;
         }
         dc-pricing .pricing-card li:last-child { border-bottom: none; }
         dc-pricing .pricing-card li::before {
-          content: '✓'; color: var(--green); flex-shrink: 0; margin-top: 1px;
+          content: '✓'; color: var(--dicode-green); flex-shrink: 0; margin-top: 1px;
         }
         dc-pricing .pricing-cta {
           margin-top: auto;
-          padding-top: var(--space-md);
+          padding-top: var(--dicode-space-md);
           text-align: center;
         }
         dc-pricing .pricing-cta a {
           display: inline-block;
         }
         dc-pricing .pricing-footer {
-          text-align: center; margin-top: var(--space-xl); color: var(--muted);
-          font-size: var(--text-sm); line-height: var(--leading-normal);
+          text-align: center; margin-top: var(--dicode-space-xl); color: var(--dicode-muted);
+          font-size: var(--dicode-text-sm); line-height: var(--dicode-leading-normal);
         }
-        dc-pricing .pricing-footer strong { color: var(--heading); }
+        dc-pricing .pricing-footer strong { color: var(--dicode-heading); }
         @media (max-width: 640px) {
-          dc-pricing .pricing-grid { grid-template-columns: 1fr; gap: var(--space-md); }
-          dc-pricing .pricing-card { padding: var(--space-lg); }
+          dc-pricing .pricing-grid { grid-template-columns: 1fr; gap: var(--dicode-space-md); }
+          dc-pricing .pricing-card { padding: var(--dicode-space-lg); }
         }
       </style>
-      <section id="deploy" style="background: var(--bg-alt);">
+      <section id="deploy" style="background: var(--dicode-bg-alt);">
         <div class="container">
           <p class="section-label reveal">Pricing</p>
           <h2 class="section-title reveal">Every feature, self-hosted, free forever</h2>
@@ -139,7 +139,7 @@ export class DcPricing extends LitElement {
           <p class="pricing-footer reveal">
             <strong>Our principle:</strong> self-host the full engine for free, forever.
             The Cloud tier is in development &mdash; sign up above to be the first to know.
-            Need enterprise (SSO/SAML, audit logs, custom infrastructure)? <a href="mailto:hello@dicode.app" style="color:var(--sky); text-decoration:none;">Get in touch</a>.
+            Need enterprise (SSO/SAML, audit logs, custom infrastructure)? <a href="mailto:hello@dicode.app" style="color:var(--dicode-sky); text-decoration:none;">Get in touch</a>.
           </p>
         </div>
       </section>

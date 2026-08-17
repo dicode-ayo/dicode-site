@@ -56,11 +56,11 @@ export class DcAiLoop extends LitElement {
   render() {
     // Build SVG content as a static string (all values are compile-time constants, no user input)
     const svgContent = `
-      <path d="${PATH}" stroke="var(--border)" stroke-width="1.5" stroke-dasharray="8 5" fill="none" opacity=".35"/>
-      <circle r="4" fill="var(--blue)" opacity=".9">
+      <path d="${PATH}" stroke="var(--dicode-border)" stroke-width="1.5" stroke-dasharray="8 5" fill="none" opacity=".35"/>
+      <circle r="4" fill="var(--dicode-blue)" opacity=".9">
         <animateMotion dur="10s" repeatCount="indefinite" path="${PATH}"/>
       </circle>
-      <circle r="3" fill="var(--sky)" opacity=".5">
+      <circle r="3" fill="var(--dicode-sky)" opacity=".5">
         <animateMotion dur="10s" repeatCount="indefinite" begin="5s" path="${PATH}"/>
       </circle>
     `;
@@ -81,7 +81,7 @@ export class DcAiLoop extends LitElement {
           position: absolute;
           top: ${TRACK_TOP}px; bottom: ${TRACK_BOTTOM}px;
           left: ${TRACK_LEFT}px; right: ${TRACK_RIGHT}px;
-          border: 2px dashed var(--border);
+          border: 2px dashed var(--dicode-border);
           border-radius: 50%;
           animation: al-ring-spin 40s linear infinite;
         }
@@ -94,7 +94,7 @@ export class DcAiLoop extends LitElement {
           left: ${TRACK_LEFT - 4}px; right: ${TRACK_RIGHT - 4}px;
           border-radius: 50%;
           border: 2px solid transparent;
-          background: conic-gradient(from 0deg, transparent 0%, var(--blue) 20%, transparent 40%) border-box;
+          background: conic-gradient(from 0deg, transparent 0%, var(--dicode-blue) 20%, transparent 40%) border-box;
           -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
           -webkit-mask-composite: xor;
           mask-composite: exclude;
@@ -120,7 +120,7 @@ export class DcAiLoop extends LitElement {
           50% { transform: scale(1.1); opacity: 1; }
         }
         dc-ai-loop .ring-center p {
-          color: var(--muted);
+          color: var(--dicode-muted);
           font-size: .72rem;
           margin-top: .2rem;
           letter-spacing: .04em;
@@ -147,8 +147,8 @@ export class DcAiLoop extends LitElement {
         dc-ai-loop .loop-node .node-bubble {
           width: ${BUBBLE}px; height: ${BUBBLE}px;
           border-radius: 50%;
-          background: var(--card-bg);
-          border: 2px solid var(--border);
+          background: var(--dicode-card-bg);
+          border: 2px solid var(--dicode-border);
           display: flex; align-items: center; justify-content: center;
           margin: 0 auto .4rem;
           font-size: 1.2rem;
@@ -159,7 +159,7 @@ export class DcAiLoop extends LitElement {
           top: -5px; right: -5px;
           width: 18px; height: 18px;
           border-radius: 50%;
-          background: var(--blue);
+          background: var(--dicode-blue);
           color: #fff;
           font-size: .6rem;
           font-weight: 800;
@@ -168,12 +168,12 @@ export class DcAiLoop extends LitElement {
         dc-ai-loop .loop-node h4 {
           font-size: .8rem;
           font-weight: 700;
-          color: var(--heading);
+          color: var(--dicode-heading);
           margin-bottom: .1rem;
         }
         dc-ai-loop .loop-node p {
           font-size: .65rem;
-          color: var(--muted);
+          color: var(--dicode-muted);
           line-height: 1.3;
         }
 
@@ -186,12 +186,12 @@ export class DcAiLoop extends LitElement {
 
         @keyframes al-node-glow {
           0%, 16%, 100% {
-            border-color: var(--border);
+            border-color: var(--dicode-border);
             box-shadow: none;
             transform: scale(1);
           }
           6%, 12% {
-            border-color: var(--blue);
+            border-color: var(--dicode-blue);
             box-shadow: 0 0 18px rgba(13,110,253,.45), 0 0 36px rgba(13,110,253,.15);
             transform: scale(1.1);
           }
@@ -205,15 +205,15 @@ export class DcAiLoop extends LitElement {
           margin-top: 2.5rem;
         }
         dc-ai-loop .ai-detail {
-          background: var(--card-bg);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
+          background: var(--dicode-card-bg);
+          border: 1px solid var(--dicode-border);
+          border-radius: var(--dicode-radius);
           padding: 1.4rem;
         }
         dc-ai-loop .ai-detail h4 {
           font-size: .85rem;
           font-weight: 700;
-          color: var(--heading);
+          color: var(--dicode-heading);
           margin-bottom: .4rem;
           display: flex;
           align-items: center;
@@ -221,15 +221,15 @@ export class DcAiLoop extends LitElement {
         }
         dc-ai-loop .ai-detail h4 span { font-size: 1.1rem; }
         dc-ai-loop .ai-detail p {
-          color: var(--muted);
+          color: var(--dicode-muted);
           font-size: .8rem;
           line-height: 1.55;
         }
         dc-ai-loop .ai-detail code {
-          color: var(--sky);
+          color: var(--dicode-sky);
           font-family: 'Fira Code', 'Cascadia Code', monospace;
           font-size: .72rem;
-          background: var(--blue-tint);
+          background: var(--dicode-blue-tint);
           padding: 1px 4px;
           border-radius: 3px;
         }
@@ -241,16 +241,16 @@ export class DcAiLoop extends LitElement {
           gap: 1.2rem;
         }
         dc-ai-loop .ai-example {
-          background: var(--card-bg);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
+          background: var(--dicode-card-bg);
+          border: 1px solid var(--dicode-border);
+          border-radius: var(--dicode-radius);
           padding: 1.4rem;
           overflow: hidden;
         }
         dc-ai-loop .example-title {
           font-size: .78rem;
           font-weight: 700;
-          color: var(--heading);
+          color: var(--dicode-heading);
           margin-bottom: 1rem;
           text-align: center;
         }
@@ -263,13 +263,13 @@ export class DcAiLoop extends LitElement {
         dc-ai-loop .ex-step {
           text-align: center;
           font-size: .65rem;
-          color: var(--muted);
+          color: var(--dicode-muted);
           line-height: 1.35;
           flex: 1;
           min-width: 0;
         }
         dc-ai-loop .ex-step strong {
-          color: var(--heading);
+          color: var(--dicode-heading);
           font-size: .7rem;
           display: block;
           margin-bottom: .15rem;
@@ -277,8 +277,8 @@ export class DcAiLoop extends LitElement {
         dc-ai-loop .ex-bubble {
           width: 40px; height: 40px;
           border-radius: 50%;
-          background: var(--bg);
-          border: 2px solid var(--border);
+          background: var(--dicode-bg);
+          border: 2px solid var(--dicode-border);
           display: flex; align-items: center; justify-content: center;
           margin: 0 auto .35rem;
           font-size: 1.1rem;
@@ -290,15 +290,15 @@ export class DcAiLoop extends LitElement {
           display: flex;
           align-items: center;
           justify-content: center;
-          color: var(--sky);
+          color: var(--dicode-sky);
           font-size: .9rem;
         }
         dc-ai-loop .ex-arrow::before { content: "\u2192"; }
 
         @media (max-width: 900px) {
           dc-ai-loop .ai-examples { grid-template-columns: 1fr; }
-          dc-ai-loop .example-flow { gap: var(--space-xs); }
-          dc-ai-loop .ex-step { font-size: var(--text-xs); }
+          dc-ai-loop .example-flow { gap: var(--dicode-space-xs); }
+          dc-ai-loop .ex-step { font-size: var(--dicode-text-xs); }
           dc-ai-loop .ex-step strong { font-size: .7rem; }
         }
 
@@ -310,18 +310,18 @@ export class DcAiLoop extends LitElement {
           dc-ai-loop .loop-stack {
             display: flex;
             flex-direction: column;
-            gap: var(--space-md);
-            margin: 0 auto var(--space-xl);
+            gap: var(--dicode-space-md);
+            margin: 0 auto var(--dicode-space-xl);
             max-width: 360px;
           }
           dc-ai-loop .stack-item {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: var(--space-md);
+            background: var(--dicode-card-bg);
+            border: 1px solid var(--dicode-border);
+            border-radius: var(--dicode-radius);
+            padding: var(--dicode-space-md);
             display: flex;
             align-items: center;
-            gap: var(--space-md);
+            gap: var(--dicode-space-md);
             position: relative;
           }
           dc-ai-loop .stack-item:not(:last-child)::after {
@@ -330,15 +330,15 @@ export class DcAiLoop extends LitElement {
             bottom: -18px;
             left: 50%;
             transform: translateX(-50%);
-            color: var(--sky);
+            color: var(--dicode-sky);
             font-size: 1.1rem;
             z-index: 1;
           }
           dc-ai-loop .stack-bubble {
             width: 44px; height: 44px;
-            border-radius: var(--radius-full);
-            background: var(--bg);
-            border: 2px solid var(--border);
+            border-radius: var(--dicode-radius-full);
+            background: var(--dicode-bg);
+            border: 2px solid var(--dicode-border);
             display: flex; align-items: center; justify-content: center;
             font-size: 1.2rem;
             flex-shrink: 0;
@@ -348,23 +348,23 @@ export class DcAiLoop extends LitElement {
             position: absolute;
             top: -4px; right: -4px;
             width: 18px; height: 18px;
-            border-radius: var(--radius-full);
-            background: var(--blue);
+            border-radius: var(--dicode-radius-full);
+            background: var(--dicode-blue);
             color: #fff;
             font-size: .6rem;
-            font-weight: var(--font-extrabold);
+            font-weight: var(--dicode-font-extrabold);
             display: flex; align-items: center; justify-content: center;
           }
           dc-ai-loop .stack-text h4 {
-            font-size: var(--text-sm);
-            font-weight: var(--font-bold);
-            color: var(--heading);
+            font-size: var(--dicode-text-sm);
+            font-weight: var(--dicode-font-bold);
+            color: var(--dicode-heading);
             margin-bottom: 2px;
           }
           dc-ai-loop .stack-text p {
-            font-size: var(--text-xs);
-            color: var(--muted);
-            line-height: var(--leading-snug);
+            font-size: var(--dicode-text-xs);
+            color: var(--dicode-muted);
+            line-height: var(--dicode-leading-snug);
           }
           dc-ai-loop .stack-item.active .stack-bubble {
             animation: al-stack-glow 10s ease-in-out infinite;
@@ -375,15 +375,15 @@ export class DcAiLoop extends LitElement {
           dc-ai-loop .stack-item:nth-child(4) .stack-bubble { animation: al-stack-glow 10s ease-in-out infinite 6s; }
           dc-ai-loop .stack-item:nth-child(5) .stack-bubble { animation: al-stack-glow 10s ease-in-out infinite 8s; }
           @keyframes al-stack-glow {
-            0%, 16%, 100% { border-color: var(--border); }
+            0%, 16%, 100% { border-color: var(--dicode-border); }
             6%, 12% {
-              border-color: var(--blue);
+              border-color: var(--dicode-blue);
               box-shadow: 0 0 12px rgba(13,110,253,.4);
             }
           }
         }
       </style>
-      <section id="ai-loop" style="background: var(--bg);">
+      <section id="ai-loop" style="background: var(--dicode-bg);">
         <div class="container">
           <p class="section-label reveal">The AI Loop</p>
           <h2 class="section-title reveal">A task kernel where AI is at every stage</h2>
@@ -520,7 +520,7 @@ export class DcAiLoop extends LitElement {
           </div>
 
           <p class="reveal" style="text-align:center; margin-top:2rem;">
-            <a href="/docs/concepts/ai-agent" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:600;">Read more &rarr;</a>
+            <a href="/docs/concepts/ai-agent" style="color:var(--dicode-sky); text-decoration:none; font-size:.85rem; font-weight:600;">Read more &rarr;</a>
           </p>
         </div>
       </section>

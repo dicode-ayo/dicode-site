@@ -19,9 +19,9 @@ export class DcMultiMachine extends LitElement {
           margin: 0 auto;
         }
         dc-multi-machine .fleet-repo {
-          background: var(--card-bg);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
+          background: var(--dicode-card-bg);
+          border: 1px solid var(--dicode-border);
+          border-radius: var(--dicode-radius);
           padding: 1.4rem;
           text-align: center;
         }
@@ -30,13 +30,13 @@ export class DcMultiMachine extends LitElement {
           margin-bottom: .6rem;
         }
         dc-multi-machine .fleet-repo h4 {
-          color: var(--heading);
+          color: var(--dicode-heading);
           font-size: .9rem;
           font-weight: 700;
           margin-bottom: .2rem;
         }
         dc-multi-machine .fleet-repo p {
-          color: var(--muted);
+          color: var(--dicode-muted);
           font-size: .75rem;
         }
         dc-multi-machine .fleet-machines {
@@ -45,9 +45,9 @@ export class DcMultiMachine extends LitElement {
           gap: 1rem;
         }
         dc-multi-machine .fleet-machine {
-          background: var(--card-bg);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
+          background: var(--dicode-card-bg);
+          border: 1px solid var(--dicode-border);
+          border-radius: var(--dicode-radius);
           padding: 1.2rem;
           position: relative;
         }
@@ -57,25 +57,25 @@ export class DcMultiMachine extends LitElement {
           left: -1.5rem;
           top: 50%;
           width: 1rem;
-          border-top: 2px dashed var(--border);
+          border-top: 2px dashed var(--dicode-border);
         }
         dc-multi-machine .fleet-machine h4 {
           font-size: .85rem;
           font-weight: 700;
-          color: var(--heading);
+          color: var(--dicode-heading);
           margin-bottom: .2rem;
         }
         dc-multi-machine .fleet-machine p {
           font-size: .75rem;
-          color: var(--muted);
+          color: var(--dicode-muted);
           line-height: 1.4;
         }
         dc-multi-machine .fleet-machine .machine-tag {
           display: inline-block;
           font-size: .65rem;
           font-weight: 600;
-          color: var(--sky);
-          background: var(--blue-tint);
+          color: var(--dicode-sky);
+          background: var(--dicode-blue-tint);
           padding: .15rem .5rem;
           border-radius: 4px;
           margin-top: .4rem;
@@ -83,11 +83,11 @@ export class DcMultiMachine extends LitElement {
         dc-multi-machine .fleet-footer {
           text-align: center;
           margin-top: 2.5rem;
-          color: var(--muted);
+          color: var(--dicode-muted);
           font-size: .9rem;
         }
         dc-multi-machine .fleet-footer strong {
-          color: var(--sky);
+          color: var(--dicode-sky);
         }
         @media (max-width: 768px) {
           dc-multi-machine .fleet-diagram {
@@ -101,7 +101,7 @@ export class DcMultiMachine extends LitElement {
           }
         }
       </style>
-      <section id="multi-machine" style="background: var(--bg);">
+      <section id="multi-machine" style="background: var(--dicode-bg);">
         <div class="container">
           <p class="section-label reveal">Distributed</p>
           <h2 class="section-title reveal">One repo, many machines</h2>

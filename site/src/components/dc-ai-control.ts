@@ -18,62 +18,62 @@ import { customElement } from "lit/decorators.js";
  * observer at src/utils/reveal.ts (which does a document-wide query).
  *
  * All token values come from src/styles/theme.css (--space-*, --text-*,
- * --font-*, --radius*, --shadow*). No hardcoded rem/px.
+ * --font-*, --dicode-radius*, --dicode-shadow*). No hardcoded rem/px.
  */
 const styles = css`
   dc-ai-control .pr-example-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: var(--space-xl);
-    margin-bottom: var(--space-2xl);
+    background: var(--dicode-card-bg);
+    border: 1px solid var(--dicode-border);
+    border-radius: var(--dicode-radius);
+    padding: var(--dicode-space-xl);
+    margin-bottom: var(--dicode-space-2xl);
   }
   dc-ai-control .pr-example-card h3 {
-    color: var(--heading);
-    font-size: var(--text-lg);
-    font-weight: var(--font-bold);
-    margin-bottom: var(--space-sm);
+    color: var(--dicode-heading);
+    font-size: var(--dicode-text-lg);
+    font-weight: var(--dicode-font-bold);
+    margin-bottom: var(--dicode-space-sm);
   }
   dc-ai-control .pr-example-card > p {
-    color: var(--muted);
-    font-size: var(--text-base);
+    color: var(--dicode-muted);
+    font-size: var(--dicode-text-base);
     line-height: 1.7;
-    margin-bottom: var(--space-lg);
+    margin-bottom: var(--dicode-space-lg);
   }
   dc-ai-control .flow-diagram {
     display: flex;
     align-items: center;
     justify-content: center;
     flex-wrap: wrap;
-    gap: var(--space-md);
+    gap: var(--dicode-space-md);
     margin-top: 0;
   }
   dc-ai-control .flow-box {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: var(--space-md) var(--space-lg);
+    background: var(--dicode-card-bg);
+    border: 1px solid var(--dicode-border);
+    border-radius: var(--dicode-radius-md);
+    padding: var(--dicode-space-md) var(--dicode-space-lg);
     text-align: center;
     min-width: 160px;
   }
   dc-ai-control .flow-box--highlight {
-    border-color: var(--border-dashed);
+    border-color: var(--dicode-border-dashed);
   }
   dc-ai-control .flow-box h4 {
-    font-size: var(--text-sm);
-    font-weight: var(--font-bold);
-    color: var(--heading);
-    margin-bottom: var(--space-xs);
+    font-size: var(--dicode-text-sm);
+    font-weight: var(--dicode-font-bold);
+    color: var(--dicode-heading);
+    margin-bottom: var(--dicode-space-xs);
   }
   dc-ai-control .flow-box p {
-    font-size: var(--text-xs);
-    color: var(--muted);
+    font-size: var(--dicode-text-xs);
+    color: var(--dicode-muted);
     line-height: 1.4;
   }
   dc-ai-control .flow-arrow {
-    color: var(--blue);
-    font-size: var(--text-xl);
-    font-weight: var(--font-bold);
+    color: var(--dicode-blue);
+    font-size: var(--dicode-text-xl);
+    font-weight: var(--dicode-font-bold);
     flex-shrink: 0;
     line-height: 1;
     display: flex;
@@ -86,14 +86,14 @@ const styles = css`
   @media (max-width: 900px) {
     dc-ai-control .flow-diagram {
       flex-direction: column;
-      gap: var(--space-md);
+      gap: var(--dicode-space-md);
     }
     dc-ai-control .flow-arrow::before {
       content: "↓";
     }
     dc-ai-control .flow-box {
       min-width: 140px;
-      padding: var(--space-sm) var(--space-md);
+      padding: var(--dicode-space-sm) var(--dicode-space-md);
       width: 100%;
       max-width: 100%;
     }

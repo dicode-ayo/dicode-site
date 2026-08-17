@@ -25,10 +25,10 @@ export class DcControl extends LitElement {
         }
         dc-control .control-card h3 {
           margin: 0 0 1rem;
-          color: var(--heading);
+          color: var(--dicode-heading);
         }
         dc-control .control-card p {
-          color: var(--muted);
+          color: var(--dicode-muted);
           margin: 0;
           font-size: .95rem;
         }
@@ -38,7 +38,7 @@ export class DcControl extends LitElement {
           }
         }
       </style>
-      <section id="control" style="background: var(--bg);">
+      <section id="control" style="background: var(--dicode-bg);">
         <div class="container">
           <p class="section-label reveal">Your Level of Control</p>
           <h2 class="section-title reveal">From full hands-on to full AI</h2>

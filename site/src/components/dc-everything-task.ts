@@ -12,23 +12,23 @@ export class DcEverythingTask extends LitElement {
       <style>
         dc-everything-task .kernel-diagram {
           max-width: 600px;
-          margin: 0 auto var(--space-2xl);
+          margin: 0 auto var(--dicode-space-2xl);
           display: flex;
           flex-direction: column;
           gap: 0;
         }
         dc-everything-task .kernel-layer {
-          padding: var(--space-lg) var(--space-xl);
+          padding: var(--dicode-space-lg) var(--dicode-space-xl);
           text-align: center;
-          border: 1px solid var(--border);
+          border: 1px solid var(--dicode-border);
           position: relative;
         }
         dc-everything-task .kernel-layer:first-child {
-          border-radius: var(--radius) var(--radius) 0 0;
-          background: var(--card-bg);
+          border-radius: var(--dicode-radius) var(--dicode-radius) 0 0;
+          background: var(--dicode-card-bg);
         }
         dc-everything-task .kernel-layer:nth-child(2) {
-          background: var(--blue-tint);
+          background: var(--dicode-blue-tint);
           border-color: rgba(13,110,253,.3);
           border-style: dashed;
           animation: layer-pulse 4s ease-in-out infinite;
@@ -38,21 +38,21 @@ export class DcEverythingTask extends LitElement {
           50% { border-color: rgba(13,110,253,.6); box-shadow: 0 0 20px rgba(13,110,253,.1); }
         }
         dc-everything-task .kernel-layer:last-child {
-          border-radius: 0 0 var(--radius) var(--radius);
-          background: var(--card-bg);
-          border-top: 2px solid var(--blue);
+          border-radius: 0 0 var(--dicode-radius) var(--dicode-radius);
+          background: var(--dicode-card-bg);
+          border-top: 2px solid var(--dicode-blue);
         }
         dc-everything-task .kernel-layer h4 {
           font-size: .85rem;
-          font-weight: var(--font-bold);
-          color: var(--heading);
+          font-weight: var(--dicode-font-bold);
+          color: var(--dicode-heading);
           margin-bottom: .3rem;
           text-transform: uppercase;
-          letter-spacing: var(--tracking-wide);
+          letter-spacing: var(--dicode-tracking-wide);
         }
         dc-everything-task .kernel-layer p {
-          color: var(--muted);
-          font-size: var(--text-sm);
+          color: var(--dicode-muted);
+          font-size: var(--dicode-text-sm);
           line-height: 1.5;
         }
         dc-everything-task .kernel-layer .replace-badge {
@@ -60,76 +60,76 @@ export class DcEverythingTask extends LitElement {
           top: .6rem;
           right: .8rem;
           font-size: .6rem;
-          font-weight: var(--font-bold);
+          font-weight: var(--dicode-font-bold);
           text-transform: uppercase;
           letter-spacing: .05em;
-          color: var(--sky);
-          background: var(--blue-tint-strong);
-          padding: .15rem var(--space-sm);
+          color: var(--dicode-sky);
+          background: var(--dicode-blue-tint-strong);
+          padding: .15rem var(--dicode-space-sm);
           border-radius: 4px;
         }
         dc-everything-task .versus-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: var(--space-lg);
+          gap: var(--dicode-space-lg);
           max-width: 700px;
           margin: 0 auto;
         }
         dc-everything-task .versus-card {
-          background: var(--card-bg);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          padding: var(--space-lg);
+          background: var(--dicode-card-bg);
+          border: 1px solid var(--dicode-border);
+          border-radius: var(--dicode-radius);
+          padding: var(--dicode-space-lg);
         }
         dc-everything-task .versus-card.highlight {
-          border-color: var(--border-dashed);
+          border-color: var(--dicode-border-dashed);
         }
         dc-everything-task .versus-card h4 {
           font-size: .85rem;
-          font-weight: var(--font-bold);
-          color: var(--muted);
+          font-weight: var(--dicode-font-bold);
+          color: var(--dicode-muted);
           text-transform: uppercase;
-          letter-spacing: var(--tracking-wide);
-          margin-bottom: var(--space-md);
+          letter-spacing: var(--dicode-tracking-wide);
+          margin-bottom: var(--dicode-space-md);
         }
         dc-everything-task .versus-card.highlight h4 {
-          color: var(--sky);
+          color: var(--dicode-sky);
         }
         dc-everything-task .versus-card ul {
           list-style: none;
           display: flex;
           flex-direction: column;
-          gap: var(--space-sm);
+          gap: var(--dicode-space-sm);
         }
         dc-everything-task .versus-card li {
           font-size: .85rem;
-          color: var(--text);
-          padding-left: var(--space-lg);
+          color: var(--dicode-text);
+          padding-left: var(--dicode-space-lg);
           position: relative;
           line-height: 1.5;
         }
         dc-everything-task .versus-card li::before {
           position: absolute;
           left: 0;
-          font-weight: var(--font-bold);
+          font-weight: var(--dicode-font-bold);
         }
         dc-everything-task .versus-card:not(.highlight) li::before {
           content: '\u2014';
-          color: var(--muted);
+          color: var(--dicode-muted);
         }
         dc-everything-task .versus-card.highlight li::before {
           content: '\u2713';
-          color: var(--green);
+          color: var(--dicode-green);
         }
         dc-everything-task .hook-text {
           text-align: center;
-          color: var(--muted);
-          font-size: var(--text-md);
+          color: var(--dicode-muted);
+          font-size: var(--dicode-text-md);
           font-style: italic;
-          margin-top: var(--space-xl);
+          margin-top: var(--dicode-space-xl);
         }
         dc-everything-task .hook-text strong {
-          color: var(--sky);
+          color: var(--dicode-sky);
           font-style: normal;
         }
         @media (max-width: 640px) {
@@ -137,11 +137,11 @@ export class DcEverythingTask extends LitElement {
             grid-template-columns: 1fr;
           }
           dc-everything-task .kernel-layer {
-            padding: var(--space-md) 1.2rem;
+            padding: var(--dicode-space-md) 1.2rem;
           }
         }
       </style>
-      <section id="everything-task" style="background: var(--bg-alt);">
+      <section id="everything-task" style="background: var(--dicode-bg-alt);">
         <div class="container">
           <p class="section-label reveal">Philosophy</p>
           <h2 class="section-title reveal">Everything is a task</h2>
@@ -190,8 +190,8 @@ export class DcEverythingTask extends LitElement {
           <p class="hook-text reveal">
             Don't like something? Don't file a feature request. <strong>Replace the task.</strong>
           </p>
-          <p class="reveal" style="text-align:center; margin-top:var(--space-md);">
-            <a href="/docs/concepts/tasks" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:var(--font-semibold);">Read more &rarr;</a>
+          <p class="reveal" style="text-align:center; margin-top:var(--dicode-space-md);">
+            <a href="/docs/concepts/tasks" style="color:var(--dicode-sky); text-decoration:none; font-size:.85rem; font-weight:var(--dicode-font-semibold);">Read more &rarr;</a>
           </p>
         </div>
       </section>

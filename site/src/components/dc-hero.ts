@@ -17,48 +17,48 @@ export class DcHero extends LitElement {
         }
         dc-hero #hero::before {
           content: ''; position: absolute; inset: 0;
-          background: radial-gradient(ellipse 80% 60% at 50% -10%, var(--hero-glow-1) 0%, transparent 70%),
-                      radial-gradient(ellipse 50% 40% at 80% 80%, var(--hero-glow-2) 0%, transparent 60%);
+          background: radial-gradient(ellipse 80% 60% at 50% -10%, var(--dicode-hero-glow-1) 0%, transparent 70%),
+                      radial-gradient(ellipse 50% 40% at 80% 80%, var(--dicode-hero-glow-2) 0%, transparent 60%);
           pointer-events: none;
         }
         dc-hero .hero-badge {
-          display: inline-flex; align-items: center; gap: var(--space-sm);
-          background: rgba(13,110,253,.15); border: 1px solid var(--border-dashed);
-          color: var(--sky); font-size: .8rem; font-weight: var(--font-semibold); letter-spacing: var(--tracking-wide);
-          padding: .35rem .9rem; border-radius: var(--radius-pill); margin-bottom: 1.8rem; text-transform: uppercase;
+          display: inline-flex; align-items: center; gap: var(--dicode-space-sm);
+          background: rgba(13,110,253,.15); border: 1px solid var(--dicode-border-dashed);
+          color: var(--dicode-sky); font-size: .8rem; font-weight: var(--dicode-font-semibold); letter-spacing: var(--dicode-tracking-wide);
+          padding: .35rem .9rem; border-radius: var(--dicode-radius-pill); margin-bottom: 1.8rem; text-transform: uppercase;
         }
-        dc-hero .hero-badge .dot { width: 6px; height: 6px; border-radius: var(--radius-full); background: var(--green); animation: pulse 2s ease-in-out infinite; }
+        dc-hero .hero-badge .dot { width: 6px; height: 6px; border-radius: var(--dicode-radius-full); background: var(--dicode-green); animation: pulse 2s ease-in-out infinite; }
         @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
         dc-hero h1 {
-          font-size: clamp(2.6rem, 6vw, 4.5rem); font-weight: var(--font-extrabold); line-height: 1.08;
-          letter-spacing: var(--tracking-tight); color: var(--heading); max-width: 860px;
+          font-size: clamp(2.6rem, 6vw, 4.5rem); font-weight: var(--dicode-font-extrabold); line-height: 1.08;
+          letter-spacing: var(--dicode-tracking-tight); color: var(--dicode-heading); max-width: 860px;
         }
-        dc-hero h1 em { font-style: normal; color: var(--sky); }
-        dc-hero .hero-sub { margin-top: 1.4rem; font-size: clamp(1rem, 2.5vw, 1.25rem); color: var(--muted); max-width: 600px; line-height: 1.7; }
-        dc-hero .hero-actions { display: flex; gap: var(--space-md); margin-top: 2.4rem; flex-wrap: wrap; justify-content: center; }
+        dc-hero h1 em { font-style: normal; color: var(--dicode-sky); }
+        dc-hero .hero-sub { margin-top: 1.4rem; font-size: clamp(1rem, 2.5vw, 1.25rem); color: var(--dicode-muted); max-width: 600px; line-height: 1.7; }
+        dc-hero .hero-actions { display: flex; gap: var(--dicode-space-md); margin-top: 2.4rem; flex-wrap: wrap; justify-content: center; }
 
         /* Timeline */
         dc-hero .hero-timeline {
           margin-top: 3.5rem; max-width: 680px; width: 100%; text-align: left;
-          background: var(--code-bg); border: 1px solid var(--code-border);
-          border-radius: var(--radius); padding: 1.4rem 1.6rem;
-          font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: var(--text-sm);
+          background: var(--dicode-code-bg); border: 1px solid var(--dicode-code-border);
+          border-radius: var(--dicode-radius); padding: 1.4rem 1.6rem;
+          font-family: 'Fira Code', 'Cascadia Code', monospace; font-size: var(--dicode-text-sm);
         }
         dc-hero .tl-row {
-          display: grid; grid-template-columns: 52px 1fr; gap: var(--space-sm);
+          display: grid; grid-template-columns: 52px 1fr; gap: var(--dicode-space-sm);
           padding: .35rem 0; line-height: 1.5;
         }
-        dc-hero .tl-time { color: var(--muted); font-size: .75rem; flex-shrink: 0; padding-top: 1px; }
-        dc-hero .tl-event { color: var(--code-text); }
-        dc-hero .tl-event em { font-style: normal; color: var(--sky); }
+        dc-hero .tl-time { color: var(--dicode-muted); font-size: .75rem; flex-shrink: 0; padding-top: 1px; }
+        dc-hero .tl-event { color: var(--dicode-code-text); }
+        dc-hero .tl-event em { font-style: normal; color: var(--dicode-sky); }
         dc-hero .tl-sep {
-          border: none; border-top: 1px solid var(--code-border);
+          border: none; border-top: 1px solid var(--dicode-code-border);
           margin: .5rem 0;
         }
-        dc-hero .tl-ok { color: var(--green); }
+        dc-hero .tl-ok { color: var(--dicode-green); }
         dc-hero .tl-fail { color: #ef4444; }
-        dc-hero .tl-ai { color: var(--sky); }
-        dc-hero .tl-notify { color: var(--yellow); }
+        dc-hero .tl-ai { color: var(--dicode-sky); }
+        dc-hero .tl-notify { color: var(--dicode-yellow); }
         /* Staggered row entrance */
         dc-hero .tl-row {
           opacity: 0;
@@ -92,7 +92,7 @@ export class DcHero extends LitElement {
           30% { background: rgba(239, 68, 68, .12); }
         }
 
-        dc-hero .cursor { display: inline-block; width: 8px; height: 1em; background: var(--blue); animation: blink 1s step-end infinite; vertical-align: text-bottom; }
+        dc-hero .cursor { display: inline-block; width: 8px; height: 1em; background: var(--dicode-blue); animation: blink 1s step-end infinite; vertical-align: text-bottom; }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
         @media (max-width: 640px) {
@@ -100,7 +100,7 @@ export class DcHero extends LitElement {
           dc-hero h1 { font-size: 2rem; }
           dc-hero .hero-sub { font-size: .95rem; }
           dc-hero .hero-actions { flex-direction: column; align-items: center; }
-          dc-hero .hero-timeline { font-size: var(--text-xs); padding: 1rem; margin-top: 2rem; }
+          dc-hero .hero-timeline { font-size: var(--dicode-text-xs); padding: 1rem; margin-top: 2rem; }
           dc-hero .tl-row { grid-template-columns: 44px 1fr; }
           dc-hero .hero-badge { font-size: .7rem; }
         }

@@ -64,8 +64,8 @@ export class DcConnect extends LitElement {
         dc-connect .provider-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-          gap: var(--space-md);
-          margin-top: var(--space-xl);
+          gap: var(--dicode-space-md);
+          margin-top: var(--dicode-space-xl);
         }
         dc-connect .provider-item {
           display: flex;
@@ -73,15 +73,15 @@ export class DcConnect extends LitElement {
           align-items: center;
           gap: .6rem;
           padding: 1.4rem 1rem;
-          background: var(--card-bg);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          transition: transform var(--duration-fast), border-color var(--duration-fast), background var(--duration-fast);
+          background: var(--dicode-card-bg);
+          border: 1px solid var(--dicode-border);
+          border-radius: var(--dicode-radius);
+          transition: transform var(--dicode-duration-fast), border-color var(--dicode-duration-fast), background var(--dicode-duration-fast);
           text-align: center;
         }
         dc-connect .provider-item:hover {
           transform: translateY(-4px);
-          border-color: var(--border-strong);
+          border-color: var(--dicode-border-strong);
           background: rgba(255, 255, 255, .06);
         }
         dc-connect .provider-logo {
@@ -90,9 +90,9 @@ export class DcConnect extends LitElement {
           flex-shrink: 0;
         }
         dc-connect .provider-name {
-          color: var(--heading);
+          color: var(--dicode-heading);
           font-size: .85rem;
-          font-weight: var(--font-medium);
+          font-weight: var(--dicode-font-medium);
           line-height: 1.2;
         }
         dc-connect .provider-item.coming-soon { opacity: .55; }
@@ -100,7 +100,7 @@ export class DcConnect extends LitElement {
           content: 'coming soon';
           display: block;
           font-size: .65rem;
-          color: var(--yellow);
+          color: var(--dicode-yellow);
           font-weight: 400;
           text-transform: uppercase;
           letter-spacing: .05em;
@@ -108,24 +108,24 @@ export class DcConnect extends LitElement {
         }
         dc-connect .provider-item.special {
           border-style: dashed;
-          border-color: var(--border-dashed);
+          border-color: var(--dicode-border-dashed);
           background: rgba(13, 110, 253, .06);
         }
         dc-connect .provider-item.special .provider-logo {
-          color: var(--sky);
+          color: var(--dicode-sky);
         }
         dc-connect .provider-item.special .provider-name {
-          color: var(--blue2);
-          font-weight: var(--font-semibold);
+          color: var(--dicode-blue2);
+          font-weight: var(--dicode-font-semibold);
         }
         dc-connect .connect-footer {
           text-align: center;
-          color: var(--muted);
-          margin-top: var(--space-xl);
-          font-size: var(--text-base);
+          color: var(--dicode-muted);
+          margin-top: var(--dicode-space-xl);
+          font-size: var(--dicode-text-base);
         }
         dc-connect .connect-footer a {
-          color: var(--sky);
+          color: var(--dicode-sky);
           text-decoration: none;
         }
         dc-connect .connect-footer a:hover { text-decoration: underline; }
@@ -145,7 +145,7 @@ export class DcConnect extends LitElement {
           dc-connect .provider-name { font-size: .75rem; }
         }
       </style>
-      <section id="connect" style="background: var(--bg);">
+      <section id="connect" style="background: var(--dicode-bg);">
         <div class="container">
           <p class="section-label reveal">One-Click OAuth</p>
           <h2 class="section-title reveal">Click. Authenticate. Done.</h2>
@@ -192,7 +192,7 @@ export class DcConnect extends LitElement {
           </div>
           <p class="connect-footer reveal">
             Missing a provider? Write your own OAuth flow &mdash; dicode gives you the building blocks.
-            <a href="/docs/concepts/relay" style="color:var(--sky); text-decoration:none; font-weight:var(--font-semibold);">Read more &rarr;</a>
+            <a href="/docs/concepts/relay" style="color:var(--dicode-sky); text-decoration:none; font-weight:var(--dicode-font-semibold);">Read more &rarr;</a>
           </p>
         </div>
       </section>

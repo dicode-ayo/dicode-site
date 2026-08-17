@@ -13,21 +13,21 @@ export class DcSecurity extends LitElement {
         dc-security .security-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: var(--space-2xl);
+          gap: var(--dicode-space-2xl);
           align-items: start;
         }
         dc-security .security-intro h2 {
-          font-size: var(--text-3xl);
-          font-weight: var(--font-extrabold);
-          color: var(--heading);
-          letter-spacing: var(--tracking-tight);
-          margin-bottom: var(--space-md);
+          font-size: var(--dicode-text-3xl);
+          font-weight: var(--dicode-font-extrabold);
+          color: var(--dicode-heading);
+          letter-spacing: var(--dicode-tracking-tight);
+          margin-bottom: var(--dicode-space-md);
         }
         dc-security .security-intro p {
-          color: var(--muted);
-          font-size: var(--text-md);
-          line-height: var(--leading-relaxed);
-          margin-bottom: var(--space-md);
+          color: var(--dicode-muted);
+          font-size: var(--dicode-text-md);
+          line-height: var(--dicode-leading-relaxed);
+          margin-bottom: var(--dicode-space-md);
         }
         dc-security .security-permissions {
           list-style: none;
@@ -35,75 +35,75 @@ export class DcSecurity extends LitElement {
           margin: 0;
           display: flex;
           flex-direction: column;
-          gap: var(--space-md);
+          gap: var(--dicode-space-md);
         }
         dc-security .permission-item {
-          background: var(--card-bg);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          padding: var(--space-md) var(--space-lg);
+          background: var(--dicode-card-bg);
+          border: 1px solid var(--dicode-border);
+          border-radius: var(--dicode-radius);
+          padding: var(--dicode-space-md) var(--dicode-space-lg);
           display: flex;
           align-items: flex-start;
-          gap: var(--space-md);
-          transition: var(--transition);
+          gap: var(--dicode-space-md);
+          transition: var(--dicode-transition);
         }
         dc-security .permission-item:hover {
-          border-color: var(--border-strong);
+          border-color: var(--dicode-border-strong);
           transform: translateX(4px);
         }
         dc-security .permission-icon {
           flex-shrink: 0;
           width: 40px;
           height: 40px;
-          border-radius: var(--radius-md);
-          background: var(--blue-tint);
+          border-radius: var(--dicode-radius-md);
+          background: var(--dicode-blue-tint);
           display: flex;
           align-items: center;
           justify-content: center;
-          color: var(--sky);
+          color: var(--dicode-sky);
         }
         dc-security .permission-icon svg {
           width: 20px;
           height: 20px;
         }
         dc-security .permission-body h4 {
-          color: var(--heading);
-          font-size: var(--text-md);
-          font-weight: var(--font-bold);
-          margin: 0 0 var(--space-xs);
+          color: var(--dicode-heading);
+          font-size: var(--dicode-text-md);
+          font-weight: var(--dicode-font-bold);
+          margin: 0 0 var(--dicode-space-xs);
         }
         dc-security .permission-body p {
-          color: var(--muted);
-          font-size: var(--text-sm);
-          line-height: var(--leading-snug);
+          color: var(--dicode-muted);
+          font-size: var(--dicode-text-sm);
+          line-height: var(--dicode-leading-snug);
           margin: 0;
         }
         dc-security .permission-body code {
-          color: var(--sky);
-          font-family: var(--font-mono);
-          font-size: var(--text-xs);
-          background: var(--blue-tint);
+          color: var(--dicode-sky);
+          font-family: var(--dicode-font-mono);
+          font-size: var(--dicode-text-xs);
+          background: var(--dicode-blue-tint);
           padding: 2px 6px;
-          border-radius: var(--radius-sm);
+          border-radius: var(--dicode-radius-sm);
         }
         @media (max-width: 900px) {
           dc-security .security-grid {
             grid-template-columns: 1fr;
-            gap: var(--space-xl);
+            gap: var(--dicode-space-xl);
           }
         }
         @media (max-width: 640px) {
-          dc-security .permission-item { padding: var(--space-md); }
+          dc-security .permission-item { padding: var(--dicode-space-md); }
           dc-security .permission-icon { width: 36px; height: 36px; }
         }
       </style>
-      <section id="security" style="background: var(--bg-alt);">
+      <section id="security" style="background: var(--dicode-bg-alt);">
         <div class="container">
           <p class="section-label reveal">Security & Permissions</p>
           <h2 class="section-title reveal">You decide what tasks can do</h2>
           <p class="section-sub reveal">
             Every task declares exactly which files, networks, env vars, and dicode APIs it
-            can access — in <code style="color:var(--sky)">task.yaml</code>. Nothing else
+            can access — in <code style="color:var(--dicode-sky)">task.yaml</code>. Nothing else
             is visible. Review permissions in git, not at runtime.
           </p>
 
@@ -118,7 +118,7 @@ export class DcSecurity extends LitElement {
               </p>
               <p>
                 The task script never sees anything it didn't ask for. An undeclared env
-                var returns <code style="color:var(--sky)">undefined</code>. An undeclared
+                var returns <code style="color:var(--dicode-sky)">undefined</code>. An undeclared
                 network call fails with a clear error. No surprises, no accidental
                 exfiltration, no wild-card trust.
               </p>
@@ -205,7 +205,7 @@ export class DcSecurity extends LitElement {
             </ul>
           </div>
           <p class="reveal" style="text-align:center; margin-top:2rem;">
-            <a href="/docs/concepts/secrets" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:600;">Read more &rarr;</a>
+            <a href="/docs/concepts/secrets" style="color:var(--dicode-sky); text-decoration:none; font-size:.85rem; font-weight:600;">Read more &rarr;</a>
           </p>
         </div>
       </section>

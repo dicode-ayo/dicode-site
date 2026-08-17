@@ -11,11 +11,11 @@ export class DcFooter extends LitElement {
     return html`
       <style>
         dc-footer footer {
-          background: var(--bg); border-top: 1px solid var(--border);
+          background: var(--dicode-bg); border-top: 1px solid var(--dicode-border);
           padding: 2rem; text-align: center;
         }
-        dc-footer footer p { color: var(--muted); font-size: .85rem; }
-        dc-footer footer a { color: var(--sky); text-decoration: none; }
+        dc-footer footer p { color: var(--dicode-muted); font-size: .85rem; }
+        dc-footer footer a { color: var(--dicode-sky); text-decoration: none; }
         dc-footer footer a:hover { text-decoration: underline; }
         @media (max-width: 640px) {
           dc-footer footer p { font-size: .78rem; }

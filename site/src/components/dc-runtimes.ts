@@ -94,57 +94,57 @@ export class DcRuntimes extends LitElement {
         dc-runtimes .runtime-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-          gap: var(--space-lg);
+          gap: var(--dicode-space-lg);
         }
         dc-runtimes .runtime-card {
-          background: var(--card-bg);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          padding: var(--space-xl);
-          transition: var(--transition);
+          background: var(--dicode-card-bg);
+          border: 1px solid var(--dicode-border);
+          border-radius: var(--dicode-radius);
+          padding: var(--dicode-space-xl);
+          transition: var(--dicode-transition);
           position: relative;
           display: flex;
           flex-direction: column;
-          gap: var(--space-md);
+          gap: var(--dicode-space-md);
         }
         dc-runtimes .runtime-card:hover {
-          border-color: var(--border-strong);
+          border-color: var(--dicode-border-strong);
           transform: translateY(-4px);
-          box-shadow: var(--shadow-card);
+          box-shadow: var(--dicode-shadow-card);
         }
         dc-runtimes .runtime-card.coming-soon { opacity: .7; }
         dc-runtimes .runtime-card.coming-soon::after {
           content: 'coming soon';
           position: absolute;
-          top: var(--space-md);
-          right: var(--space-md);
-          font-size: var(--text-xs);
-          font-weight: var(--font-semibold);
-          color: var(--yellow);
+          top: var(--dicode-space-md);
+          right: var(--dicode-space-md);
+          font-size: var(--dicode-text-xs);
+          font-weight: var(--dicode-font-semibold);
+          color: var(--dicode-yellow);
           text-transform: uppercase;
-          letter-spacing: var(--tracking-wider);
+          letter-spacing: var(--dicode-tracking-wider);
           background: rgba(202, 138, 4, .12);
           border: 1px solid rgba(202, 138, 4, .3);
-          padding: 2px var(--space-sm);
-          border-radius: var(--radius-pill);
+          padding: 2px var(--dicode-space-sm);
+          border-radius: var(--dicode-radius-pill);
         }
         dc-runtimes .runtime-header {
           display: flex;
           align-items: center;
-          gap: var(--space-md);
+          gap: var(--dicode-space-md);
         }
         dc-runtimes .runtime-header svg { width: 40px; height: 40px; flex-shrink: 0; }
         dc-runtimes .runtime-title h3 {
-          color: var(--heading);
-          font-size: var(--text-xl);
-          font-weight: var(--font-bold);
+          color: var(--dicode-heading);
+          font-size: var(--dicode-text-xl);
+          font-weight: var(--dicode-font-bold);
           margin: 0;
         }
         dc-runtimes .runtime-title p {
-          color: var(--muted);
-          font-size: var(--text-xs);
+          color: var(--dicode-muted);
+          font-size: var(--dicode-text-xs);
           margin: 0;
-          font-family: var(--font-mono);
+          font-family: var(--dicode-font-mono);
         }
         dc-runtimes .runtime-features {
           list-style: none;
@@ -152,31 +152,31 @@ export class DcRuntimes extends LitElement {
           margin: 0;
           display: flex;
           flex-direction: column;
-          gap: var(--space-xs);
+          gap: var(--dicode-space-xs);
         }
         dc-runtimes .runtime-features li {
-          color: var(--text);
-          font-size: var(--text-sm);
+          color: var(--dicode-text);
+          font-size: var(--dicode-text-sm);
           padding-left: 1.2rem;
           position: relative;
-          line-height: var(--leading-snug);
+          line-height: var(--dicode-leading-snug);
         }
         dc-runtimes .runtime-features li::before {
           content: '✓';
           position: absolute;
           left: 0;
-          color: var(--green);
-          font-weight: var(--font-bold);
+          color: var(--dicode-green);
+          font-weight: var(--dicode-font-bold);
         }
         @media (max-width: 640px) {
           dc-runtimes .runtime-grid {
             grid-template-columns: 1fr;
-            gap: var(--space-md);
+            gap: var(--dicode-space-md);
           }
-          dc-runtimes .runtime-card { padding: var(--space-lg); }
+          dc-runtimes .runtime-card { padding: var(--dicode-space-lg); }
         }
       </style>
-      <section id="runtimes" style="background: var(--bg);">
+      <section id="runtimes" style="background: var(--dicode-bg);">
         <div class="container">
           <p class="section-label reveal">Execution Runtimes</p>
           <h2 class="section-title reveal">Run tasks in the language you love</h2>

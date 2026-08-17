@@ -16,15 +16,15 @@ export class DcAiHow extends LitElement {
           gap: 1.5rem;
         }
         dc-ai-how .ai-card {
-          background: var(--card-bg);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
+          background: var(--dicode-card-bg);
+          border: 1px solid var(--dicode-border);
+          border-radius: var(--dicode-radius);
           padding: 1.6rem;
         }
         dc-ai-how .ai-card h3 {
           font-size: .95rem;
           font-weight: 700;
-          color: var(--heading);
+          color: var(--dicode-heading);
           margin-bottom: .5rem;
           display: flex;
           align-items: center;
@@ -32,15 +32,15 @@ export class DcAiHow extends LitElement {
         }
         dc-ai-how .ai-card h3 span { font-size: 1.2rem; }
         dc-ai-how .ai-card p {
-          color: var(--muted);
+          color: var(--dicode-muted);
           font-size: .85rem;
           line-height: 1.6;
         }
         dc-ai-how .ai-card code {
-          color: var(--sky);
+          color: var(--dicode-sky);
           font-family: 'Fira Code', 'Cascadia Code', monospace;
           font-size: .78rem;
-          background: var(--blue-tint);
+          background: var(--dicode-blue-tint);
           padding: 1px 5px;
           border-radius: 4px;
         }
@@ -53,7 +53,7 @@ export class DcAiHow extends LitElement {
         }
         dc-ai-how .ai-card li {
           font-size: .82rem;
-          color: var(--text);
+          color: var(--dicode-text);
           padding-left: 1.2rem;
           position: relative;
           line-height: 1.5;
@@ -62,7 +62,7 @@ export class DcAiHow extends LitElement {
           content: '\u2713';
           position: absolute;
           left: 0;
-          color: var(--green);
+          color: var(--dicode-green);
           font-weight: 700;
         }
         @media (max-width: 640px) {
@@ -70,7 +70,7 @@ export class DcAiHow extends LitElement {
           dc-ai-how .ai-card { padding: 1.2rem; }
         }
       </style>
-      <section id="ai-how" style="background: var(--bg-alt);">
+      <section id="ai-how" style="background: var(--dicode-bg-alt);">
         <div class="container">
           <p class="section-label reveal">Under the Hood</p>
           <h2 class="section-title reveal">How the AI actually works</h2>

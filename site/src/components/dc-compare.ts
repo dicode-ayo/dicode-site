@@ -11,23 +11,23 @@ export class DcCompare extends LitElement {
     return html`
       <style>
         dc-compare table { width: 100%; border-collapse: collapse; font-size: .85rem; min-width: 700px; }
-        dc-compare th { text-align: center; padding: .8rem; color: var(--muted); font-weight: 600; }
+        dc-compare th { text-align: center; padding: .8rem; color: var(--dicode-muted); font-weight: 600; }
         dc-compare th:first-child { text-align: left; }
-        dc-compare th.dicode-col { color: var(--sky); font-weight: 700; }
-        dc-compare thead tr { border-bottom: 2px solid var(--border); }
-        dc-compare tbody tr { border-bottom: 1px solid var(--border); }
+        dc-compare th.dicode-col { color: var(--dicode-sky); font-weight: 700; }
+        dc-compare thead tr { border-bottom: 2px solid var(--dicode-border); }
+        dc-compare tbody tr { border-bottom: 1px solid var(--dicode-border); }
         dc-compare tbody tr:last-child { border-bottom: none; }
-        dc-compare td { padding: .6rem .8rem; color: var(--text); }
+        dc-compare td { padding: .6rem .8rem; color: var(--dicode-text); }
         dc-compare td:not(:first-child) { text-align: center; }
-        dc-compare .check { color: var(--green); font-weight: 700; font-size: 1rem; }
-        dc-compare .dash { color: var(--muted); }
-        dc-compare .partial { color: var(--yellow); font-weight: 600; font-size: .8rem; }
+        dc-compare .check { color: var(--dicode-green); font-weight: 700; font-size: 1rem; }
+        dc-compare .dash { color: var(--dicode-muted); }
+        dc-compare .partial { color: var(--dicode-yellow); font-weight: 600; font-size: .8rem; }
         @media (max-width: 640px) {
           dc-compare table { font-size: .75rem; }
           dc-compare th, dc-compare td { padding: .5rem .4rem; }
         }
       </style>
-      <section id="compare" style="background: var(--bg);">
+      <section id="compare" style="background: var(--dicode-bg);">
         <div class="container">
           <p class="section-label reveal">Before &amp; After</p>
           <h2 class="section-title reveal">What you're replacing</h2>

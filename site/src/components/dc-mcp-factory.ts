@@ -14,61 +14,61 @@ export class DcMcpFactory extends LitElement {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: var(--space-md);
+          gap: var(--dicode-space-md);
           flex-wrap: wrap;
-          margin-bottom: var(--space-2xl);
+          margin-bottom: var(--dicode-space-2xl);
         }
         dc-mcp-factory .mcp-box {
-          background: var(--card-bg);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
+          background: var(--dicode-card-bg);
+          border: 1px solid var(--dicode-border);
+          border-radius: var(--dicode-radius);
           padding: 1.2rem 1.6rem;
           text-align: center;
           min-width: 160px;
         }
         dc-mcp-factory .mcp-box h4 {
           font-size: .85rem;
-          font-weight: var(--font-bold);
-          color: var(--heading);
+          font-weight: var(--dicode-font-bold);
+          color: var(--dicode-heading);
           margin-bottom: .2rem;
         }
         dc-mcp-factory .mcp-box p {
           font-size: .75rem;
-          color: var(--muted);
+          color: var(--dicode-muted);
           line-height: 1.4;
         }
         dc-mcp-factory .mcp-arrow {
-          color: var(--sky);
+          color: var(--dicode-sky);
           font-size: 1.5rem;
-          font-weight: var(--font-bold);
+          font-weight: var(--dicode-font-bold);
           flex-shrink: 0;
         }
         dc-mcp-factory .mcp-arrow::before { content: "\u2192"; }
         dc-mcp-factory .mcp-compare {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: var(--space-lg);
+          gap: var(--dicode-space-lg);
           max-width: 700px;
           margin: 0 auto;
         }
         dc-mcp-factory .mcp-card {
-          background: var(--card-bg);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          padding: var(--space-lg);
+          background: var(--dicode-card-bg);
+          border: 1px solid var(--dicode-border);
+          border-radius: var(--dicode-radius);
+          padding: var(--dicode-space-lg);
         }
         dc-mcp-factory .mcp-card.highlight {
-          border-color: var(--border-dashed);
+          border-color: var(--dicode-border-dashed);
         }
         dc-mcp-factory .mcp-card h4 {
           font-size: .8rem;
-          font-weight: var(--font-bold);
-          color: var(--muted);
+          font-weight: var(--dicode-font-bold);
+          color: var(--dicode-muted);
           text-transform: uppercase;
-          letter-spacing: var(--tracking-wide);
+          letter-spacing: var(--dicode-tracking-wide);
           margin-bottom: .8rem;
         }
-        dc-mcp-factory .mcp-card.highlight h4 { color: var(--sky); }
+        dc-mcp-factory .mcp-card.highlight h4 { color: var(--dicode-sky); }
         dc-mcp-factory .mcp-card ul {
           list-style: none;
           display: flex;
@@ -77,21 +77,21 @@ export class DcMcpFactory extends LitElement {
         }
         dc-mcp-factory .mcp-card li {
           font-size: .85rem;
-          color: var(--text);
-          padding-left: var(--space-lg);
+          color: var(--dicode-text);
+          padding-left: var(--dicode-space-lg);
           position: relative;
           line-height: 1.5;
         }
         dc-mcp-factory .mcp-card li::before {
           position: absolute;
           left: 0;
-          font-weight: var(--font-bold);
+          font-weight: var(--dicode-font-bold);
         }
         dc-mcp-factory .mcp-card:not(.highlight) li::before {
-          content: '\u2014'; color: var(--muted);
+          content: '\u2014'; color: var(--dicode-muted);
         }
         dc-mcp-factory .mcp-card.highlight li::before {
-          content: '\u2713'; color: var(--green);
+          content: '\u2713'; color: var(--dicode-green);
         }
         @media (max-width: 900px) {
           dc-mcp-factory .mcp-flow { flex-direction: column; }
@@ -101,7 +101,7 @@ export class DcMcpFactory extends LitElement {
           dc-mcp-factory .mcp-compare { grid-template-columns: 1fr; }
         }
       </style>
-      <section id="mcp-factory" style="background: var(--bg);">
+      <section id="mcp-factory" style="background: var(--dicode-bg);">
         <div class="container">
           <p class="section-label reveal">AI Toolkit</p>
           <h2 class="section-title reveal">Every task is an AI tool</h2>
@@ -155,8 +155,8 @@ export class DcMcpFactory extends LitElement {
               </ul>
             </div>
           </div>
-          <p class="reveal" style="text-align:center; margin-top:var(--space-xl);">
-            <a href="/docs/concepts/ai-agent" style="color:var(--sky); text-decoration:none; font-size:.85rem; font-weight:var(--font-semibold);">Read more &rarr;</a>
+          <p class="reveal" style="text-align:center; margin-top:var(--dicode-space-xl);">
+            <a href="/docs/concepts/ai-agent" style="color:var(--dicode-sky); text-decoration:none; font-size:.85rem; font-weight:var(--dicode-font-semibold);">Read more &rarr;</a>
           </p>
         </div>
       </section>

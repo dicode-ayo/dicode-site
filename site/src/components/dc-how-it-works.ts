@@ -10,26 +10,26 @@ export class DcHowItWorks extends LitElement {
   render() {
     return html`
       <style>
-        dc-how-it-works section { background: var(--bg-alt); }
+        dc-how-it-works section { background: var(--dicode-bg-alt); }
         dc-how-it-works .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 2rem; }
         dc-how-it-works .step {
-          background: var(--card-bg); border: 1px solid var(--border);
-          border-radius: var(--radius); padding: 2rem; position: relative; overflow: hidden;
+          background: var(--dicode-card-bg); border: 1px solid var(--dicode-border);
+          border-radius: var(--dicode-radius); padding: 2rem; position: relative; overflow: hidden;
         }
         dc-how-it-works .step::after {
           content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-          background: linear-gradient(90deg, var(--blue), var(--sky));
+          background: linear-gradient(90deg, var(--dicode-blue), var(--dicode-sky));
           transform: scaleX(0); transform-origin: left; transition: transform .4s ease;
         }
         dc-how-it-works .step:hover::after { transform: scaleX(1); }
         dc-how-it-works .step-num {
           width: 40px; height: 40px; border-radius: 50%;
-          background: var(--blue-tint-strong); border: 1.5px solid rgba(13,110,253,.4);
-          color: var(--sky); font-weight: 800; font-size: .9rem;
+          background: var(--dicode-blue-tint-strong); border: 1.5px solid rgba(13,110,253,.4);
+          color: var(--dicode-sky); font-weight: 800; font-size: .9rem;
           display: flex; align-items: center; justify-content: center; margin-bottom: 1.2rem;
         }
-        dc-how-it-works .step h3 { font-size: 1.1rem; font-weight: 700; color: var(--heading); margin-bottom: .5rem; }
-        dc-how-it-works .step p { color: var(--muted); font-size: .9rem; line-height: 1.65; }
+        dc-how-it-works .step h3 { font-size: 1.1rem; font-weight: 700; color: var(--dicode-heading); margin-bottom: .5rem; }
+        dc-how-it-works .step p { color: var(--dicode-muted); font-size: .9rem; line-height: 1.65; }
         @media (max-width: 640px) {
           dc-how-it-works section { padding: 60px 1rem; }
           dc-how-it-works .steps { grid-template-columns: 1fr; gap: 1rem; }

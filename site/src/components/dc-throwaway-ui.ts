@@ -17,15 +17,15 @@ export class DcThrowawayUi extends LitElement {
           margin-bottom: 2.5rem;
         }
         dc-throwaway-ui .ui-example {
-          background: var(--code-bg);
-          border: 1px solid var(--code-border);
-          border-radius: var(--radius);
+          background: var(--dicode-code-bg);
+          border: 1px solid var(--dicode-code-border);
+          border-radius: var(--dicode-radius);
           overflow: hidden;
         }
         dc-throwaway-ui .ui-example-header {
           display: flex; align-items: center; gap: .5rem;
           padding: .5rem 1rem;
-          border-bottom: 1px solid var(--code-border);
+          border-bottom: 1px solid var(--dicode-code-border);
         }
         dc-throwaway-ui .ui-example-header .dot { width: 10px; height: 10px; border-radius: 50%; }
         dc-throwaway-ui .ui-example-header .dot:nth-child(1) { background: #ff5f57; }
@@ -33,7 +33,7 @@ export class DcThrowawayUi extends LitElement {
         dc-throwaway-ui .ui-example-header .dot:nth-child(3) { background: #28c840; }
         dc-throwaway-ui .ui-example-header span:last-child {
           margin-left: auto;
-          color: var(--code-filename);
+          color: var(--dicode-code-filename);
           font-size: .7rem;
           font-family: 'Fira Code', 'Cascadia Code', monospace;
         }
@@ -42,7 +42,7 @@ export class DcThrowawayUi extends LitElement {
           font-family: 'Fira Code', 'Cascadia Code', monospace;
           font-size: .72rem;
           line-height: 1.6;
-          color: var(--code-text);
+          color: var(--dicode-code-text);
           overflow-x: auto;
         }
         dc-throwaway-ui .use-cases {
@@ -51,9 +51,9 @@ export class DcThrowawayUi extends LitElement {
           gap: 1rem;
         }
         dc-throwaway-ui .use-case {
-          background: var(--card-bg);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
+          background: var(--dicode-card-bg);
+          border: 1px solid var(--dicode-border);
+          border-radius: var(--dicode-radius);
           padding: 1.2rem;
           text-align: center;
         }
@@ -64,23 +64,23 @@ export class DcThrowawayUi extends LitElement {
         dc-throwaway-ui .use-case h4 {
           font-size: .85rem;
           font-weight: 700;
-          color: var(--heading);
+          color: var(--dicode-heading);
           margin-bottom: .2rem;
         }
         dc-throwaway-ui .use-case p {
           font-size: .75rem;
-          color: var(--muted);
+          color: var(--dicode-muted);
           line-height: 1.4;
         }
         dc-throwaway-ui .hook-text {
           text-align: center;
-          color: var(--muted);
+          color: var(--dicode-muted);
           font-size: 1rem;
           font-style: italic;
           margin-top: 2rem;
         }
         dc-throwaway-ui .hook-text strong {
-          color: var(--sky);
+          color: var(--dicode-sky);
           font-style: normal;
         }
         @media (max-width: 900px) {
@@ -91,7 +91,7 @@ export class DcThrowawayUi extends LitElement {
           dc-throwaway-ui .use-cases { grid-template-columns: 1fr 1fr; }
         }
       </style>
-      <section id="throwaway-ui" style="background: var(--bg-alt);">
+      <section id="throwaway-ui" style="background: var(--dicode-bg-alt);">
         <div class="container">
           <p class="section-label reveal">Instant Frontends</p>
           <h2 class="section-title reveal">UIs without frameworks</h2>
