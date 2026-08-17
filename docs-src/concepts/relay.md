@@ -65,7 +65,7 @@ The daemon opens one independent mTLS control connection per instance, all shari
 Exactly one of `relay.server_url` or `relay.server_urls` must be set when `relay.enabled: true`. Setting both, or neither, is a config-load error. Every entry in `server_urls` must be `wss://` (mTLS-only — no `ws://` fallback for HA deployments), and duplicate or empty entries are also rejected at config load.
 :::
 
-The corresponding environment variable overrides follow the same split: `DICODE_RELAY_SERVER_URL` carries the single/primary URL for `server_url` deployments, while `DICODE_RELAY_SERVER_URLS` carries the comma-joined full list for `server_urls` deployments.
+The daemon exports both as environment variables for the relay task: `DICODE_RELAY_SERVER_URL` always carries the primary URL — `server_url` itself, or the first `server_urls` entry — as the shorthand a single-connection consumer falls back to, and `DICODE_RELAY_SERVER_URLS` carries the comma-joined full list, set only when `server_urls` is in use.
 
 ---
 
