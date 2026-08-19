@@ -10,7 +10,7 @@ dicode watches git sources and reconciles tasks on every poll. Without the appro
 
 The decision is made once per `(task_id, content_hash)` pair:
 
-1. The daemon computes the task's **content hash** (`sha256("dicode-approval-content-v2" || dir_hash || resolved_permissions_JSON)`) where `resolved_permissions_JSON` covers `Permissions`, `Runtime`, and `Trigger.WebhookAuth`.
+1. The daemon computes the task's **content hash** (`sha256("dicode-approval-content-v1" || dir_hash || resolved_permissions_JSON)`) where `resolved_permissions_JSON` covers `Permissions`, `Runtime`, and `Trigger.WebhookAuth`.
 2. It looks up the task ID in `dicode.lock`.
 3. If the stored hash matches, the task re-arms immediately — no user action needed.
 4. If there is no entry, or the hash has changed, the task is held **pending**.
@@ -19,7 +19,7 @@ Anything that changes what code runs or what the sandbox can do produces a new h
 
 ### `dicode.lock`
 
-`dicode.lock` is a daemon-owned YAML file written in the same directory as `dicode.yaml`. It maps task ID to `{hash, approved_at, approved_by}` and is the source of truth for approval records.
+`dicode.lock` is a daemon-owned YAML file written in the same directory as `dicode.yaml`. It maps task ID to `{hash, approved_at, approved_by, commit}` and is the source of truth for approval records.
 
 ```
 ~/.dicode/
@@ -28,6 +28,16 @@ Anything that changes what code runs or what the sandbox can do produces a new h
 ```
 
 Do not hand-edit `dicode.lock` while the daemon is running. The daemon reads and writes it atomically; concurrent edits will be overwritten on the next reconcile.
+
+`commit` is an informational-only field — no gate decision reads it:
+
+| | |
+|---|---|
+| Captured | At pend time, not re-read from HEAD when the task is later approved, so a recorded commit always matches the tree that produced the approved hash |
+| Populated on | Every path that writes a lock entry, manual approval and auto-approve alike (trust-always source/task, gate disabled, bootstrap) |
+| Left empty when | The task's directory isn't tracked by the resolved repository's HEAD — e.g. the source isn't a git repo, has no commits, or the task is a dir-less inline taskset entry |
+
+A task directory that merely happens to sit inside an unrelated version-controlled folder does not get a `commit` recorded — the directory has to be tracked by the *resolved* repository's HEAD. Pre-existing lock records written before this field was added remain valid; `commit` is simply absent on them.
 
 ### Pending state
 
