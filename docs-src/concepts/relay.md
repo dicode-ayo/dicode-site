@@ -426,3 +426,23 @@ relay:
     - wss://relay-a.example.com/ws
     - wss://relay-b.example.com/ws
 ```
+
+### Provisioning the edge with Cloudflare (ops/relay-edge)
+
+Running your own relay means exposing two very different listeners to the internet, and they need different edge treatment:
+
+- **Public listener** — the HTTP webhook/OAuth endpoint external services talk to. This one is fine to put behind a proxy or tunnel; a **Cloudflare Tunnel** to a proxied (orange-cloud) hostname works well and needs no inbound port on your host.
+- **Control channel** — the mTLS connection dicode daemons use to authenticate to the broker. A daemon's identity *is* its TLS client certificate. If this channel sits behind any proxy or tunnel, Cloudflare terminates TLS at the edge and strips the client cert before it reaches your broker — the broker then sees an unauthenticated connection and closes it with **code 4401**. The control hostname must therefore be a **grey (unproxied) DNS A record** pointed straight at your host's IP.
+
+dicode-core ships a task that provisions and reconciles exactly this split: [`tasks/ops/relay-edge`](https://github.com/dicode-ayo/dicode-core/tree/main/tasks/ops/relay-edge) (added in [dicode-core#628](https://github.com/dicode-ayo/dicode-core/pull/628)). It manages a Cloudflare Tunnel plus DNS record for the public hostname and a grey A record for the control hostname, and enforces the never-proxy-the-control-channel rule in code — `proxied` is derived from each record's role rather than accepted as input, so a control record can never be created or patched into a proxied state.
+
+It's also safe by default: `dry_run` defaults to `true`, so the task's built-in hourly cron trigger is a pure drift check — it reads the current zone state, computes a plan, and returns `{ dry_run, drift, changes, summary }` without issuing a single mutating call. Provisioning or fixing drift requires an explicit `dry_run=false` run:
+
+```sh
+dicode run ops/relay-edge \
+  zone=example.com public_hostname=relay.example.com \
+  control_hostname=broker.relay.example.com control_ip=203.0.113.7 \
+  tunnel_name=relay-tunnel dry_run=false
+```
+
+See the task's own [README](https://github.com/dicode-ayo/dicode-core/blob/main/tasks/ops/relay-edge/README.md) for the full topology diagram, required Cloudflare API token scopes, and complete param reference — it deliberately doesn't run `cloudflared` itself, only provisions the tunnel and stores the connector token in `kv` for an operator or sidecar task to consume.
