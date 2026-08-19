@@ -104,7 +104,7 @@ task my-task/processor is pending approval (hash: a3f2…); approve via UI, CLI,
 
 ### 1. Web UI
 
-The task list badges each pending task but does not approve inline — it hands off to the task detail page, where approving is a two-step flow. The button starts labeled **Review**: clicking it loads the pending task's resolved end state — what will actually run if you arm it. Once that review is on screen the button relabels to **Approve**, and clicking it approves. Authentication is required (session cookie).
+The task list badges each pending task and offers a **Review** button in the row, but nothing approves from the list — the button navigates to the task detail page. Approving there is a two-step flow: the detail page's button also starts labeled **Review**, and clicking it loads the pending task's resolved end state — what will actually run if you arm it. Once that review is on screen the button relabels to **Approve**, and clicking it approves. Authentication is required (session cookie).
 
 Under the hood, **Review** calls `GET /api/tasks/{id}/pending-state` and **Approve** calls `POST /api/tasks/{id}/approve`, binding the request to the `pending_hash` of the state it reviewed. If the task has been re-pended at a newer hash by the time you click Approve — a `409 {"stale": true}` — the dashboard tells you the change moved under you and reloads the review rather than leaving a stale one on screen.
 
