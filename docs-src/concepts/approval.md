@@ -114,9 +114,9 @@ task my-task/processor is pending approval (hash: a3f2…); approve via UI, CLI,
 
 ### 1. Web UI
 
-The task list badges each pending task. Click the **Approve** button in the row (or in the task detail panel) to approve immediately. Authentication is required (session cookie).
+The task list badges each pending task and offers a **Review** button in the row, but nothing approves from the list — the button navigates to the task detail page. Approving there is a two-step flow: the detail page's button also starts labeled **Review**, and clicking it loads the pending task's resolved end state — what will actually run if you arm it. Once that review is on screen the button relabels to **Approve**, and clicking it approves. Authentication is required (session cookie).
 
-Under the hood, the UI calls `POST /api/tasks/{id}/approve`.
+Under the hood, **Review** calls `GET /api/tasks/{id}/pending-state` and **Approve** calls `POST /api/tasks/{id}/approve`, binding the request to the `pending_hash` of the state it reviewed. If the task has been re-pended at a newer hash by the time you click Approve — a `409 {"stale": true}` — the dashboard tells you the change moved under you and reloads the review rather than leaving a stale one on screen.
 
 ### 2. CLI
 
@@ -260,20 +260,62 @@ Returns the task state. When the task is held by the approval gate, the response
 
 A task with `pending_approval: true` cannot be fired — manual fire, chain fire, and trigger dispatch are all blocked.
 
+### `GET /api/tasks/{id}/pending-state`
+
+Returns the review surface for a pending task (`Gate.State()`): the resolved task as it will run if the operator arms it — runtime, triggers, permissions, declared env (names and where each value comes from, never the values), params, and a file inventory of names/sizes/hashes.
+
+```json
+{
+  "task_id": "my-source/my-task",
+  "pending_hash": "a3f2…",
+  "runtime": "deno",
+  "triggers": [ ... ],
+  "permissions": { ... },
+  "files": [ ... ]
+}
+```
+
+**Auth:** session cookie or Bearer API key — same route group as `POST /api/tasks/{id}/approve`.
+
+| Status | Meaning |
+|---|---|
+| `200` | State returned |
+| `404` | Task ID not found in the registry |
+| `409` | Task is not in a pending state |
+| `503` | Approval gate not wired up |
+
+`pending_hash` is the content hash the gate observed when it held the task. Pass it back as `hash` on `POST /api/tasks/{id}/approve` to bind the approval to the version you reviewed — see below.
+
 ### `POST /api/tasks/{id}/approve`
 
 Approves a pending task, writes the approval to `dicode.lock`, and arms the task's triggers immediately.
 
 **Auth:** session cookie or Bearer API key.
 
-| Status | Meaning |
-|---|---|
-| `200` | Task approved and armed |
-| `404` | Task ID not found in the registry |
-| `409` | Task is not in a pending state (already approved or trust-always) |
+**Body (optional):**
+
+```json
+{ "hash": "a3f2…" }
+```
+
+When a `hash` is supplied, the approval is bound to that exact content hash (`Gate.ApproveIfHash`) instead of unconditionally approving whatever is currently pending. If the task has since been re-pended at a newer hash — e.g. another push landed after you loaded the review but before you clicked Approve — the request is rejected as stale and the task remains pending, so you never silently approve content you didn't review. Omitting the body preserves the prior unconditional-approve behavior (this is what `dicode task approve` uses, since it goes over the control-socket IPC rather than this REST endpoint).
+
+| Status | Body | Meaning |
+|---|---|---|
+| `200` | — | Task approved and armed |
+| `400` | — | Malformed JSON body, or a `hash` field that is present but empty/null |
+| `404` | — | Task ID not found in the registry |
+| `409` | — | Task is not in a pending state (already approved or trust-always) |
+| `409` | `{"stale": true}` | A `hash` was supplied but no longer matches the task's current pending hash; the task stays pending — refetch and re-review before retrying |
 
 ```sh
 # Approve via curl with API key
 curl -X POST http://localhost:8080/api/tasks/my-source/my-task/approve \
   -H "Authorization: Bearer <api-key>"
+
+# Approve bound to the reviewed hash (rejected with 409 {"stale": true} if it has moved)
+curl -X POST http://localhost:8080/api/tasks/my-source/my-task/approve \
+  -H "Authorization: Bearer <api-key>" \
+  -H "Content-Type: application/json" \
+  -d '{"hash": "a3f2…"}'
 ```
