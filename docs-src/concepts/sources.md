@@ -122,6 +122,7 @@ The override system can patch these fields without modifying the original `task.
 - `trigger` (cron, webhook, manual, chain, daemon, restart)
 - `params` (add new params or change defaults of existing ones)
 - `env` (add or replace env entries)
+- `fs` (replace filesystem access list; `${VAR}` paths in `permissions.fs[].path` expand the same as in a task's own `task.yaml` — see [Template variables](./tasks#template-variables))
 - `net` (replace network access list)
 - `timeout`
 - `runtime`

@@ -450,6 +450,10 @@ A tight allowlist of fields in `task.yaml` support `${VAR}` substitution, resolv
 
 Everything else is taken literally.
 
+::: tip Works the same in taskset overrides
+`${VAR}` expansion for `permissions.fs[].path` applies identically whether the entry is declared in a task's own `task.yaml` or inside a taskset *override* layer (a `taskset.yaml`'s `overrides.entries.<task>.permissions.fs`) — fixed in [dicode-core#725](https://github.com/dicode-ayo/dicode-core/pull/725) (closes [dicode-core#721](https://github.com/dicode-ayo/dicode-core/issues/721)). `permissions.net` override entries are hostnames, not paths, and remain out of scope for this expansion.
+:::
+
 **Built-in variables:**
 
 | Variable | Value |
