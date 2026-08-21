@@ -312,7 +312,7 @@ permissions:
 
 ## dicode.caps
 
-The list of `permissions.dicode` capability names granted to this run, computed once at handshake time from the task's own declared permissions. Useful for a task that adapts to what it's actually allowed to do — e.g. skipping a step it knows will be denied — without re-parsing its own `task.yaml`.
+The list of internal capability tokens granted to this run, computed once at handshake time from the task's own declared `permissions.dicode`. Each token corresponds 1:1 to a `permissions.dicode` field (e.g. declaring `tasks_test: true` grants the token behind `dicode_test_task`, dicode-core's [built-in AI-agent tool](./ai-agent.md#capability-gated-built-in-tools)), but the token's own spelling doesn't always match the YAML field name verbatim (`"tasks.test"`, not `"tasks_test"`) — treat `dicode.caps` as an opaque list to check membership in, not something to construct by hand. Useful for a task that adapts to what it's actually allowed to do — e.g. skipping a step it knows will be denied — without re-parsing its own `task.yaml`.
 
 ::: tip Not gated
 Unlike the rest of `dicode.*`, `caps` isn't itself gated by a `permissions.dicode` flag — it just reports what was already granted. It's a plain property, not a method call, and it's exposed the same way in both SDKs.
@@ -323,13 +323,13 @@ Unlike the rest of `dicode.*`, `caps` isn't itself gated by a `permissions.dicod
 ```ts [Deno]
 export default async function main({ dicode }: DicodeSdk) {
   console.log(dicode.caps);
-  // ["list_tasks", "get_runs", "tasks_test", "runs_replay", ...]
+  // ["tasks.list", "tasks.test", "runs.replay", "git.commit_push", ...]
 }
 ```
 
 ```python [Python]
 print(dicode.caps)
-# ["list_tasks", "get_runs", "tasks_test", "runs_replay", ...]
+# ["tasks.list", "tasks.test", "runs.replay", "git.commit_push", ...]
 ```
 
 :::
@@ -557,6 +557,7 @@ await dicode.sources.set_dev_mode("infra", {
   enabled: true,
   local_path: "/home/dev/infra/taskset.yaml",
 });
+// { ok: true, dev_root_path: "/home/dev/infra/taskset.yaml", clone_path: "/home/dev/infra" }
 
 // Clone-mode (auto-fix flow)
 const { dev_root_path, clone_path } = await dicode.sources.set_dev_mode("infra", {
@@ -580,6 +581,7 @@ dicode.sources.set_dev_mode(
     enabled=True,
     local_path="/home/dev/infra/taskset.yaml",
 )
+# {"ok": True, "dev_root_path": "/home/dev/infra/taskset.yaml", "clone_path": "/home/dev/infra"}
 
 result = dicode.sources.set_dev_mode(
     "infra",
@@ -599,7 +601,7 @@ dicode.sources.set_dev_mode("infra", enabled=False)
 
 :::
 
-**Clone-mode** enable returns `{ok, dev_root_path, clone_path}` — `dev_root_path` is the source's dev-mode root and `clone_path` the specific per-run clone directory, e.g. to pass to a subsequent `dicode.git.commit_push()` call against the same session. Before dicode-core [#746](https://github.com/dicode-ayo/dicode-core/pull/746) the call returned only `{ok: true}`, leaving a caller holding a clone it had no way to locate. **Local-path mode** enable and any disable call still return just `{ok: true}` — there's no clone to report a path for.
+Enabling dev mode — clone-mode or local-path — returns `{ok, dev_root_path, clone_path}`: `dev_root_path` is the `taskset.yaml` the source now resolves through (the cloned copy in clone-mode, your own `local_path` in local-path mode) and `clone_path` is its parent directory, e.g. to pass to a subsequent `dicode.git.commit_push()` call against the same session. Before dicode-core [#746](https://github.com/dicode-ayo/dicode-core/pull/746) the call returned only `{ok: true}`, leaving a clone-mode caller holding a clone it had no way to locate. **Disabling** dev mode still returns just `{ok: true}` — both path keys are absent, not empty strings, once there's no dev root to report.
 
 ```yaml
 permissions:
