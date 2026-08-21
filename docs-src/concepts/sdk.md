@@ -511,7 +511,7 @@ permissions:
     runs_unpin_input: true
 ```
 
-Gated by the same ownership check as `runs.replay` and `runs.get_input`: caller owns the run OR caller's `parent_run_id` matches the requested run.
+Unlike `runs.replay` and `runs.get_input`, neither call is bounded by an ownership check — any task granted `runs_pin_input`/`runs_unpin_input` can pin or unpin **any** run's input system-wide, not just runs it owns or is chained from. The capability check is the only gate; treat granting either as broader than granting `runs_get_input`.
 
 ---
 
