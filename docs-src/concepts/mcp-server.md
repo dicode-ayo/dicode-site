@@ -43,22 +43,27 @@ When `server.auth: false`, `/mcp` is open to anyone who can reach the port — t
 
 ## Tool surface
 
-The MCP server exposes six tools. Three are direct passthroughs to the dicode SDK; three return structured hints pointing at the dicode HTTP API for operations that aren't (yet) exposed to tasks.
+The MCP server exposes twelve tools. Three cover the MCP-exposed task catalog and are always available; `list_sources` stays a structured hint pointing at the dicode HTTP API; the remaining eight are **capability-gated** — each one appears only when the caller's token was granted the matching `permissions.dicode` capability. An undeclared capability makes the tool invisible rather than a permission error the caller discovers by calling it (dicode-core [#746](https://github.com/dicode-ayo/dicode-core/pull/746)).
 
-| Tool | What it does | Backed by |
-|---|---|---|
-| `list_tasks` | Returns MCP-exposed tasks with their IDs, names, descriptions, and declared params. Only tasks with `mcp_exposed: true` in their `task.yaml` appear — all others are hidden from MCP by default. | `dicode.list_tasks()` |
-| `get_task` | Returns the spec for a single task. The task must have `mcp_exposed: true`; querying a non-exposed task returns an error. | `dicode.list_tasks()` filtered by id |
-| `run_task` | Triggers a task by ID and waits for it to finish. Returns the run result. The task must have `mcp_exposed: true`; invoking a non-exposed task returns an error. | `dicode.run_task()` |
-| `list_sources` | Hint: call `GET /api/sources` directly. | — |
-| `switch_dev_mode` | Hint: call `PATCH /api/sources/{name}/dev` directly. | — |
-| `test_task` | Hint: call `POST /api/tasks/{id}/test` directly. That REST call is itself gated on `permissions.dicode.tasks_test: true` for an [ephemeral per-run token](#ephemeral-per-run-mcp-tokens) — the JSON-RPC hint here is always allowed regardless. | — |
+| Tool | What it does | Backed by | Requires capability |
+|---|---|---|---|
+| `get_task` | Returns the spec for a single task. The task must have `mcp_exposed: true`; querying a non-exposed task returns an error. | `dicode.list_tasks()` filtered by id | — |
+| `run_task` | Triggers a task by ID and waits for it to finish. Returns the run result. The task must have `mcp_exposed: true`; invoking a non-exposed task returns an error. | `dicode.run_task()` | — |
+| `list_sources` | Hint: call `GET /api/sources` directly. | — | — |
+| `dicode_list_tasks` | Returns MCP-exposed tasks with their IDs, names, descriptions, and declared params. Only tasks with `mcp_exposed: true` in their `task.yaml` appear — all others are hidden from MCP by default. | `dicode.list_tasks()` | `list_tasks` |
+| `dicode_get_runs` | Returns recent run records (status, timing, output) for a task. | `dicode.get_runs()` | `get_runs` |
+| `dicode_test_task` | Runs a task's sibling test file with full host permissions and returns the result — a real call now, not a pointer to `POST /api/tasks/{id}/test`. | `dicode.tasks.test()` | `tasks_test` |
+| `dicode_set_dev_mode` | Toggles dev mode on a source (local-path or clone-mode). Returns `{ok, dev_root_path, clone_path}` — previously just `{ok: true}`, which left a caller holding a clone it had no way to locate. | `dicode.sources.set_dev_mode()` | `sources_set_dev_mode` |
+| `dicode_get_run_input` | Reads another run's persisted input — used to inspect what triggered a failure before replaying it. | `dicode.runs.get_input()` | `runs_get_input` |
+| `dicode_pin_run_input` / `dicode_unpin_run_input` | Pins a run's persisted input so the retention sweeper won't delete it mid-loop, or releases that hold. | `dicode.runs.pin_input()` / `dicode.runs.unpin_input()` | `runs_pin_input` / `runs_unpin_input` |
+| `dicode_replay_run` | Re-fires a task using a previously recorded (typically pinned) input. | `dicode.runs.replay()` | `runs_replay` |
+| `dicode_git_commit_push` | Commits and pushes staged changes from a dev-mode clone. Commit author is defaulted by the daemon; the model can't set `allow_main` or the clone's `run_id` — see dicode-core#746's "What the model is not handed". | `dicode.git.commit_push()` | `git_commit_push` |
 
 ::: warning Tasks must opt in to MCP exposure
-By default, tasks are **hidden** from MCP clients. To make a task visible to `list_tasks` and invokable via `tools/call`, set `mcp_exposed: true` in its `task.yaml`. This prevents unintended exposure of internal tasks to MCP clients. Calling `get_task` or `run_task` on a non-exposed task returns a JSON-RPC error. See [Tasks — `mcp_exposed`](./tasks.md#field-reference) for the field reference.
+By default, tasks are **hidden** from MCP clients. To make a task visible to `dicode_list_tasks` and invokable via `tools/call`, set `mcp_exposed: true` in its `task.yaml`. This prevents unintended exposure of internal tasks to MCP clients. Calling `get_task` or `run_task` on a non-exposed task returns a JSON-RPC error. See [Tasks — `mcp_exposed`](./tasks.md#field-reference) for the field reference.
 :::
 
-The "hint" tools intentionally don't proxy. Every MCP client already has the dicode API key (it's how it reached `/mcp`), so when it needs to manage sources or run task tests, it calls the corresponding REST endpoint directly with the same key — one less round-trip than going through MCP.
+`list_sources` is the one tool that still intentionally doesn't proxy — every MCP client already has the dicode API key (it's how it reached `/mcp`), so when it needs to manage sources it calls `GET /api/sources` directly with the same key, one less round-trip than going through MCP. `switch_dev_mode` and `test_task` used to work the same way; as of dicode-core#746 they're real, capability-gated tools (`dicode_set_dev_mode`, `dicode_test_task`) that execute directly instead of pointing the caller at a REST endpoint.
 
 ## Configure Claude Desktop
 
@@ -180,13 +185,13 @@ Reach for `dicode mcp install` when a human is sitting at a `claude` CLI session
 ::: info Capability-scoped, not full-surface
 The minted token is **scoped 1:1 to the task's own declared `permissions.dicode`** — it never authorizes more than the task could already do directly:
 
-- `list_tasks` / `get_task` require the task to declare `permissions.dicode.list_tasks: true`.
-- `run_task` requires the target task ID to appear in the task's own `permissions.dicode.tasks` (or `["*"]` for any task).
-- `list_sources`, `switch_dev_mode`, and `test_task` stay always-allowed hint tools — they exercise no dicode capability themselves.
+- `get_task` / `run_task` require the task to declare `permissions.dicode.list_tasks: true` (for `get_task`) and the target task ID in `permissions.dicode.tasks` (for `run_task`, or `["*"]` for any task).
+- `list_sources` stays an always-allowed hint tool — it exercises no dicode capability itself.
+- Every `dicode_`-prefixed tool from the [tool surface table](#tool-surface) above is gated on its own matching capability: `dicode_list_tasks` needs `list_tasks`, `dicode_test_task` needs `tasks_test`, `dicode_set_dev_mode` needs `sources_set_dev_mode`, and so on down the table. An undeclared capability makes the tool **invisible** to the caller — it never appears from `tools/list` — rather than a permission error discovered by calling it (dicode-core [#746](https://github.com/dicode-ayo/dicode-core/pull/746)).
 
-A task with no `permissions.dicode` block at all gets a token that can call none of the three scoped tools above. Enforcement happens in the `/mcp` handler *before* the request reaches the `buildin/mcp` task, so a denied call comes back as a JSON-RPC error (HTTP 200, `error.code: -32001`) rather than being silently forwarded. This shipped in dicode-core [#589](https://github.com/dicode-ayo/dicode-core/pull/589).
+A task with no `permissions.dicode` block at all gets a token that can call `get_task`/`run_task` on nothing and sees none of the eight capability-gated tools — only the always-allowed `list_sources` hint remains. Enforcement happens in the `/mcp` handler *before* the request reaches the `buildin/mcp` task, so a denied call comes back as a JSON-RPC error (HTTP 200, `error.code: -32001`) rather than being silently forwarded. This mechanism shipped in dicode-core [#589](https://github.com/dicode-ayo/dicode-core/pull/589) and was extended to the full `dicode_*` set by [#746](https://github.com/dicode-ayo/dicode-core/pull/746).
 
-**The `test_task` / REST split.** The `test_task` JSON-RPC call is always allowed as noted above, but it's only a hint — it returns pointer text telling the client to call `POST /api/tasks/{id}/test` directly. That REST endpoint is a separate surface, still reachable with the same Bearer token, and it runs the target task's sibling test file with full host permissions — so it's independently gated on `permissions.dicode.tasks_test: true` ([#627](https://github.com/dicode-ayo/dicode-core/pull/627)). A scoped token whose minting task didn't declare that flag gets **HTTP 403** from `/api/tasks/{id}/test`, even though the JSON-RPC `test_task` call that pointed it there was itself unconditionally allowed. Scoping the three JSON-RPC tools above does not, by itself, scope every REST endpoint reachable with the same token — `tasks_test` is the one other case covered today.
+**`dicode_test_task` no longer splits from REST.** Before #746, the JSON-RPC `test_task` call was an unconditionally-allowed hint pointing at `POST /api/tasks/{id}/test`, which was itself separately gated on `permissions.dicode.tasks_test: true` ([#627](https://github.com/dicode-ayo/dicode-core/pull/627)) — so a token could see the hint but still get a 403 from the endpoint it pointed to. `dicode_test_task` now carries the same `tasks_test` gate directly: a token without that capability doesn't see the tool at all, and one that does see it gets the same result the REST endpoint would give.
 
 Operator-, CLI-, and dashboard-created API keys (`dicode mcp install`, the dashboard's **Create API Key**) remain **unscoped** — full access, same as before this feature — since they aren't tied to a single task's declared permissions.
 :::
@@ -237,6 +242,6 @@ Set `server.mcp: false` in `dicode.yaml` to take the `/mcp` URL down. The buildi
 ## Security notes
 
 - The buildin/mcp task declares `permissions.dicode.tasks: ["*"]` — the task itself always runs with full `list_tasks`/`run_task` permissions and isn't relied on to self-restrict. With a durable **operator-, CLI-, or dashboard-issued** key, an authenticated MCP client can call `run_task` on any registered task. This is the intended design for those keys: MCP is a privileged surface. Don't expose `/mcp` to untrusted networks.
-- An **ephemeral per-run token** (see [Ephemeral per-run MCP tokens](#ephemeral-per-run-mcp-tokens) above) does *not* inherit that full access — it's capability-scoped to its minting task's own `permissions.dicode`, including the separate `tasks_test` gate on `POST /api/tasks/{id}/test`. Don't assume every Bearer token on `/mcp` carries the same privileges; check whether it's a durable key or an ephemeral one.
+- An **ephemeral per-run token** (see [Ephemeral per-run MCP tokens](#ephemeral-per-run-mcp-tokens) above) does *not* inherit that full access — it's capability-scoped to its minting task's own `permissions.dicode`, including the `tasks_test` gate shared by `dicode_test_task` and `POST /api/tasks/{id}/test`. Don't assume every Bearer token on `/mcp` carries the same privileges; check whether it's a durable key or an ephemeral one.
 - The buildin task uses `trigger.auth: true` to close the bypass where an unauthenticated caller could post directly to `/hooks/mcp` and skip the API-key gate. The `/mcp` forwarder bypasses session auth and uses Bearer keys, so MCP clients are unaffected.
 - API keys are stored as SHA-256 hashes — losing your dicode database doesn't expose the raw keys, but losing one of the keys in transit *does* mean someone can fire any task. Treat them like SSH keys.
