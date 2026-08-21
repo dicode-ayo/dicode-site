@@ -599,7 +599,7 @@ dicode.sources.set_dev_mode("infra", enabled=False)
 
 :::
 
-Enabling dev mode returns `{ok, dev_root_path, clone_path}` — `dev_root_path` is the source's dev-mode root and `clone_path` the specific per-run clone directory, e.g. to pass to a subsequent `dicode.git.commit_push()` call against the same session. Before dicode-core [#746](https://github.com/dicode-ayo/dicode-core/pull/746) the call returned only `{ok: true}`, leaving a caller holding a clone it had no way to locate. Disabling dev mode still returns `{ok: true}`.
+**Clone-mode** enable returns `{ok, dev_root_path, clone_path}` — `dev_root_path` is the source's dev-mode root and `clone_path` the specific per-run clone directory, e.g. to pass to a subsequent `dicode.git.commit_push()` call against the same session. Before dicode-core [#746](https://github.com/dicode-ayo/dicode-core/pull/746) the call returned only `{ok: true}`, leaving a caller holding a clone it had no way to locate. **Local-path mode** enable and any disable call still return just `{ok: true}` — there's no clone to report a path for.
 
 ```yaml
 permissions:

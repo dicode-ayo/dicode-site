@@ -135,7 +135,7 @@ docker:                          # docker/podman runtime only
   pull_policy: missing           # always | missing | never
 
 timeout: 30s                     # default 60s for script tasks; no default for docker/daemon
-mcp_exposed: true                # visible to MCP clients via list_tasks / tools/call
+mcp_exposed: true                # visible to MCP clients via dicode_list_tasks / tools/call
 mcp_port: 3000                   # daemon exposes MCP server on this port
 
 webui:                           # contribute a link to the main WebUI header nav — see "WebUI navigation" below
@@ -172,7 +172,7 @@ on_failure_chain: buildin/alert  # short form — task to run on failure
 | `permissions` | object | no | Security sandbox declarations |
 | `docker` | object | conditional | Required when runtime is `docker` or `podman` |
 | `timeout` | duration | no | Max execution time (default `60s` for scripts) |
-| `mcp_exposed` | bool | no | Default `false`. When `true`, the task is visible to MCP clients via `list_tasks` and can be invoked via `tools/call`. When `false` (default), the task is hidden from MCP. See [MCP Server](./mcp-server.md). |
+| `mcp_exposed` | bool | no | Default `false`. When `true`, the task is visible to MCP clients via `dicode_list_tasks` and can be invoked via `tools/call`. When `false` (default), the task is hidden from MCP. See [MCP Server](./mcp-server.md). |
 | `mcp_port` | int | no | Port where a daemon task exposes an MCP server |
 | `webui` | object | no | Contribute a link to the main WebUI header nav. Requires `trigger.webhook`. See [WebUI navigation](#webui-navigation) below. |
 | `on_failure_chain` | string \| object | no | Task ID (short form) or structured block to trigger on failure. Used for notifications, auto-fix, and any other side-effect chain. See [Auto-fix loop](./auto-fix.md). |
