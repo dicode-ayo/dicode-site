@@ -241,7 +241,7 @@ async def main():
 
 The `data` option in `output.html()` attaches structured data alongside the HTML output. This is useful when webhook task UIs need to read both rendered HTML and machine-readable values.
 
-`output.json()` serializes `value` and sets the run's output content type to `application/json`. Unlike the other `output.*` methods, its published body survives a subsequent `throw` (or, in Python, a raised exception) -- a task can call `output.json()` with an error envelope and then fail the run, and a webhook caller still receives that structured body as the response, alongside the run's `status=failure`. Values that cannot be JSON-serialized (e.g. `undefined` in Deno) are rejected at the call site rather than publishing an empty body.
+`output.json()` serializes `value` and sets the run's output content type to `application/json`. Like every `output.*` call, its published body stays attached to the run even if the task goes on to `throw` (or, in Python, raise an exception) -- a task can call `output.json()` with a structured error envelope and then fail the run, and a webhook caller still receives that body as the response, alongside the run's `status=failure`. Values that cannot be JSON-serialized (e.g. `undefined` in Deno) are rejected at the call site rather than publishing an empty body.
 
 ---
 
