@@ -50,6 +50,7 @@ The dial between human control and AI autonomy is yours to set.
 - **Skills** — markdown files under `tasks/skills/` that get loaded into the agent's system prompt. Think of them as domain knowledge the agent should always have in context: runbooks, glossaries, team conventions.
 - **Persistent sessions** — conversations are keyed by `session_id` and stored in KV. Pass your own id to resume, or omit it to have the task generate and return one.
 - **Lazy history compaction** — when a conversation exceeds `max_history_tokens`, older turns are replaced by a running summary generated via a second model call. The buildin stays snappy on long conversations without silently losing context.
+- **Configurable temperature** — a `temperature` param (0–2, default 0) controls sampling for both normal turns and compaction summaries; the low default keeps tool calls structured rather than emitted as prose. This param is specific to `buildin/ai-agent` — `buildin/ai-agent-claude-cli` shells out to the Claude CLI rather than calling a chat-completions API directly, so it has no `temperature` param.
 - **Provider-agnostic** — works with OpenAI, Anthropic (via openai-compat), Ollama, LM Studio, Groq, OpenRouter, Together, DeepSeek — anything that speaks the OpenAI chat completions API.
 
 ## Quickstart
