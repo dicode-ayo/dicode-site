@@ -188,6 +188,10 @@ export default async function main({ output }: DicodeSdk) {
   // Plain text
   await output.text("Task completed successfully.");
 
+  // JSON body -- survives a throw, so a task can fail the run and still
+  // answer a webhook caller with a structured body
+  await output.json({ ok: false, error: "rate limited" });
+
   // Image (base64-encoded content)
   await output.image("image/png", base64EncodedPng);
 
@@ -202,6 +206,10 @@ output.html("<h1>Hello!</h1>", data={"key": "value"})
 
 # Plain text
 output.text("Task completed successfully.")
+
+# JSON body -- survives a throw, so a task can fail the run and still
+# answer a webhook caller with a structured body
+output.json({"ok": False, "error": "rate limited"})
 
 # Image (base64-encoded content)
 output.image("image/png", base64_encoded_png)
@@ -218,6 +226,7 @@ In async Python tasks, use the `_async` variants:
 async def main():
     await output.html_async("<h1>Hello!</h1>")
     await output.text_async("Done.")
+    await output.json_async({"ok": False, "error": "rate limited"})
 ```
 
 ### API
@@ -226,10 +235,13 @@ async def main():
 |--------|------|---------------|----------------|
 | HTML | `await output.html(content, opts?)` | `output.html(content, data=None)` | `await output.html_async(content, data=None)` |
 | Text | `await output.text(content)` | `output.text(content)` | `await output.text_async(content)` |
+| JSON | `await output.json(value)` | `output.json(value)` | `await output.json_async(value)` |
 | Image | `await output.image(mime, content)` | `output.image(mime, content)` | `await output.image_async(mime, content)` |
 | File | `await output.file(name, content, mime?)` | `output.file(name, content, mime=None)` | `await output.file_async(name, content, mime=None)` |
 
 The `data` option in `output.html()` attaches structured data alongside the HTML output. This is useful when webhook task UIs need to read both rendered HTML and machine-readable values.
+
+`output.json()` serializes `value` and sets the run's output content type to `application/json`. Unlike the other `output.*` methods, its published body survives a subsequent `throw` (or, in Python, a raised exception) -- a task can call `output.json()` with an error envelope and then fail the run, and a webhook caller still receives that structured body as the response, alongside the run's `status=failure`. Values that cannot be JSON-serialized (e.g. `undefined` in Deno) are rejected at the call site rather than publishing an empty body.
 
 ---
 
