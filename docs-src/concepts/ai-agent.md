@@ -155,7 +155,7 @@ As of [dicode-core#759](https://github.com/dicode-ayo/dicode-core/pull/759), loa
 Under `index` mode, the agent gets a `dicode_read_skill` tool alongside the catalogue (only offered when at least one skill is configured):
 
 - **Input:** `{ "name": "<skill name, exactly as listed in the index>" }`
-- **Returns:** `{ "name", "description", "body" }` for a skill that loaded; `{ "error": "unknown skill: <name>", "available": [...] }` for a name not in the configured `skills` list; or `{ "error": "skill <name> not loaded: <reason>" }` for a configured skill that failed to read from disk.
+- **Returns:** `{ "name", "description", "body" }` for a skill that loaded; `{ "error": "unknown skill: <name>", "available": [...] }` for a name not in the configured `skills` list; or `{ "error": "skill <name> not loaded: <reason>" }` for a name that *is* in the `skills` list but couldn't be turned into a skill — a bad filename, an empty `skills_dir`, or an actual disk-read failure.
 
 Because only the name and description reach the model up front, a `system_prompt` under `index` mode has to name the skill it wants read and when — the description alone doesn't trigger a fetch. The built-in `auto-fix`, `task-create`, and `dicodai` presets (`tasks/buildin/taskset.yaml`) all carry this kind of pointer text, e.g. auto-fix's system prompt says "Read the dicode-auto-fix skill before anything else... Read dicode-task-dev before you write to any file."
 
