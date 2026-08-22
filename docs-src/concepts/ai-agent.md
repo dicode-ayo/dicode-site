@@ -47,7 +47,7 @@ The dial between human control and AI autonomy is yours to set.
 
 - **A chat page** at `/hooks/ai`, with per-provider presets at `/hooks/ai/ollama`, `/hooks/ai/openai`, and `/hooks/ai/groq`. The task-detail page in the dashboard also embeds a dedicated agent at `/hooks/ai/dicodai` (the `buildin/dicodai` preset) preloaded with the `dicode-task-dev` skill — that's the one powering the "AI" chat button when you're editing a task.
 - **Tool use** — the agent discovers every registered task and exposes them as OpenAI-compatible tools. Each task's declared params become the tool's schema. Ask "how many deploys failed yesterday?" and the agent calls the right task, reads the result, and answers with real data.
-- **Skills** — markdown files under `tasks/skills/` that get loaded into the agent's system prompt. Think of them as domain knowledge the agent should always have in context: runbooks, glossaries, team conventions.
+- **Skills** — markdown files under `tasks/skills/` that the agent can look up on demand (or, in `eager` mode, gets loaded into its system prompt up front). Think of them as domain knowledge the agent should have available: runbooks, glossaries, team conventions. See [Tools vs skills](#tools-vs-skills).
 - **Persistent sessions** — conversations are keyed by `session_id` and stored in KV. Pass your own id to resume, or omit it to have the task generate and return one.
 - **Lazy history compaction** — when a conversation exceeds `max_history_tokens`, older turns are replaced by a running summary generated via a second model call. The buildin stays snappy on long conversations without silently losing context.
 - **Provider-agnostic** — works with OpenAI, Anthropic (via openai-compat), Ollama, LM Studio, Groq, OpenRouter, Together, DeepSeek — anything that speaks the OpenAI chat completions API.
@@ -107,7 +107,7 @@ Dicode uses these two words with specific meanings, matching the convention in C
 | Concept | What it is | Where it lives | How the agent sees it |
 | ------- | ---------- | -------------- | --------------------- |
 | **Tool** | A dicode task the agent can execute | `tasks/**/task.yaml` | An OpenAI tool schema built from the task's params; invoked via `dicode.run_task()` |
-| **Skill** | A markdown file with domain context | `tasks/skills/*.md` | Concatenated into the system prompt at the start of every turn |
+| **Skill** | A markdown file with domain context | `tasks/skills/*.md` | Advertised by name and description in the system prompt; the body is fetched on demand via `dicode_read_skill` (or, under `skills_mode: eager`, concatenated into the system prompt at the start of every turn) |
 
 Tools are **capabilities**. Skills are **knowledge**.
 
@@ -137,9 +137,31 @@ curl -X POST http://localhost:8080/hooks/ai/groq \
   }'
 ```
 
-Skills are loaded eagerly — every name you pass is read and concatenated into the system prompt for the entire turn. Missing or unreadable skills produce a placeholder in the prompt instead of failing the request.
+Every name you pass is read at the start of the run. What reaches the model from there is decided by the `skills_mode` param — see [Skill loading modes: index vs. eager](#skill-loading-modes-index-vs-eager) below. Missing or unreadable skills still appear (as a placeholder line or entry) instead of failing the request.
 
 A starter skill ships at `tasks/skills/dicode-basics.md` covering core dicode concepts an agent should know to be useful.
+
+### Skill loading modes: index vs. eager
+
+As of [dicode-core#759](https://github.com/dicode-ayo/dicode-core/pull/759), loaded skills no longer land in the system prompt in full by default. A `skills_mode` param controls the tradeoff:
+
+| `skills_mode` | What the system prompt carries | Lookup tool |
+| ------------- | ------------------------------ | ----------- |
+| `index` (default) | One line per skill: its name and its frontmatter `description` | `dicode_read_skill` returns a skill's full body |
+| `eager` | Every skill's full body, on every turn | not offered |
+
+`index` is the default because a skill's full text is often many times the size of the agent's own `system_prompt`, and a model reading both tends to imitate the skill's examples rather than follow its own instructions — dicode-core#759 measured eager-loading 22 KB of skill taking a correct task manifest from 8/8 to 0/8 on an 8B model, with the tool-call protocol itself unaffected. The eager cost is also paid on every iteration of the tool loop, since the system prompt is rebuilt each time. Reach for `skills_mode: eager` only when the model can't be relied on to call a tool before it acts.
+
+Under `index` mode, the agent gets a `dicode_read_skill` tool alongside the catalogue (only offered when at least one skill is configured):
+
+- **Input:** `{ "name": "<skill name, exactly as listed in the index>" }`
+- **Returns:** `{ "name", "description", "body" }` for a skill that loaded; `{ "error": "unknown skill: <name>", "available": [...] }` for a name not in the configured `skills` list; or `{ "error": "skill <name> not loaded: <reason>" }` for a configured skill that failed to read from disk.
+
+Because only the name and description reach the model up front, a `system_prompt` under `index` mode has to name the skill it wants read and when — the description alone doesn't trigger a fetch. The built-in `auto-fix`, `task-create`, and `dicodai` presets (`tasks/buildin/taskset.yaml`) all carry this kind of pointer text, e.g. auto-fix's system prompt says "Read the dicode-auto-fix skill before anything else... Read dicode-task-dev before you write to any file."
+
+The skills block is also positioned differently by mode: under `index`, the catalogue is placed **before** the operator's own `system_prompt`, so the operator's instructions are the last thing the model reads before the request — dicode-core#759 found that placing the same index *after* the system prompt caused the model to narrate its plan instead of executing it (6/6 → 0/6 structured tool calls on an 8B model). Under `eager`, skill bodies stay **after** the `system_prompt`, matching where they've always been, so opting back into `eager` reproduces the old prompt shape byte-for-byte.
+
+`dicode_read_skill` is purely an internal mechanism of the `ai-agent` task's own OpenAI-style tool loop — it is not gated by `permissions.dicode`, not listed as a dicode SDK global, and not reachable through the `/mcp` endpoint. It only exists inside a chat turn the model itself is driving.
 
 ## Picking the task the WebUI and CLI use
 
