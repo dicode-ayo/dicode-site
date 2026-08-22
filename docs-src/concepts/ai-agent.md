@@ -347,7 +347,9 @@ Both can coexist: nothing prevents one task from using the API path and another 
      -H 'Content-Type: application/json' \
      -d '{"prompt":"In one sentence, what is dicode?"}'
    ```
-   Response includes a `session_id` you pass back to continue the conversation.
+   Response includes a `session_id`, but this one-shot call always starts a **fresh** Claude session — posting the id back on a later call does not resume it. For multi-turn conversation, use the [interactive chat](#interactive-chat) loop instead. True session resumption for the one-shot path is tracked in dicode-core [#751](https://github.com/dicode-ayo/dicode-core/issues/751) (not yet implemented).
+
+   A turn that cannot run (CLI invocation failure, non-zero exit, an `is_error` response, …) is now a **failed run**, not a silently-green one: the task publishes `{ "ok": false, "error": "..." }` as the run's output and fails, so a webhook caller sees `status=failure` (HTTP 500 with that JSON body) instead of a `200` with an error string buried in `ok: false`.
 
 ### MCP tool access (no setup step needed)
 
