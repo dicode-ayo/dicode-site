@@ -546,6 +546,46 @@ permissions:
 
 ---
 
+## dicode.sources.list
+
+Returns the configured sources, sorted by name.
+
+::: code-group
+
+```ts [Deno]
+const sources = await dicode.sources.list();
+// [{ name, type, url?, branch?, dev_mode }, ...]
+```
+
+```python [Python]
+sources = dicode.sources.list()
+```
+
+:::
+
+```yaml
+permissions:
+  dicode:
+    sources_list: true
+```
+
+Host filesystem paths are withheld from the response, and any userinfo embedded in a source URL (operators routinely embed a PAT there) is stripped — the listing names the repo without handing over the credential that reaches it. `sources_list` is grantable on its own, so a caller holding only it must not learn the daemon's filesystem layout; `dicode.sources.set_dev_mode()` above is the one call that hands back a path, and only for the clone it just created.
+
+Return shape:
+
+```json
+[
+  { "name": "buildin", "type": "taskset", "dev_mode": false },
+  { "name": "infra", "type": "taskset", "url": "https://github.com/acme/tasks.git", "branch": "main", "dev_mode": true }
+]
+```
+
+::: tip
+`GET /api/sources` still carries the full record — host paths included — for the dashboard. `dicode.sources.list()` is the capability-gated, host-path-withheld version for tasks and MCP clients.
+:::
+
+---
+
 ## dicode.git.commit_push
 
 Add, commit, and push a branch in one call (pure go-git — no `git` binary). Validates the branch against an optional `branch_prefix`; never sets `--force`.
