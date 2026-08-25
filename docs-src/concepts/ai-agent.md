@@ -243,7 +243,7 @@ Session lifecycle:
 
 | Step | What happens |
 |---|---|
-| **Open** | `dicode task create <name> [--source NAME] [--ai "PROMPT"]` (new task) or `dicode task edit <task-id> ["PROMPT"]` (existing) opens a session. The session ID is printed to stderr; the task ID is printed to stdout. Files in the session start as copies of the current task (edit) or an empty scaffold (create). Opening resolves the session's **`SandboxPath`** (see below) and can refuse the session outright before anything is scaffolded. |
+| **Open** | `dicode task create <name> [--source NAME] [--ai "PROMPT"]` (new task) or `dicode task edit <task-id> ["PROMPT"]` (existing) opens a session. The session ID is printed to stderr; the task ID is printed to stdout. Files in the session start as copies of the current task (edit) or an empty scaffold (create). Opening resolves the session's **`SandboxPath`** (see below); `task create` against a git-backed source is refused right here, before anything is scaffolded — `task edit`'s equivalent check happens later, only when a prompt is about to fire a turn. |
 | **Edit** | The AI or user writes files into the session via IPC or REST. Each write is immediately reflected in the WebUI's diff view. |
 | **Validate** | Optional — `task.yaml` is parsed and linted against the task schema. Validation errors are returned without closing the session. |
 | **Save** | `dicode task save <session-id>` commits the draft files to the configured git source. The reconciler picks up the change within ~1 s. |
