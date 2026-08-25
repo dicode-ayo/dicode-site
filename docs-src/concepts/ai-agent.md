@@ -306,12 +306,12 @@ For custom integrations or AI agent tool-call paths, the same lifecycle is avail
 
 | Method | Path | Body | Description |
 |---|---|---|---|
-| `POST` | `/api/task/create` | `{"name": "<name>", "source": "<source>"}` | Create a new task scaffold and open an authoring session. Returns `{"task_id": "...", "source": "...", "files": [...]}`. |
+| `POST` | `/api/task/create` | `{"name": "<name>", "source": "<source>"}` | Scaffold a new task's boilerplate directly — no authoring session opens. Returns `{"task_id": "...", "source": "...", "files": [...]}`. Call `/api/task/edit` with the returned `task_id` to open a session against it (needed before `/api/task/save` or `/api/task/cancel` — both require a `session_id`, which only `/api/task/edit` returns). |
 | `POST` | `/api/task/edit` | `{"task_id": "<id>"}` or `{"session_id": "<sid>", "task_id": "<id>"}` | Open (or resume) an edit session for an existing task. Returns `{"session_id": "...", "sandbox_path": "...", "source": "...", "source_kind": "..."}`. |
 | `POST` | `/api/task/save` | `{"session_id": "<sid>"}` | Commit the session's files to the git source and close the session. Returns `{"applied": true}`. |
 | `POST` | `/api/task/cancel` | `{"session_id": "<sid>"}` | Discard the session. Returns `{"cancelled": true}`. |
 
-Only `/api/task/create` is subject to the [`SandboxPath` git-source refusal](#the-write-boundary-sandboxpath) — it runs through the same unconditional check the CLI's `task create` does. `/api/task/edit` accepts a `prompt` field but never acts on it, so no AI turn ever fires over REST — which means neither the git-source refusal nor the [pipeline verification stage](#ai-driven-creation-is-a-two-stage-pipeline) applies to it; both are checks against a turn that, over REST, is never taken.
+`/api/task/create` never opens a session, so it has no `SandboxPath` of its own — but it still refuses a git-backed, non-dev-mode source outright, on the same underlying durability check that backs the [`SandboxPath` git-source refusal](#the-write-boundary-sandboxpath) (both exist because a git source's files aren't safe to write to outside dev mode). `/api/task/edit` accepts a `prompt` field but never acts on it, so no AI turn ever fires over REST — which means neither that refusal nor the [pipeline verification stage](#ai-driven-creation-is-a-two-stage-pipeline) applies to it; both are checks against a turn that, over REST, is never taken.
 
 ### WebUI flow
 
