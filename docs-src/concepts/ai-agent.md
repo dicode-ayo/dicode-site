@@ -243,7 +243,7 @@ Session lifecycle:
 
 | Step | What happens |
 |---|---|
-| **Open** | `dicode task create <name> [--source NAME] [--ai "PROMPT"]` (new task) or `dicode task edit <task-id> ["PROMPT"]` (existing) opens a session. The session ID is printed to stderr; the task ID is printed to stdout. Files in the session start as copies of the current task (edit) or an empty scaffold (create). Opening resolves the session's **`SandboxPath`** (see below); `task create` against a git-backed source is refused right here, before anything is scaffolded — `task edit`'s equivalent check happens later, only when a prompt is about to fire a turn. |
+| **Open** | `dicode task create <name> [--source NAME] [--ai "PROMPT"]` scaffolds a new task — refused up front against a git-backed, non-dev-mode source (see [`SandboxPath`](#the-write-boundary-sandboxpath) below) — and `--ai` additionally opens an authoring session, chaining straight into an AI turn. A plain `task create` with no `--ai` opens no session at all. `dicode task edit <task-id> ["PROMPT"]` always opens (or resumes) a session on an existing task, prompt or not. Whenever a session does open, its ID is printed to stderr, the task ID to stdout, and the session's **`SandboxPath`** is resolved; files start as copies of the current task (edit) or an empty scaffold (`--ai` create). |
 | **Edit** | The AI or user writes files into the session via IPC or REST. Each write is immediately reflected in the WebUI's diff view. |
 | **Validate** | Optional — `task.yaml` is parsed and linted against the task schema. Validation errors are returned without closing the session. |
 | **Save** | `dicode task save <session-id>` commits the draft files to the configured git source. The reconciler picks up the change within ~1 s. |
