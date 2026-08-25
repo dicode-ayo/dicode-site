@@ -253,9 +253,11 @@ Session files are stored in the daemon's data directory (not in git) until save 
 
 ### The write boundary: `SandboxPath`
 
-A session's write tool isn't free to touch the whole source — it's confined to a single directory, `AuthoringSession.SandboxPath`, resolved once when the session opens and checked against both the target task's `fs` permission grant and `DICODE_TASK_FILE_ROOTS`. Both checks read off the task's registered spec rather than a fixed constant, so widening either grant widens what the sandbox allows. `SandboxPath` is what the write tool actually enforces and what the model is aimed at — treat it as the write boundary rather than assuming it's simply "the task's own directory."
+A session's write tool isn't free to touch the whole source — it's confined to a single directory, `AuthoringSession.SandboxPath`, resolved once when the session opens. Whether an AI turn can actually write into that directory is checked against `buildin/write-task-file`'s own `fs` permission grant and its `DICODE_TASK_FILE_ROOTS` — not the target task's — so it's an override on the `buildin/write-task-file` taskset entry, not the task being authored, that widens or narrows what any session's write tool can reach.
 
-**Opening a session against a git-backed taskset source is refused**, for both `task create --source NAME` and `task edit`, unless the daemon is running in [dev mode](/concepts/sources#dev-mode). Outside dev mode, a git source's files resolve under the reconciler's pull cache, which the reconciler overwrites with `Force: true` on every sync — a session scaffolded there could work only until an unrelated upstream `git pull` silently discarded its files out from under it. In dev mode, the same source name resolves into a real git clone instead, giving it a stable working tree that authoring can safely target. The refusal happens before anything is scaffolded, so a source the session could never durably write to leaves neither an orphaned session nor partial files behind — the error names the directory, the permission grant it was checked against, and which config entry to override. (dicode-core [#769](https://github.com/dicode-ayo/dicode-core/pull/769).)
+**`dicode task create` (CLI or `POST /api/task/create`) naming a git-backed taskset source is refused outright**, before anything is scaffolded, unless the source has [dev mode](/concepts/sources#dev-mode) enabled — a per-source toggle, not a daemon-wide setting. Outside dev mode, a git source's files resolve under the reconciler's pull cache, which gets overwritten with `Force: true` on every sync, so anything scaffolded there could work only until an unrelated upstream `git pull` silently discarded it. In dev mode the source resolves into a real clone instead, giving it a stable working tree.
+
+The same check runs again, against the resolved `SandboxPath`, right before `dicode task edit <task-id> "<prompt>"` fires an AI turn on the CLI — so a git-backed, non-dev-mode source is refused there too, and the error names the directory, the grant it was measured against, and which taskset entry to override. It only fires when a turn is about to run, though: a **bare** `dicode task edit <task-id>` (no prompt) just opens the session with no check at all, and `POST /api/task/edit` accepts a `prompt` field but never acts on it — no turn fires over REST, so REST edit is never subject to this refusal either. In short, the refusal is unconditional for `task create` (CLI and REST) and applies to `task edit` only when a prompt fires a turn — which today is CLI-only. (dicode-core [#769](https://github.com/dicode-ayo/dicode-core/pull/769).)
 
 ### CLI verbs
 
@@ -291,12 +293,12 @@ dicode task save "$SESSION"
 
 ### AI-driven creation is a two-stage pipeline
 
-`dicode task create --ai "PROMPT"` runs `buildin/task-create`, which is a `kind: PipelineTask` with two stages:
+Every AI turn fired from the CLI — `dicode task create --ai "PROMPT"` (which scaffolds, then chains straight into an edit session with that prompt) and `dicode task edit <task-id> "<prompt>"` alike — runs through the task named by `ai.create_task` in `dicode.yaml` (`buildin/task-create` by default), which is a `kind: PipelineTask` with two stages:
 
-1. **`buildin/task-create-turn`** — the agent turn: opens the session and lets the model write files into it, as before.
+1. **`buildin/task-create-turn`** — the agent turn: writes files into the session, as before.
 2. **`buildin/verify-task-written`** — reads the session's directory afterward and fails the pipeline if the turn didn't leave behind a runnable task (no manifest, no `kind: Task`, or just the untouched scaffold).
 
-Previously, a turn that never actually wrote a valid task — wrong tool name, an unwritable path, an unreliable model, a swamped prompt — still settled as a **successful run**, because nothing checked the agent's claims against disk. Now that path fails the pipeline: `dicode task create --ai` exits non-zero and the run is recorded as a failure instead of a false-positive success with an empty or stale task directory. This verification stage is specific to the `--ai` pipeline path — it doesn't run for a plain `dicode task create` (no `--ai`) or for `POST /api/task/create`, neither of which fires an agent turn to verify. (dicode-core [#760](https://github.com/dicode-ayo/dicode-core/pull/760).)
+Previously, a turn that never actually wrote a valid task — wrong tool name, an unwritable path, an unreliable model, a swamped prompt — still settled as a **successful run**, because nothing checked the agent's claims against disk. Now that path fails the pipeline: the CLI call exits non-zero and the run is recorded as a failure instead of a false-positive success with an empty or stale task directory. The pipeline only runs when a prompt actually fires a turn — a plain `dicode task create`/`task edit` (no prompt) never reaches it, and neither does `POST /api/task/create` or `/api/task/edit`, since neither REST endpoint fires a turn at all. (dicode-core [#760](https://github.com/dicode-ayo/dicode-core/pull/760).)
 
 ### REST API
 
@@ -309,7 +311,7 @@ For custom integrations or AI agent tool-call paths, the same lifecycle is avail
 | `POST` | `/api/task/save` | `{"session_id": "<sid>"}` | Commit the session's files to the git source and close the session. Returns `{"applied": true}`. |
 | `POST` | `/api/task/cancel` | `{"session_id": "<sid>"}` | Discard the session. Returns `{"cancelled": true}`. |
 
-The [`SandboxPath` refusal](#the-write-boundary-sandboxpath) applies here too: `/api/task/create` and `/api/task/edit` open the same kind of session the CLI does, so a `source` naming a git-backed taskset source is refused with an error rather than opened, unless the daemon is in dev mode. The pipeline verification stage described [above](#ai-driven-creation-is-a-two-stage-pipeline) is specific to `dicode task create --ai`, though — `/api/task/create` scaffolds a session directly without firing an agent turn, so there's nothing for that stage to verify.
+Only `/api/task/create` is subject to the [`SandboxPath` git-source refusal](#the-write-boundary-sandboxpath) — it runs through the same unconditional check the CLI's `task create` does. `/api/task/edit` accepts a `prompt` field but never acts on it, so no AI turn ever fires over REST — which means neither the git-source refusal nor the [pipeline verification stage](#ai-driven-creation-is-a-two-stage-pipeline) applies to it; both are checks against a turn that, over REST, is never taken.
 
 ### WebUI flow
 
