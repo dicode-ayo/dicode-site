@@ -243,13 +243,21 @@ Session lifecycle:
 
 | Step | What happens |
 |---|---|
-| **Open** | `dicode task create <name> [--ai "PROMPT"]` (new task) or `dicode task edit <task-id> ["PROMPT"]` (existing) opens a session. The session ID is printed to stderr; the task ID is printed to stdout. Files in the session start as copies of the current task (edit) or an empty scaffold (create). |
+| **Open** | `dicode task create <name> [--source NAME] [--ai "PROMPT"]` scaffolds a new task — refused up front against a git-backed, non-dev-mode source (see [`SandboxPath`](#the-write-boundary-sandboxpath) below) — and `--ai` additionally opens an authoring session, chaining straight into an AI turn. A plain `task create` with no `--ai` opens no session at all. `dicode task edit <task-id> ["PROMPT"]` always opens (or resumes) a session on an existing task, prompt or not. Whenever a session does open, its ID is printed to stderr, the task ID to stdout, and the session's **`SandboxPath`** is resolved; files start as copies of the current task (edit) or an empty scaffold (`--ai` create). |
 | **Edit** | The AI or user writes files into the session via IPC or REST. Each write is immediately reflected in the WebUI's diff view. |
 | **Validate** | Optional — `task.yaml` is parsed and linted against the task schema. Validation errors are returned without closing the session. |
 | **Save** | `dicode task save <session-id>` commits the draft files to the configured git source. The reconciler picks up the change within ~1 s. |
 | **Cancel** | `dicode task cancel <session-id>` discards the draft. No git change is made. |
 
 Session files are stored in the daemon's data directory (not in git) until save is called. Sessions are automatically expired after 24 hours if neither save nor cancel is called.
+
+### The write boundary: `SandboxPath`
+
+A session's write tool isn't free to touch the whole source — it's confined to a single directory, `AuthoringSession.SandboxPath`, resolved once when the session opens. Whether an AI turn can actually write into that directory is checked against `buildin/write-task-file`'s own `fs` permission grant and its `DICODE_TASK_FILE_ROOTS` — not the target task's — so it's an override on the `buildin/write-task-file` taskset entry, not the task being authored, that widens or narrows what any session's write tool can reach.
+
+**`dicode task create` (CLI or `POST /api/task/create`) naming a git-backed taskset source is refused outright**, before anything is scaffolded, unless the source has [dev mode](/concepts/sources#dev-mode) enabled — a per-source toggle, not a daemon-wide setting. Outside dev mode, a git source's files resolve under the reconciler's pull cache, which gets overwritten with `Force: true` on every sync, so anything scaffolded there could work only until an unrelated upstream `git pull` silently discarded it. In dev mode the source resolves into a real clone instead, giving it a stable working tree.
+
+The same check runs again, against the resolved `SandboxPath`, right before `dicode task edit <task-id> "<prompt>"` fires an AI turn on the CLI — so a git-backed, non-dev-mode source is refused there too, and the error names the directory, the grant it was measured against, and which taskset entry to override. It only fires when a turn is about to run, though: a **bare** `dicode task edit <task-id>` (no prompt) just opens the session with no check at all, and `POST /api/task/edit` accepts a `prompt` field but never acts on it — no turn fires over REST, so REST edit is never subject to this refusal either. In short, the refusal is unconditional for `task create` (CLI and REST) and applies to `task edit` only when a prompt fires a turn — which today is CLI-only. (dicode-core [#769](https://github.com/dicode-ayo/dicode-core/pull/769).)
 
 ### CLI verbs
 
@@ -283,16 +291,27 @@ SESSION=$(grep '^session:' /tmp/session-meta.txt | awk '{print $2}')
 dicode task save "$SESSION"
 ```
 
+### AI-driven creation is a two-stage pipeline
+
+Every AI turn fired from the CLI — `dicode task create --ai "PROMPT"` (which scaffolds, then chains straight into an edit session with that prompt) and `dicode task edit <task-id> "<prompt>"` alike — runs through the task named by `ai.create_task` in `dicode.yaml` (`buildin/task-create` by default), which is a `kind: PipelineTask` with two stages:
+
+1. **`buildin/task-create-turn`** — the agent turn: writes files into the session, as before.
+2. **`buildin/verify-task-written`** — reads the session's directory afterward and fails the pipeline if the turn didn't leave behind a runnable task (no manifest, no `kind: Task`, or just the untouched scaffold).
+
+Previously, a turn that never actually wrote a valid task — wrong tool name, an unwritable path, an unreliable model, a swamped prompt — still settled as a **successful run**, because nothing checked the agent's claims against disk. Now that path fails the pipeline: the CLI call exits non-zero and the run is recorded as a failure instead of a false-positive success with an empty or stale task directory. The pipeline only runs when a prompt actually fires a turn — a plain `dicode task create`/`task edit` (no prompt) never reaches it, and neither does `POST /api/task/create` or `/api/task/edit`, since neither REST endpoint fires a turn at all. (dicode-core [#760](https://github.com/dicode-ayo/dicode-core/pull/760).)
+
 ### REST API
 
 For custom integrations or AI agent tool-call paths, the same lifecycle is available over HTTP. All routes are under `/api/` and require authentication (session cookie or `Authorization: Bearer <api-key>`). Session IDs are passed in the JSON request body.
 
 | Method | Path | Body | Description |
 |---|---|---|---|
-| `POST` | `/api/task/create` | `{"name": "<name>", "source": "<source>"}` | Create a new task scaffold and open an authoring session. Returns `{"task_id": "...", "source": "...", "files": [...]}`. |
+| `POST` | `/api/task/create` | `{"name": "<name>", "source": "<source>"}` | Scaffold a new task's boilerplate directly — no authoring session opens. Returns `{"task_id": "...", "source": "...", "files": [...]}`. Call `/api/task/edit` with the returned `task_id` to open a session against it (needed before `/api/task/save` or `/api/task/cancel` — both require a `session_id`, which only `/api/task/edit` returns). |
 | `POST` | `/api/task/edit` | `{"task_id": "<id>"}` or `{"session_id": "<sid>", "task_id": "<id>"}` | Open (or resume) an edit session for an existing task. Returns `{"session_id": "...", "sandbox_path": "...", "source": "...", "source_kind": "..."}`. |
 | `POST` | `/api/task/save` | `{"session_id": "<sid>"}` | Commit the session's files to the git source and close the session. Returns `{"applied": true}`. |
 | `POST` | `/api/task/cancel` | `{"session_id": "<sid>"}` | Discard the session. Returns `{"cancelled": true}`. |
+
+`/api/task/create` never opens a session, so it has no `SandboxPath` of its own — but it still refuses a git-backed, non-dev-mode source outright, on the same underlying durability check that backs the [`SandboxPath` git-source refusal](#the-write-boundary-sandboxpath) (both exist because a git source's files aren't safe to write to outside dev mode). `/api/task/edit` accepts a `prompt` field but never acts on it, so no AI turn ever fires over REST — which means neither that refusal nor the [pipeline verification stage](#ai-driven-creation-is-a-two-stage-pipeline) applies to it; both are checks against a turn that, over REST, is never taken.
 
 ### WebUI flow
 
