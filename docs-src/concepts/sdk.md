@@ -322,6 +322,32 @@ permissions:
 
 ---
 
+## dicode.caps
+
+The list of internal capability tokens granted to this run, computed once at handshake time from the task's own declared `permissions.dicode`. Each token corresponds 1:1 to a `permissions.dicode` field (e.g. declaring `tasks_test: true` grants the token behind `dicode_test_task`, dicode-core's [built-in AI-agent tool](./ai-agent.md#capability-gated-built-in-tools)), but the token's own spelling doesn't always match the YAML field name verbatim (`"tasks.test"`, not `"tasks_test"`) — treat `dicode.caps` as an opaque list to check membership in, not something to construct by hand. Useful for a task that adapts to what it's actually allowed to do — e.g. skipping a step it knows will be denied — without re-parsing its own `task.yaml`.
+
+::: tip Not gated
+Unlike the rest of `dicode.*`, `caps` isn't itself gated by a `permissions.dicode` flag — it just reports what was already granted. It's a plain property, not a method call, and it's exposed the same way in both SDKs.
+:::
+
+::: code-group
+
+```ts [Deno]
+export default async function main({ dicode }: DicodeSdk) {
+  console.log(dicode.caps);
+  // ["tasks.list", "tasks.test", "runs.replay", "git.commit_push", ...]
+}
+```
+
+```python [Python]
+print(dicode.caps)
+# ["tasks.list", "tasks.test", "runs.replay", "git.commit_push", ...]
+```
+
+:::
+
+---
+
 ## dicode.suspend
 
 Pause the run mid-execution to collect human input, then resume later. The task hands the daemon a JSON Schema describing what to ask for, plus an optional carried `state` blob; the daemon persists both, ends the run as **`suspended`** (not a failure), and validates the eventual submission against the schema before spawning a continuation run that the SDK **auto-dispatches** to the right handler -- no hand-written `if (state)` switch. A human resumes it through the [web UI, the `dicode resume` CLI, or lets it expire](./suspend-resume.md#lifecycle-and-statuses). See [Suspend & Resume](./suspend-resume.md) for the full contract, auto-dispatch rules, resume paths, and timeout/chain behavior.
@@ -468,6 +494,39 @@ The redaction layer is the bound on what's exposed — see [run-input persistenc
 
 ---
 
+## dicode.runs.pin_input / dicode.runs.unpin_input
+
+Pin a run's persisted input so the daemon's retention sweeper doesn't delete it while a longer-running process still needs to read or replay it. Unpin releases the hold, letting normal retention resume.
+
+Used by the auto-fix loop: pin the failing run's input before iterating, unpin once the loop ends — success, exhausted iterations, or an unhandled error — so its cleanup doesn't leak pinned rows. See [Auto-Fix — What the agent does](./auto-fix.md#what-the-agent-does).
+
+::: code-group
+
+```ts [Deno]
+await dicode.runs.pin_input(failedRunID);
+// ... loop reads / replays the run ...
+await dicode.runs.unpin_input(failedRunID);
+```
+
+```python [Python]
+dicode.runs.pin_input(failed_run_id)
+# ... loop reads / replays the run ...
+dicode.runs.unpin_input(failed_run_id)
+```
+
+:::
+
+```yaml
+permissions:
+  dicode:
+    runs_pin_input: true
+    runs_unpin_input: true
+```
+
+Unlike `runs.replay` and `runs.get_input`, neither call is bounded by an ownership check — any task granted `runs_pin_input`/`runs_unpin_input` can pin or unpin **any** run's input system-wide, not just runs it owns or is chained from. The capability check is the only gate; treat granting either as broader than granting `runs_get_input`.
+
+---
+
 ## dicode.tasks.test
 
 Run a task's sibling test file (`task.test.{ts,js,py}`) and return the result. Same shape as `POST /api/tasks/{id}/test`.
@@ -510,14 +569,16 @@ await dicode.sources.set_dev_mode("infra", {
   enabled: true,
   local_path: "/home/dev/infra/taskset.yaml",
 });
+// { ok: true, dev_root_path: "/home/dev/infra/taskset.yaml", clone_path: "/home/dev/infra" }
 
 // Clone-mode (auto-fix flow)
-await dicode.sources.set_dev_mode("infra", {
+const { dev_root_path, clone_path } = await dicode.sources.set_dev_mode("infra", {
   enabled: true,
   branch: "fix/auto-2026-04-30",
   base: "main",
   run_id: "abc123",
 });
+// { ok: true, dev_root_path: "...", clone_path: "..." }
 
 // Disable targeted session (leaves other sessions running)
 await dicode.sources.set_dev_mode("infra", { enabled: false, run_id: "abc123" });
@@ -532,14 +593,16 @@ dicode.sources.set_dev_mode(
     enabled=True,
     local_path="/home/dev/infra/taskset.yaml",
 )
+# {"ok": True, "dev_root_path": "/home/dev/infra/taskset.yaml", "clone_path": "/home/dev/infra"}
 
-dicode.sources.set_dev_mode(
+result = dicode.sources.set_dev_mode(
     "infra",
     enabled=True,
     branch="fix/auto-2026-04-30",
     base="main",
     run_id="abc123",
 )
+# {"ok": True, "dev_root_path": "...", "clone_path": "..."}
 
 # Disable targeted session
 dicode.sources.set_dev_mode("infra", enabled=False, run_id="abc123")
@@ -549,6 +612,8 @@ dicode.sources.set_dev_mode("infra", enabled=False)
 ```
 
 :::
+
+Enabling dev mode — clone-mode or local-path — returns `{ok, dev_root_path, clone_path}`: `dev_root_path` is the `taskset.yaml` the source now resolves through (the cloned copy in clone-mode, your own `local_path` in local-path mode) and `clone_path` is its parent directory, e.g. to pass to a subsequent `dicode.git.commit_push()` call against the same session. Before dicode-core [#746](https://github.com/dicode-ayo/dicode-core/pull/746) the call returned only `{ok: true}`, leaving a clone-mode caller holding a clone it had no way to locate. **Disabling** dev mode still returns just `{ok: true}` — both path keys are absent, not empty strings, once there's no dev root to report.
 
 ```yaml
 permissions:
