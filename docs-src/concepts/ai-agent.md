@@ -260,7 +260,7 @@ Beyond the chat agent that *operates* your tasks, dicode ships an interactive **
 
 ### What authoring sessions are
 
-An **authoring session** is a server-side draft that holds proposed changes to one task's files (`task.yaml`, `task.js` / `task.py`, `task.test.js`) before they are committed to the source git repo. Sessions decouple the "write files" step from the "commit to git" step, giving you (or the AI) the opportunity to review a live diff in the WebUI and iterate before anything is permanent.
+An **authoring session** is a server-side draft that holds proposed changes to one task's files — `task.yaml`, the script itself (`task.ts` for a freshly AI-scaffolded task, per dicode-core [#771](https://github.com/dicode-ayo/dicode-core/pull/771); `task.js` / `task.py` for a hand-authored task or an existing one being edited), and its test counterpart (`task.test.ts` / `task.test.js`) — before they are committed to the source git repo. Sessions decouple the "write files" step from the "commit to git" step, giving you (or the AI) the opportunity to review a live diff in the WebUI and iterate before anything is permanent.
 
 Session lifecycle:
 
