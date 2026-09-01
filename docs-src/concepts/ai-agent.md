@@ -57,6 +57,8 @@ The dial between human control and AI autonomy is yours to set.
 
 The buildin `ai-agent` task ships maximally restrictive — no default provider, no network access, no API keys. To make it useful, pick a preset from the examples taskset, or copy one and change the provider.
 
+**Hitting it unconfigured now fails the run, not a silently-green one.** If `model`/`base_url` aren't set (the shipped default), the task publishes a structured error envelope — `{ "session_id", "reply", "error": "not_configured", "missing": ["model", "base_url"], "hint": "..." }` — via `output.json(...)` and then throws, so a webhook caller sees `status=failure` (HTTP 500 with that JSON body) instead of a `200` whose `reply` field just happens to contain "I could not run at all." This mirrors the identical fix already shipped for [`ai-agent-claude-cli`](#subscription-backed-alternative-buildin-ai-agent-claude-cli) below (dicode-core #749) — see dicode-core [#770](https://github.com/dicode-ayo/dicode-core/pull/770).
+
 ### With a local Ollama
 
 Install Ollama on your machine, pull a model, then hit the Ollama preset:
