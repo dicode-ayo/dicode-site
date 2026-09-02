@@ -173,14 +173,17 @@ The `env` provider reads directly from environment variables.
 
 Notifications are delivered by **tasks**, not by a daemon-level config block. Wire any notification path you like by pointing `defaults.on_failure_chain` at a task that emits the alert — see the [Defaults](#defaults) section below.
 
-Two buildins are shipped out of the box:
+Three buildins are shipped out of the box:
 
 | Task | Surface | Notes |
 |---|---|---|
 | `buildin/notifications` | Native OS desktop notification (`notify-send` / `osascript` / `powershell`) | No external service. Works offline. |
 | `buildin/alert` | Wrapper that calls `buildin/notifications` via `dicode.run_task` | Demonstrates the chain pattern; copy and adapt for ntfy / Slack / Discord / email / etc. |
+| `buildin/telegram` | Telegram Bot API `sendMessage` | Reaches a headless host. Opt-in: needs a `TELEGRAM_BOT_TOKEN` secret. |
 
-For mobile push (ntfy.sh, gotify, pushover, telegram), webhook integrations (Slack, Discord), or any custom delivery, write a task that POSTs to the right endpoint and point `defaults.on_failure_chain` at it. Per-task overrides go through the task-level `on_failure_chain` field — see [Tasks → on_failure_chain](/concepts/tasks#field-reference).
+`buildin/telegram` is the only one of the three that can be wired to all three notification sources — `ai.notify_task`, `approval.notify_task`, and `defaults.on_failure_chain` — since it handles the differing field shapes each source sends; `buildin/notifications` and `buildin/alert` only handle the failure-chain shape today.
+
+For mobile push (ntfy.sh, gotify, pushover), webhook integrations (Slack, Discord), or any custom delivery, write a task that POSTs to the right endpoint and point `defaults.on_failure_chain` at it. Per-task overrides go through the task-level `on_failure_chain` field — see [Tasks → on_failure_chain](/concepts/tasks#field-reference).
 
 ## Server
 
