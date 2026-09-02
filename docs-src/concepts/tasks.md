@@ -11,7 +11,7 @@ dicode is a **task kernel** — a minimal Go binary that handles scheduling, run
 | **AI task generator** | Daemon task using OpenAI-compatible API | Yes — swap the model, provider, or the entire task |
 | **Web dashboard** | Daemon task serving HTML on port 8080 | Yes — write your own UI as a daemon task |
 | **AI chat agent** | Webhook task at `/hooks/ai` | Yes — customize skills, tools, provider |
-| **Notification alerts** | Task triggered on failure via chain | Yes — write your own Telegram/email/PagerDuty notifier |
+| **Notification alerts** | Task triggered on failure via chain | Yes — `buildin/telegram` ships out of the box; write your own for email/PagerDuty/etc. |
 | **MCP server** | Daemon task speaking JSON-RPC 2.0 | Yes — write your own MCP server task with custom tool selection |
 
 The defaults are sensible and work out of the box. But if you need different behavior — a different AI model, a custom dashboard, a different notification channel — you replace the task, not the binary. Everything is versioned in git, reviewable, and revertable.

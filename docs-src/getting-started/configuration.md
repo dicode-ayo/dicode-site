@@ -181,7 +181,7 @@ Three buildins are shipped out of the box:
 | `buildin/alert` | Wrapper that calls `buildin/notifications` via `dicode.run_task` | Demonstrates the chain pattern; copy and adapt for ntfy / Slack / Discord / email / etc. |
 | `buildin/telegram` | Telegram Bot API `sendMessage` | Reaches a headless host. Opt-in: needs a `TELEGRAM_BOT_TOKEN` secret. |
 
-`buildin/telegram` is the only one of the three that can be wired to all three notification sources — `ai.notify_task`, `approval.notify_task`, and `defaults.on_failure_chain` — since it handles the differing field shapes each source sends; `buildin/notifications` and `buildin/alert` only handle the failure-chain shape today.
+`buildin/telegram` is the only one of the three that parses all three notification sources' payloads — `ai.notify_task`'s rendered `title`/`body`, `approval.notify_task`'s `task_id`/`hash`/`approve_url`, and `defaults.on_failure_chain`'s `taskID`/`runID`/`status`/`output` — falling back to a generic message when a field it doesn't recognize is all that's sent. `buildin/notifications` is the default `ai.notify_task` target and only speaks that hook's rendered `title`/`body` shape; `buildin/alert` is a fixed-message wrapper around it. Neither reads the approval or failure-chain payloads on its own.
 
 For mobile push (ntfy.sh, gotify, pushover), webhook integrations (Slack, Discord), or any custom delivery, write a task that POSTs to the right endpoint and point `defaults.on_failure_chain` at it. Per-task overrides go through the task-level `on_failure_chain` field — see [Tasks → on_failure_chain](/concepts/tasks#field-reference).
 
