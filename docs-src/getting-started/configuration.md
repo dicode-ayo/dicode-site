@@ -50,7 +50,7 @@ server:
   secret: ""
   allowed_origins: []
   trust_proxy: false
-  public_url: ""             # reachable address for notification links (requires auth: true)
+  public_url: ""             # scheme://host[:port] notification links resolve against (requires auth: true)
   mcp: true
   tray: true
   tls_cert: ""
@@ -193,7 +193,7 @@ server:
   secret: ""                # passphrase override; leave empty to auto-generate on first boot
   allowed_origins: []       # CORS allowlist; empty = same-origin only
   trust_proxy: false        # trust X-Forwarded-For / X-Forwarded-Proto headers
-  public_url: ""            # bare host[:port] notification links resolve against (requires auth: true)
+  public_url: ""            # scheme://host[:port] notification links resolve against (requires auth: true)
   mcp: true                 # expose MCP endpoint at /mcp (default: true)
   tray: true                # enable system tray integration
   tls_cert: ""              # path to TLS certificate PEM (enables HTTPS)
@@ -287,21 +287,21 @@ Set `server.public_url` to the address dicode is actually reachable at (a revers
 ```yaml
 server:
   auth: true
-  public_url: "dicode.example.com"
+  public_url: "https://dicode.example.com"
 ```
 
 ```yaml
 server:
   auth: true
-  public_url: "100.64.0.5:8080"
+  public_url: "http://100.64.0.5:8080"
 ```
 
 Setting `public_url` only changes what address is *written into* links — it does not make the daemon reachable at that address. Getting traffic there (DNS, tailnet, port forwarding, a reverse proxy) is still the operator's job; see [Reverse proxy (`server.trust_proxy`)](#reverse-proxy-server-trust-proxy) above if that's a proxy in front of dicode.
 
 **Shape rules**, enforced at config load — a bad value fails startup with a categorized error naming `server.public_url`:
 
-- Only a bare authority (`host` or `host:port`) is accepted. No path, query, fragment, or credentials — the web UI serves root-relative URLs, and callers append `/approve/<token>` or `/?run=<id>` straight onto the stored value.
-- A trailing `/`, `?`, or `#` is normalized away, so `dicode.example.com/` and `dicode.example.com` are equivalent.
+- A scheme is required — `http://host[:port]` or `https://host[:port]` — and nothing beyond the bare authority is accepted: no path, query, fragment, or credentials. The web UI serves root-relative URLs, and callers append `/approve/<token>` or `/?run=<id>` straight onto the stored value.
+- A trailing `/`, `?`, or `#` is normalized away, so `https://dicode.example.com/` and `https://dicode.example.com` are equivalent.
 - `http://` is accepted, not just `https://` — dicode requires TLS nowhere else, and the address is often a tailnet or VPN name that's already encrypted below HTTP.
 
 **Requires `server.auth: true`.** `public_url` is refused unless auth is also enabled. Publishing an off-loopback address is only safe behind the auth wall — with auth off, `GET /api/audit` falls open and would hand live single-use approve tokens to anyone who can reach that address. `trust_proxy` does **not** satisfy this requirement; it only affects real-IP forwarding and the `Secure` cookie flag (see above), so set `auth: true` explicitly even if `trust_proxy` is already on.
