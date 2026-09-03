@@ -50,6 +50,7 @@ server:
   secret: ""
   allowed_origins: []
   trust_proxy: false
+  public_url: ""             # reachable address for notification links (requires auth: true)
   mcp: true
   tray: true
   tls_cert: ""
@@ -192,6 +193,7 @@ server:
   secret: ""                # passphrase override; leave empty to auto-generate on first boot
   allowed_origins: []       # CORS allowlist; empty = same-origin only
   trust_proxy: false        # trust X-Forwarded-For / X-Forwarded-Proto headers
+  public_url: ""            # bare host[:port] notification links resolve against (requires auth: true)
   mcp: true                 # expose MCP endpoint at /mcp (default: true)
   tray: true                # enable system tray integration
   tls_cert: ""              # path to TLS certificate PEM (enables HTTPS)
@@ -266,6 +268,8 @@ Set `trust_proxy: true` when dicode runs behind a reverse proxy (nginx, Caddy, T
 1. **Real IP forwarding** — dicode reads the client IP from `X-Forwarded-For` instead of the TCP connection's remote address. This is required for accurate audit log actor IDs and rate-limit keys.
 2. **`Secure` cookie flag** — session and device cookies are set with `Secure: true`, so browsers only send them over HTTPS.
 
+`trust_proxy` only affects how dicode reads an incoming request; it does not change what address dicode writes into outbound notification links. If you also want approve/resume/logs links in notifications to point somewhere other than `localhost`, see [Notification links (`server.public_url`)](#notification-links-server-public-url) below.
+
 ::: warning
 `trust_proxy: true` only works correctly when requests actually arrive over HTTPS via a proxy. If you set it with a plain HTTP connection (no proxy in front), browsers will refuse to send the `Secure` cookies and users will be unable to log in.
 
@@ -273,6 +277,34 @@ Do not enable this flag unless dicode is behind a proxy that sets `X-Forwarded-P
 
 Additionally, enabling `trust_proxy` when dicode is directly internet-facing (no proxy) lets any client forge the `X-Forwarded-For` header, causing spoofed IP addresses to appear in the audit log. Only enable this flag when a trusted proxy sits in front of dicode and strips or overwrites those headers before forwarding.
 :::
+
+### Notification links (`server.public_url`)
+
+Every link dicode puts in an outbound notification — `approve_url` on the approval hook, `resume_url` on the suspend hook, and the `Logs:` link sent by `buildin/telegram` — is built from the daemon's own idea of its base URL, which defaults to `localhost`. That's fine for links opened on the same machine, but dead on arrival once the notification leaves the host — for example when it lands on your phone.
+
+Set `server.public_url` to the address dicode is actually reachable at (a reverse proxy hostname, a tailnet name, a LAN host) and outbound links are built from that instead:
+
+```yaml
+server:
+  auth: true
+  public_url: "dicode.example.com"
+```
+
+```yaml
+server:
+  auth: true
+  public_url: "100.64.0.5:8080"
+```
+
+Setting `public_url` only changes what address is *written into* links — it does not make the daemon reachable at that address. Getting traffic there (DNS, tailnet, port forwarding, a reverse proxy) is still the operator's job; see [Reverse proxy (`server.trust_proxy`)](#reverse-proxy-server-trust-proxy) above if that's a proxy in front of dicode.
+
+**Shape rules**, enforced at config load — a bad value fails startup with a categorized error naming `server.public_url`:
+
+- Only a bare authority (`host` or `host:port`) is accepted. No path, query, fragment, or credentials — the web UI serves root-relative URLs, and callers append `/approve/<token>` or `/?run=<id>` straight onto the stored value.
+- A trailing `/`, `?`, or `#` is normalized away, so `dicode.example.com/` and `dicode.example.com` are equivalent.
+- `http://` is accepted, not just `https://` — dicode requires TLS nowhere else, and the address is often a tailnet or VPN name that's already encrypted below HTTP.
+
+**Requires `server.auth: true`.** `public_url` is refused unless auth is also enabled. Publishing an off-loopback address is only safe behind the auth wall — with auth off, `GET /api/audit` falls open and would hand live single-use approve tokens to anyone who can reach that address. `trust_proxy` does **not** satisfy this requirement; it only affects real-IP forwarding and the `Secure` cookie flag (see above), so set `auth: true` explicitly even if `trust_proxy` is already on.
 
 ## AI
 
