@@ -19,11 +19,13 @@ Four categories of events are emitted:
 
 Sensitive values in logged parameters are replaced with `[REDACTED]`:
 
-- **Exact-match keys** (case-insensitive): `authorization`, `cookie`, `password`, `passphrase`, `api_key`, `apikey`, `api-key`, `secret`, `token`, `bearer`, `credential`, `credentials`
+- **Exact-match keys** (case-insensitive): `authorization`, `cookie`, `password`, `passphrase`, `api_key`, `apikey`, `api-key`, `secret`, `token`, `bearer`, `credential`, `credentials`, `approve_url`
 - **Substring-match keys** (case-insensitive): any param name containing `key`, `token`, `secret`, `password`, `passphrase`, `credential`, or `signature` — for example, `signing_key`, `refresh_token`, `db_password`
 - **Reference values**: any value that starts with `env:`, `secret:`, or `secrets:` (these reference daemon-resolved material)
 
 When in doubt, redaction is the safe failure mode — `tokens_per_minute` would be redacted because its name contains `token`.
+
+`approve_url` is redacted despite the innocuous-looking name because the URL embeds a single-use approval bearer token — an operator following it can approve the pending run. `resume_url`, by contrast, is deliberately *not* redacted: it carries only a bare run ID, and the actual resume token is resolved server-side against the caller's session, so the URL alone grants no capability.
 
 ### Querying audit events
 
