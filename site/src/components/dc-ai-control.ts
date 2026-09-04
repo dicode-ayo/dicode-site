@@ -180,7 +180,7 @@ export class DcAiControl extends LitElement {
               <div class="feature-icon">&#x1F4DA;</div>
               <h3>Skills As Markdown</h3>
               <p>
-                Drop markdown files into dicode-buildin/skills/ and the agent loads them into its system
+                Drop markdown files into your taskset's skills/ directory and the agent loads them into its system
                 prompt on demand. Teach it your domain, your runbooks, your conventions —
                 durable context that survives across sessions.
               </p>

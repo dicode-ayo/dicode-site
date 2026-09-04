@@ -352,9 +352,9 @@ spec:
 | Old `sources[]` field | New location |
 |---|---|
 | `name` | entry key (e.g. `buildin:`) |
-| `type` | inferred: `url` present → git; `path` present → local |
-| `path` (local type) | `ref.path` |
-| `entry_path` (git type) | `ref.path` |
+| `type` | inferred from which old field was set: `url` → git; `path` → local (in the new schema, both types write to `ref.path`, so `ref` alone no longer tells you which) |
+| `path` (old `local` type) | `ref.path` |
+| `entry_path` (old `git` type) | `ref.path` |
 | `url` | `ref.url` |
 | `branch` | `ref.branch` |
 | `poll_interval` | `ref.poll_interval` |
