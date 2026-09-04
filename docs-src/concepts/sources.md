@@ -295,7 +295,7 @@ entries:
 
 ## Migration from the old `sources:` array
 
-The top-level `sources:` array was removed in v0.1+ ([dicode-core#262](https://github.com/dicode-ayo/dicode-core/pull/262)). The format change is mechanical:
+The top-level `sources:` array was removed in v0.1+ ([dicode-core#262](https://github.com/dicode-ayo/dicode-core/pull/262)). The format change is mechanical — it's shown below with today's `buildin` entry (a git ref) for consistency with the rest of this page, though the array format actually predates `buildin`'s move to its own repo; if you're migrating a config old enough to still use the array, your `buildin` entry may instead be a `local`-type one like `local-tasks` below, which maps the same way:
 
 **Before:**
 
