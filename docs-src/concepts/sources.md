@@ -18,7 +18,10 @@ spec:
   entries:
     buildin:
       ref:
-        path: ${CONFIGDIR}/tasks/buildin/taskset.yaml
+        url: https://github.com/dicode-ayo/dicode-buildin
+        branch: main
+        path: taskset.yaml
+        poll_interval: 30s
       overrides:
         entries:
           relay-client:
@@ -34,6 +37,10 @@ spec:
 ```
 
 Each entry key becomes the namespace under which the referenced taskset's tasks are registered. Both sources contribute to the same registry — task IDs must be unique across all sources.
+
+::: tip `buildin` is its own git repo
+`buildin` resolves over git, from [dicode-ayo/dicode-buildin](https://github.com/dicode-ayo/dicode-buildin), rather than a local path bundled with dicode. The daemon polls it (`poll_interval`) and reconciles changes without a restart, so built-in tasks update independently of your `dicode` binary version.
+:::
 
 ### Field reference for `spec.entries.<name>.ref`
 
@@ -295,9 +302,11 @@ The top-level `sources:` array was removed in v0.1+ ([dicode-core#262](https://g
 ```yaml
 sources:
   - name: buildin
-    type: local
-    path: ${CONFIGDIR}/tasks/buildin/taskset.yaml
-    watch: true
+    type: git
+    url: https://github.com/dicode-ayo/dicode-buildin
+    branch: main
+    entry_path: taskset.yaml
+    poll_interval: 30s
   - name: examples
     type: git
     url: https://github.com/dicode-ayo/dicode-core
@@ -316,8 +325,10 @@ spec:
   entries:
     buildin:
       ref:
-        path: ${CONFIGDIR}/tasks/buildin/taskset.yaml
-        watch: true
+        url: https://github.com/dicode-ayo/dicode-buildin
+        branch: main
+        path: taskset.yaml
+        poll_interval: 30s
     examples:
       ref:
         url: https://github.com/dicode-ayo/dicode-core

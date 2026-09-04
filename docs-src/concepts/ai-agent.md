@@ -382,7 +382,7 @@ Both can coexist: nothing prevents one task from using the API path and another 
    - **Custom Docker image**: build a derivative of `ghcr.io/dicode-ayo/dicode-core` that copies the binary in. The published image is distroless (no shell), so the actual install runs in a builder stage.
    - **Kubernetes init container**: an Alpine init container runs the installer into a shared `emptyDir`; the main dicode container reads from it via `CLAUDE_CLI_PATH`. No image rebuild required.
 
-   Full Dockerfile and Pod spec recipes live in the [task README](https://github.com/dicode-ayo/dicode-core/blob/main/tasks/buildin/ai-agent-claude-cli/README.md).
+   Full Dockerfile and Pod spec recipes live in the [task README](https://github.com/dicode-ayo/dicode-buildin/blob/main/ai-agent-claude-cli/README.md), in the separate [dicode-ayo/dicode-buildin](https://github.com/dicode-ayo/dicode-buildin) repo.
 
 3. **Verify** by hitting the task's webhook:
    ```sh
