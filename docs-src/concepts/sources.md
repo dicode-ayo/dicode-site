@@ -353,7 +353,8 @@ spec:
 |---|---|
 | `name` | entry key (e.g. `buildin:`) |
 | `type` | inferred: `url` present → git; `path` present → local |
-| `path` | `ref.path` |
+| `path` (local type) | `ref.path` |
+| `entry_path` (git type) | `ref.path` |
 | `url` | `ref.url` |
 | `branch` | `ref.branch` |
 | `poll_interval` | `ref.poll_interval` |
