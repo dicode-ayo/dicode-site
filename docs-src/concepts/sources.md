@@ -352,7 +352,7 @@ spec:
 | Old `sources[]` field | New location |
 |---|---|
 | `name` | entry key (e.g. `buildin:`) |
-| `type` | inferred from which old field was set: `url` → git; `path` → local (in the new schema, both types write to `ref.path`, so `ref` alone no longer tells you which) |
+| `type` | inferred the same way in both schemas: `ref.url` present → git; absent → local. In the old schema this was spelled `url` vs. `path`; in the new schema both types write the taskset location to `ref.path` (see the two rows below), so `ref.url` — not `ref.path` — is what to check |
 | `path` (old `local` type) | `ref.path` |
 | `entry_path` (old `git` type) | `ref.path` |
 | `url` | `ref.url` |
