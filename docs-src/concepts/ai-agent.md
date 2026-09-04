@@ -163,7 +163,7 @@ curl -X POST http://localhost:8080/hooks/ai/groq \
 
 Every name you pass is read at the start of the run. What reaches the model from there is decided by the `skills_mode` param — see [Skill loading modes: index vs. eager](#skill-loading-modes-index-vs-eager) below. Missing or unreadable skills still appear (as a placeholder line or entry) instead of failing the request.
 
-A starter skill ships at `dicode-buildin/skills/dicode-basics.md` covering core dicode concepts an agent should know to be useful.
+A starter skill ships at [`dicode-basics.md`](https://github.com/dicode-ayo/dicode-buildin/blob/main/skills/dicode-basics.md) covering core dicode concepts an agent should know to be useful.
 
 ### Skill loading modes: index vs. eager
 
