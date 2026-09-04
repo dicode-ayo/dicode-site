@@ -307,6 +307,10 @@ sources:
     branch: main
     entry_path: taskset.yaml
     poll_interval: 30s
+  - name: local-tasks
+    type: local
+    path: ~/dicode-tasks/taskset.yaml
+    watch: true
   - name: examples
     type: git
     url: https://github.com/dicode-ayo/dicode-core
@@ -329,6 +333,10 @@ spec:
         branch: main
         path: taskset.yaml
         poll_interval: 30s
+    local-tasks:
+      ref:
+        path: ~/dicode-tasks/taskset.yaml
+        watch: true
     examples:
       ref:
         url: https://github.com/dicode-ayo/dicode-core

@@ -85,7 +85,7 @@ https://relay.dicode.app/u/a1b2c3d4e5f6.../hooks/
 
 ### Identity rotation
 
-The relay client is a Deno daemon task (`tasks/buildin/relay-client/`) that stores its identity encrypted at rest as `~/.dicode/relay-store/relay/identity-v1.bin` (or `$DICODE_DATADIR/relay-store/relay/identity-v1.bin` if you've overridden the data directory). To rotate the identity (generating a new UUID and relay URL):
+The relay client is a Deno daemon task (`relay-client/` in [dicode-ayo/dicode-buildin](https://github.com/dicode-ayo/dicode-buildin)) that stores its identity encrypted at rest as `~/.dicode/relay-store/relay/identity-v1.bin` (or `$DICODE_DATADIR/relay-store/relay/identity-v1.bin` if you've overridden the data directory). To rotate the identity (generating a new UUID and relay URL):
 
 1. Stop the daemon.
 2. Delete `~/.dicode/relay-store/relay/identity-v1.bin` (or `$DICODE_DATADIR/relay-store/relay/identity-v1.bin` if you've overridden the data directory).
