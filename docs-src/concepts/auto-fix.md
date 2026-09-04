@@ -64,7 +64,7 @@ For autonomous mode you also need a fine-grained PAT in the secrets store under 
 7. **Disable dev mode** — engine removes the local clone; the remote branch is retained.
 8. **Unpin input** (deferred cleanup also handles timeout / panic).
 
-The skill prompt [`dicode-auto-fix.md`](https://github.com/dicode-ayo/dicode-core/blob/main/tasks/skills/dicode-auto-fix.md) prescribes the exact sequence and the "do not write outside the failing task's directory" rule.
+The skill prompt [`dicode-auto-fix.md`](https://github.com/dicode-ayo/dicode-buildin/blob/main/skills/dicode-auto-fix.md) — shipped from the separate [dicode-ayo/dicode-buildin](https://github.com/dicode-ayo/dicode-buildin) repo — prescribes the exact sequence and the "do not write outside the failing task's directory" rule.
 
 ## Engine guardrails
 
