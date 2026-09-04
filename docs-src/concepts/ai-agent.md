@@ -47,7 +47,7 @@ The dial between human control and AI autonomy is yours to set.
 
 - **A chat page** at `/hooks/ai`, with per-provider presets at `/hooks/ai/ollama`, `/hooks/ai/openai`, and `/hooks/ai/groq`. The task-detail page in the dashboard also embeds a dedicated agent at `/hooks/ai/dicodai` (the `buildin/dicodai` preset) preloaded with the `dicode-task-dev` skill — that's the one powering the "AI" chat button when you're editing a task.
 - **Tool use** — the agent discovers every registered task and exposes them as OpenAI-compatible tools. Each task's declared params become the tool's schema. Ask "how many deploys failed yesterday?" and the agent calls the right task, reads the result, and answers with real data.
-- **Skills** — markdown files under `dicode-buildin/skills/` that the agent can look up on demand (or, in `eager` mode, gets loaded into its system prompt up front). Think of them as domain knowledge the agent should have available: runbooks, glossaries, team conventions. See [Tools vs skills](#tools-vs-skills).
+- **Skills** — markdown files under a taskset's `skills/` directory that the agent can look up on demand (or, in `eager` mode, gets loaded into its system prompt up front). Think of them as domain knowledge the agent should have available: runbooks, glossaries, team conventions. See [Tools vs skills](#tools-vs-skills).
 - **Persistent sessions** — conversations are keyed by `session_id` and stored in KV. Pass your own id to resume, or omit it to have the task generate and return one.
 - **Lazy history compaction** — when a conversation exceeds `max_history_tokens`, older turns are replaced by a running summary generated via a second model call. The buildin stays snappy on long conversations without silently losing context.
 - **Configurable temperature** — a `temperature` param (0–2, default 0) controls sampling for both normal turns and compaction summaries; the low default keeps tool calls structured rather than emitted as prose. This param is specific to `buildin/ai-agent` — `buildin/ai-agent-claude-cli` shells out to the Claude CLI rather than calling a chat-completions API directly, so it has no `temperature` param.
@@ -108,7 +108,7 @@ Dicode uses these two words with specific meanings, matching the convention in C
 | Concept | What it is | Where it lives | How the agent sees it |
 | ------- | ---------- | -------------- | --------------------- |
 | **Tool** | A dicode task the agent can execute | `tasks/**/task.yaml` | An OpenAI tool schema built from the task's params; invoked via `dicode.run_task()` |
-| **Skill** | A markdown file with domain context | `dicode-buildin/skills/*.md` | Advertised by name and description in the system prompt; the body is fetched on demand via `dicode_read_skill` (or, under `skills_mode: eager`, concatenated into the system prompt at the start of every turn) |
+| **Skill** | A markdown file with domain context | `<taskset>/skills/*.md` | Advertised by name and description in the system prompt; the body is fetched on demand via `dicode_read_skill` (or, under `skills_mode: eager`, concatenated into the system prompt at the start of every turn) |
 
 Tools are **capabilities**. Skills are **knowledge**.
 
