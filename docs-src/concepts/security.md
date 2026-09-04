@@ -22,6 +22,7 @@ Sensitive values in logged parameters are replaced with `[REDACTED]`:
 - **Exact-match keys** (case-insensitive): `authorization`, `cookie`, `password`, `passphrase`, `api_key`, `apikey`, `api-key`, `secret`, `token`, `bearer`, `credential`, `credentials`
 - **Substring-match keys** (case-insensitive): any param name containing `key`, `token`, `secret`, `password`, `passphrase`, `credential`, or `signature` — for example, `signing_key`, `refresh_token`, `db_password`
 - **Reference values**: any value that starts with `env:`, `secret:`, or `secrets:` (these reference daemon-resolved material)
+- **Value shape**: a value that embeds a recognizable credential shape (currently the `dcap_` approval-token prefix) is redacted regardless of field name — e.g. an approval link forwarded through `link`, `cta`, or `callback` instead of `approve_url`
 
 When in doubt, redaction is the safe failure mode — `tokens_per_minute` would be redacted because its name contains `token`.
 
