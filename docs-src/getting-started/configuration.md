@@ -99,7 +99,8 @@ spec:
 |---|---|---|
 | `path` | required (local) | Absolute path to `taskset.yaml`; `${CONFIGDIR}` and `${HOME}` are expanded, and a leading `~/` resolves to the user's home directory |
 | `url` | required (git) | HTTPS or SSH git URL |
-| `branch` | `main` | Branch to track (git only) |
+| `branch` | `main` | Branch to track (git only). Mutually exclusive with `tag` |
+| `tag` | none | Pin to a tag instead of a branch (git only); does not by itself guarantee immutable content — see [Pinning to a tag](/concepts/sources#pinning-to-a-tag) |
 | `poll_interval` | `30s` | How often to fetch (git only) |
 | `auth.token_env` | | Env var holding a personal access token (HTTPS) |
 | `auth.ssh_key` | | Path to an SSH private key (SSH) |
@@ -132,6 +133,18 @@ spec:
 ```
 
 The daemon clones the repo into `data_dir`, polls for changes at `poll_interval`, and reconciles tasks automatically. See [Sources & TaskSets](/concepts/sources) for nested taskset composition, override cascades, and namespace IDs.
+
+To pin to a release instead of tracking a branch, replace `branch` with `tag`:
+
+```yaml
+      ref:
+        url: https://github.com/your-org/tasks.git
+        tag: v1.0.0                  # pin instead of branch: main
+        path: taskset.yaml
+        poll_interval: 30s
+```
+
+`branch` and `tag` are mutually exclusive. See [Pinning to a tag](/concepts/sources#pinning-to-a-tag) for what pinning does and does not guarantee.
 
 ## Database
 
