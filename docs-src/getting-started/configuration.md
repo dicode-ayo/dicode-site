@@ -6,6 +6,10 @@ The daemon reads its configuration from `~/.dicode/dicode.yaml`. The file is aut
 The top-level `sources:` array was removed in v0.1+ — `dicode.yaml` is now a root TaskSet with sources declared under `spec.entries`. The daemon refuses to start with the legacy format. See [Sources & TaskSets — Migration](/concepts/sources#migration-from-the-old-sources-array) for the field-by-field mapping.
 :::
 
+::: tip `buildin` is its own git repo
+The `buildin` entry resolves over git, from [dicode-ayo/dicode-buildin](https://github.com/dicode-ayo/dicode-buildin) — not a path inside the dicode install. The daemon polls it (`poll_interval`) and reconciles changes without a restart, so built-in tasks update independently of your `dicode` binary version.
+:::
+
 ## Full example
 
 ```yaml
@@ -18,8 +22,10 @@ spec:
   entries:
     buildin:
       ref:
-        path: ${CONFIGDIR}/tasks/buildin/taskset.yaml
-        watch: true
+        url: https://github.com/dicode-ayo/dicode-buildin
+        branch: main
+        path: taskset.yaml
+        poll_interval: 30s
     local:
       ref:
         path: ~/dicode-tasks/taskset.yaml

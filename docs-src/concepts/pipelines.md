@@ -215,7 +215,7 @@ The dashboard lists runs per task. A pipeline fire shows up as the parent run on
 A `kind: PipelineTask` (`task.yaml`) whose terminal stage is a standalone daemon-body `kind: Task`:
 
 ```yaml
-# tasks/buildin/relay-server/task.yaml  (kind: PipelineTask)
+# relay-server/task.yaml (in dicode-ayo/dicode-buildin; kind: PipelineTask)
 apiVersion: dicode/v1
 kind: PipelineTask
 name: Relay Server
@@ -255,7 +255,7 @@ stages:
 ```
 
 ```yaml
-# tasks/buildin/relay-server-body/task.yaml  (standalone daemon body)
+# relay-server-body/task.yaml (in dicode-ayo/dicode-buildin; standalone daemon body)
 apiVersion: dicode/v1
 kind: Task
 name: Relay Server (daemon body)

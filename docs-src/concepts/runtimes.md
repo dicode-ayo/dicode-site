@@ -81,15 +81,14 @@ A Deno task can call `dicode.suspend({ schema })` to pause mid-run and ask a hum
 
 If a `deno.lock` file exists at or near the task directory, dicode automatically enforces it. The runtime walks up to two parent directories from the task directory looking for `deno.lock`. When found, Deno is invoked with `--lock=<path> --frozen`, which prevents per-run resolution of newer package versions — all imports are pinned to the exact versions recorded in the lockfile.
 
-The canonical layout for buildin tasks places a shared lockfile two levels above the individual task folders:
+The canonical layout for buildin tasks places a shared lockfile at the root of [dicode-ayo/dicode-buildin](https://github.com/dicode-ayo/dicode-buildin), one level above the individual task folders:
 
 ```
-tasks/
+dicode-buildin/
   deno.lock          # detected automatically for all buildin tasks
-  buildin/
-    my-task/
-      task.yaml
-      task.ts
+  my-task/
+    task.yaml
+    task.ts
 ```
 
 **Opt-out**: If the task directory contains its own `deno.json` (note: `deno.jsonc` is not detected), the walk is skipped entirely. Deno respects whatever lock configuration that file declares.

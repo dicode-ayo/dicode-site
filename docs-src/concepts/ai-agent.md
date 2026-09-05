@@ -47,7 +47,7 @@ The dial between human control and AI autonomy is yours to set.
 
 - **A chat page** at `/hooks/ai`, with per-provider presets at `/hooks/ai/ollama`, `/hooks/ai/openai`, and `/hooks/ai/groq`. The task-detail page in the dashboard also embeds a dedicated agent at `/hooks/ai/dicodai` (the `buildin/dicodai` preset) preloaded with the `dicode-task-dev` skill — that's the one powering the "AI" chat button when you're editing a task.
 - **Tool use** — the agent discovers every registered task and exposes them as OpenAI-compatible tools. Each task's declared params become the tool's schema. Ask "how many deploys failed yesterday?" and the agent calls the right task, reads the result, and answers with real data.
-- **Skills** — markdown files under `tasks/skills/` that the agent can look up on demand (or, in `eager` mode, gets loaded into its system prompt up front). Think of them as domain knowledge the agent should have available: runbooks, glossaries, team conventions. See [Tools vs skills](#tools-vs-skills).
+- **Skills** — markdown files under a taskset's `skills/` directory that the agent can look up on demand (or, in `eager` mode, gets loaded into its system prompt up front). Think of them as domain knowledge the agent should have available: runbooks, glossaries, team conventions. See [Tools vs skills](#tools-vs-skills).
 - **Persistent sessions** — conversations are keyed by `session_id` and stored in KV. Pass your own id to resume, or omit it to have the task generate and return one.
 - **Lazy history compaction** — when a conversation exceeds `max_history_tokens`, older turns are replaced by a running summary generated via a second model call. The buildin stays snappy on long conversations without silently losing context.
 - **Configurable temperature** — a `temperature` param (0–2, default 0) controls sampling for both normal turns and compaction summaries; the low default keeps tool calls structured rather than emitted as prose. This param is specific to `buildin/ai-agent` — `buildin/ai-agent-claude-cli` shells out to the Claude CLI rather than calling a chat-completions API directly, so it has no `temperature` param.
@@ -108,7 +108,7 @@ Dicode uses these two words with specific meanings, matching the convention in C
 | Concept | What it is | Where it lives | How the agent sees it |
 | ------- | ---------- | -------------- | --------------------- |
 | **Tool** | A dicode task the agent can execute | `tasks/**/task.yaml` | An OpenAI tool schema built from the task's params; invoked via `dicode.run_task()` |
-| **Skill** | A markdown file with domain context | `tasks/skills/*.md` | Advertised by name and description in the system prompt; the body is fetched on demand via `dicode_read_skill` (or, under `skills_mode: eager`, concatenated into the system prompt at the start of every turn) |
+| **Skill** | A markdown file with domain context | `<taskset>/skills/*.md` | Advertised by name and description in the system prompt; the body is fetched on demand via `dicode_read_skill` (or, under `skills_mode: eager`, concatenated into the system prompt at the start of every turn) |
 
 Tools are **capabilities**. Skills are **knowledge**.
 
@@ -163,7 +163,7 @@ curl -X POST http://localhost:8080/hooks/ai/groq \
 
 Every name you pass is read at the start of the run. What reaches the model from there is decided by the `skills_mode` param — see [Skill loading modes: index vs. eager](#skill-loading-modes-index-vs-eager) below. Missing or unreadable skills still appear (as a placeholder line or entry) instead of failing the request.
 
-A starter skill ships at `tasks/skills/dicode-basics.md` covering core dicode concepts an agent should know to be useful.
+A starter skill ships at [`dicode-basics.md`](https://github.com/dicode-ayo/dicode-buildin/blob/main/skills/dicode-basics.md) covering core dicode concepts an agent should know to be useful.
 
 ### Skill loading modes: index vs. eager
 
@@ -181,7 +181,7 @@ Under `index` mode, the agent gets a `dicode_read_skill` tool alongside the cata
 - **Input:** `{ "name": "<skill name, exactly as listed in the index>" }`
 - **Returns:** `{ "name", "description", "body" }` for a skill that loaded; `{ "error": "unknown skill: <name>", "available": [...] }` for a name not in the configured `skills` list; or `{ "error": "skill <name> not loaded: <reason>" }` for a name that *is* in the `skills` list but couldn't be turned into a skill — a bad filename, an empty `skills_dir`, or an actual disk-read failure.
 
-Because only the name and description reach the model up front, a `system_prompt` under `index` mode has to name the skill it wants read and when — the description alone doesn't trigger a fetch. The built-in `auto-fix`, `task-create`, and `dicodai` presets (`tasks/buildin/taskset.yaml`) all carry this kind of pointer text, e.g. auto-fix's system prompt says "Read the dicode-auto-fix skill before anything else... Read dicode-task-dev before you write to any file."
+Because only the name and description reach the model up front, a `system_prompt` under `index` mode has to name the skill it wants read and when — the description alone doesn't trigger a fetch. The built-in `auto-fix`, `task-create`, and `dicodai` presets (`taskset.yaml` in [dicode-ayo/dicode-buildin](https://github.com/dicode-ayo/dicode-buildin)) all carry this kind of pointer text, e.g. auto-fix's system prompt says "Read the dicode-auto-fix skill before anything else... Read dicode-task-dev before you write to any file."
 
 The skills block is also positioned differently by mode: under `index`, the catalogue is placed **before** the operator's own `system_prompt`, so the operator's instructions are the last thing the model reads before the request — dicode-core#759 found that placing the same index *after* the system prompt caused the model to narrate its plan instead of executing it (6/6 → 0/6 structured tool calls on an 8B model). Under `eager`, skill bodies stay **after** the `system_prompt`, matching where they've always been, so opting back into `eager` reproduces the old prompt shape byte-for-byte.
 
@@ -382,7 +382,7 @@ Both can coexist: nothing prevents one task from using the API path and another 
    - **Custom Docker image**: build a derivative of `ghcr.io/dicode-ayo/dicode-core` that copies the binary in. The published image is distroless (no shell), so the actual install runs in a builder stage.
    - **Kubernetes init container**: an Alpine init container runs the installer into a shared `emptyDir`; the main dicode container reads from it via `CLAUDE_CLI_PATH`. No image rebuild required.
 
-   Full Dockerfile and Pod spec recipes live in the [task README](https://github.com/dicode-ayo/dicode-core/blob/main/tasks/buildin/ai-agent-claude-cli/README.md).
+   Full Dockerfile and Pod spec recipes live in the [task README](https://github.com/dicode-ayo/dicode-buildin/blob/main/ai-agent-claude-cli/README.md), in the separate [dicode-ayo/dicode-buildin](https://github.com/dicode-ayo/dicode-buildin) repo.
 
 3. **Verify** by hitting the task's webhook:
    ```sh

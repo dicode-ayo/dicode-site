@@ -228,7 +228,7 @@ curl -X POST http://localhost:8080/mcp \
 
 ## How it's implemented
 
-Unlike most MCP servers — which ship as a separate process — dicode's MCP surface is **itself a dicode task**. The buildin/mcp task at [`tasks/buildin/mcp/`](https://github.com/dicode-ayo/dicode-core/tree/main/tasks/buildin/mcp) is a Deno webhook that receives the JSON-RPC body, dispatches to the right tool, and returns the response. The `/mcp` URL in the WebUI is a thin API-key-gated forwarder onto `/hooks/mcp`.
+Unlike most MCP servers — which ship as a separate process — dicode's MCP surface is **itself a dicode task**. The buildin/mcp task at [`mcp/`](https://github.com/dicode-ayo/dicode-buildin/tree/main/mcp) — shipped from the separate [dicode-ayo/dicode-buildin](https://github.com/dicode-ayo/dicode-buildin) repo — is a Deno webhook that receives the JSON-RPC body, dispatches to the right tool, and returns the response. The `/mcp` URL in the WebUI is a thin API-key-gated forwarder onto `/hooks/mcp`.
 
 Why this matters: editing the MCP surface is just editing a task. Want a custom tool? Fork the buildin, add a case to the dispatcher. Want to gate certain tools on a different auth scheme? Wrap the task. The same hot-reload flow that applies to your own tasks applies to dicode's MCP surface — no rebuild, no daemon restart.
 

@@ -18,7 +18,10 @@ spec:
   entries:
     buildin:
       ref:
-        path: ${CONFIGDIR}/tasks/buildin/taskset.yaml
+        url: https://github.com/dicode-ayo/dicode-buildin
+        branch: main
+        path: taskset.yaml
+        poll_interval: 30s
       overrides:
         entries:
           relay-client:
@@ -34,6 +37,10 @@ spec:
 ```
 
 Each entry key becomes the namespace under which the referenced taskset's tasks are registered. Both sources contribute to the same registry — task IDs must be unique across all sources.
+
+::: tip `buildin` is its own git repo
+`buildin` resolves over git, from [dicode-ayo/dicode-buildin](https://github.com/dicode-ayo/dicode-buildin), rather than a local path bundled with dicode. The daemon polls it (`poll_interval`) and reconciles changes without a restart, so built-in tasks update independently of your `dicode` binary version.
+:::
 
 ### Field reference for `spec.entries.<name>.ref`
 
@@ -310,15 +317,21 @@ entries:
 
 ## Migration from the old `sources:` array
 
-The top-level `sources:` array was removed in v0.1+ ([dicode-core#262](https://github.com/dicode-ayo/dicode-core/pull/262)). The format change is mechanical:
+The top-level `sources:` array was removed in v0.1+ ([dicode-core#262](https://github.com/dicode-ayo/dicode-core/pull/262)). The format change is mechanical — it's shown below with today's `buildin` entry (a git ref) for consistency with the rest of this page, though the array format actually predates `buildin`'s move to its own repo; if you're migrating a config old enough to still use the array, your `buildin` entry is likely `local`-type instead, mapping the same way the unrelated `local-tasks` entry below does (the field shapes carry over regardless of the entry's name):
 
 **Before:**
 
 ```yaml
 sources:
   - name: buildin
+    type: git
+    url: https://github.com/dicode-ayo/dicode-buildin
+    branch: main
+    entry_path: taskset.yaml
+    poll_interval: 30s
+  - name: local-tasks
     type: local
-    path: ${CONFIGDIR}/tasks/buildin/taskset.yaml
+    path: ~/dicode-tasks/taskset.yaml
     watch: true
   - name: examples
     type: git
@@ -338,7 +351,13 @@ spec:
   entries:
     buildin:
       ref:
-        path: ${CONFIGDIR}/tasks/buildin/taskset.yaml
+        url: https://github.com/dicode-ayo/dicode-buildin
+        branch: main
+        path: taskset.yaml
+        poll_interval: 30s
+    local-tasks:
+      ref:
+        path: ~/dicode-tasks/taskset.yaml
         watch: true
     examples:
       ref:
@@ -355,8 +374,9 @@ spec:
 | Old `sources[]` field | New location |
 |---|---|
 | `name` | entry key (e.g. `buildin:`) |
-| `type` | inferred: `url` present → git; `path` present → local |
-| `path` | `ref.path` |
+| `type` | inferred the same way in both schemas: `ref.url` present → git; absent → local. In the old schema this was spelled `url` vs. `path`; in the new schema both types write the taskset location to `ref.path` (see the two rows below), so `ref.url` — not `ref.path` — is what to check |
+| `path` (old `local` type) | `ref.path` |
+| `entry_path` (old `git` type) | `ref.path` |
 | `url` | `ref.url` |
 | `branch` | `ref.branch` |
 | `poll_interval` | `ref.poll_interval` |
