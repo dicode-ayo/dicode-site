@@ -192,14 +192,17 @@ The `env` provider reads directly from environment variables.
 
 Notifications are delivered by **tasks**, not by a daemon-level config block. Wire any notification path you like by pointing `defaults.on_failure_chain` at a task that emits the alert — see the [Defaults](#defaults) section below.
 
-Two buildins are shipped out of the box:
+Three buildins are shipped out of the box:
 
 | Task | Surface | Notes |
 |---|---|---|
 | `buildin/notifications` | Native OS desktop notification (`notify-send` / `osascript` / `powershell`) | No external service. Works offline. |
 | `buildin/alert` | Wrapper that calls `buildin/notifications` via `dicode.run_task` | Demonstrates the chain pattern; copy and adapt for ntfy / Slack / Discord / email / etc. |
+| `buildin/telegram` | Telegram Bot API `sendMessage` | Reaches a headless host. Opt-in: needs a `TELEGRAM_BOT_TOKEN` secret and a target chat (`TELEGRAM_CHAT_ID` secret, or a `chat_id` param per run). |
 
-For mobile push (ntfy.sh, gotify, pushover, telegram), webhook integrations (Slack, Discord), or any custom delivery, write a task that POSTs to the right endpoint and point `defaults.on_failure_chain` at it. Per-task overrides go through the task-level `on_failure_chain` field — see [Tasks → on_failure_chain](/concepts/tasks#field-reference).
+`buildin/telegram` is the only one of the three that parses all three notification sources' payloads — `ai.notify_task`'s rendered `title`/`body`, `approval.notify_task`'s `task_id`/`hash`/`approve_url`, and `defaults.on_failure_chain`'s `taskID`/`runID`/`status`/`output` — falling back to a generic message when a field it doesn't recognize is all that's sent. `buildin/notifications` is the default `ai.notify_task` target and only speaks that hook's rendered `title`/`body` shape; `buildin/alert` forwards its own `title`/`message` params to `buildin/notifications`, falling back to a placeholder when fired with none — as happens via the failure chain, since it never reads chain `input`. Neither reads the approval or failure-chain payloads on its own.
+
+For mobile push (ntfy.sh, gotify, pushover), webhook integrations (Slack, Discord), or any custom delivery, write a task that POSTs to the right endpoint and point `defaults.on_failure_chain` at it. Per-task overrides go through the task-level `on_failure_chain` field — see [Tasks → on_failure_chain](/concepts/tasks#field-reference).
 
 ## Server
 
