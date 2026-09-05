@@ -68,7 +68,7 @@ spec:
         poll_interval: 5m
 ```
 
-The `buildin` namespace is a good candidate for pinning: `buildin/*` tasks are [always armed by the approval gate](./approval#trust-policies) regardless of content hash, so pinning `buildin` to a release tag of `dicode-ayo/dicode-buildin` — instead of tracking its default branch — controls which version of those always-trusted tasks you run, without having to hand-manage `dicode.lock` entries yourself.
+The `buildin` namespace is a case where pinning matters more than usual, not less: `buildin/*` tasks are [always armed by the approval gate](./approval#trust-policies) — the gate auto-approves them before any hash check runs, so a re-cut release there reaches the daemon with **no re-approval step at all**, unlike a gated source where a changed hash would re-pend it ([dicode-core#832](https://github.com/dicode-ayo/dicode-core/issues/832)). Pinning `buildin` to a release tag of `dicode-ayo/dicode-buildin` you trust — instead of tracking its default branch — is the main lever you have to control what runs there, since the approval gate and `dicode.lock` don't apply to this namespace the way they do to others.
 
 ### Field reference for `spec.entries.<name>` (entry-level)
 
