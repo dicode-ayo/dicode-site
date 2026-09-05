@@ -41,12 +41,34 @@ Each entry key becomes the namespace under which the referenced taskset's tasks 
 |---|---|---|
 | `path` | required (local) | Absolute path to `taskset.yaml`; `${CONFIGDIR}` and `${HOME}` are expanded, and a leading `~/` resolves to the user's home directory |
 | `url` | required (git) | HTTPS or SSH git URL |
-| `branch` | `main` | Branch to track (git only) |
+| `branch` | `main` | Branch to track (git only). Mutually exclusive with `tag` — declaring both is a config-load error |
+| `tag` | none | Pin to a tag instead of a branch (git only). Mutually exclusive with `branch`; validated with the same `check-ref-format` rules |
 | `poll_interval` | `30s` | How often to fetch (git only) |
 | `auth.token_env` | | Env var holding a personal access token |
 | `auth.ssh_key` | | Path to an SSH private key |
 | `watch` | `true` | Enable fsnotify live reload (local refs) |
 | `dev_ref` | | Substitute ref when [dev mode](#dev-mode) is active |
+
+#### Pinning to a tag
+
+A git-backed `ref` can declare `tag: <name>` instead of `branch: <name>` to read `refs/tags/<name>` rather than the moving head of a branch. This is useful for pinning a namespace to a specific release rather than tracking `main` — for example, pinning `buildin` to a tagged release of `dicode-ayo/dicode-buildin` instead of following its default branch.
+
+Pinning to a tag selects *which ref is read*; on its own it is **not** an immutability guarantee — if the remote force-moves the tag to a different commit, dicode follows it on the next poll, same as it would follow a force-pushed branch. What actually prevents unreviewed content from running is the [approval gate](./approval) (which hashes task content — including a `dir_hash` of the task directory — so a force-moved tag that changes file content produces a new hash and re-pends the task) together with `dicode.lock`. Use `tag` to control which version you read; rely on the approval gate and lockfile for guarantees about what's allowed to run.
+
+`POST /api/settings/sources` and the onboarding wizard also accept `tag` alongside `branch`, so this is configurable from the UI, not just by hand-editing YAML.
+
+```yaml
+spec:
+  entries:
+    buildin:
+      ref:
+        url: https://github.com/dicode-ayo/dicode-buildin
+        tag: v1.0.0                 # pin instead of tracking main
+        path: taskset.yaml
+        poll_interval: 5m
+```
+
+The `buildin` namespace is a case where pinning matters more than usual, not less: `buildin/*` tasks are [always armed by the approval gate](./approval#trust-policies) — the gate auto-approves them before any hash check runs, so a re-cut release there reaches the daemon with **no re-approval step at all**, unlike a gated source where a changed hash would re-pend it ([dicode-core#832](https://github.com/dicode-ayo/dicode-core/issues/832)). Pinning `buildin` to a release tag of `dicode-ayo/dicode-buildin` you trust — instead of tracking its default branch — is the main lever you have to control what runs there, since the approval gate and `dicode.lock` don't apply to this namespace the way they do to others.
 
 ### Field reference for `spec.entries.<name>` (entry-level)
 
