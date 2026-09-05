@@ -204,6 +204,8 @@ permissions:
 If the notify task itself is not trusted (or builtin), it will sit pending and never fire. Either add it to `approval.tasks.<id>.trust: always`, use a `buildin/*` task, or trust its source.
 :::
 
+The `approve_url` token is also protected by shape, not just by field name: a custom notify task that forwards the same link through a differently-named param (`link`, `cta`, `callback`, …) still gets it redacted from persisted run-input and the audit log — see [Redaction](./security.md#redaction).
+
 ## First-run bootstrap
 
 On first upgrade to a version with `approval.enabled: true`, **all non-builtin tasks go pending**. Choose one of three approaches:
