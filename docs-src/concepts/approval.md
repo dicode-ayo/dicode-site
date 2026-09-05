@@ -164,6 +164,12 @@ Parameters passed to the notify task:
 | `task_id` | string | ID of the task that just went pending |
 | `hash` | string | Content hash at pend time |
 | `approve_url` | string | Tokenized approve link (single-use, 24h TTL) |
+| `title` | string | Pre-rendered notification title, e.g. `"dicode: a task is waiting for approval"` |
+| `body` | string | Pre-rendered notification text, e.g. `"Task <id> is held pending approval and will not run until it is approved. Approve: <url>"` — the `Approve:` sentence is omitted when no link could be minted |
+| `priority` | string | Notification priority; currently always `"default"` |
+| `event` | string | Always `"approval_pending"` for this hook |
+
+`title` and `body` arrive pre-rendered, so a delivery task that doesn't want to compose its own text can send them as-is — the same shape the suspend hook (`ai.notify_task`) already sends. The general contract: both `ai.notify_task` and `approval.notify_task` send rendered text plus structured fields to the notify task's params; `defaults.on_failure_chain` remains the one exception, delivering via `input` rather than params, with no rendered text. `tasks/buildin/telegram/README.md` in dicode-core is a worked example of a single task serving all three.
 
 Use these to deliver a message to Slack, email, ntfy, or any other channel:
 
@@ -177,13 +183,15 @@ approval:
 ```ts
 // notify-approval/task.ts
 export default async function main({ params }: DicodeSdk) {
-  const taskId = await params.get("task_id");
-  const approveUrl = await params.get("approve_url");
+  // title/body are already rendered — send them as-is if you don't need
+  // custom formatting.
+  const title = await params.get("title");
+  const body = await params.get("body");
 
   await fetch("https://hooks.slack.com/services/…", {
     method: "POST",
     body: JSON.stringify({
-      text: `Task *${taskId}* is pending approval.\n<${approveUrl}|Approve now>`,
+      text: `*${title}*\n${body}`,
     }),
   });
 }
