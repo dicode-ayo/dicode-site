@@ -315,7 +315,7 @@ async def main():
 
 ## Params
 
-Parameters are declared in `task.yaml` and can be provided at runtime via CLI, API, webhook body, or chain input.
+Parameters are declared in `task.yaml` and can be provided at runtime via CLI, API, or webhook body. A plain chain dispatch does **not** supply params this way — see the warning below.
 
 Two YAML formats are supported:
 
@@ -348,7 +348,7 @@ params:
 | `required` | If `true`, the task fails when the param is missing |
 
 ::: warning `required` params and trigger type
-**Cron**, **daemon**, and an un-overridden **chain** trigger never supply fire-time params — cron fires on a schedule, daemon fires once at startup, and a plain chain dispatch only forwards the upstream task's return value as `input`, not `params`. A `required: true` param with no `default` on a task whose only trigger is one of these can never be satisfied: every single fire fails preflight with `params_invalid` before the task body runs. dicode warns about this at config-load time (visible in the daemon log), but the fix is on the task author: give the param a `default`, drop `required`, or move the task to a trigger that can actually supply one (`manual`, `webhook`, or a `chain` with a [taskset-level `params` override](./sources.md#what-can-be-overridden) that sets a default). See [Triggers](./triggers.md) for what each trigger type can and can't provide at fire time.
+**Cron**, **daemon**, and an un-overridden **chain** trigger never supply fire-time params — cron fires on a schedule, daemon fires once at startup, and a plain chain dispatch only forwards the upstream task's return value as `input`, not `params`. A `required: true` param with no `default` on a task whose only trigger is one of these can never be satisfied: every single fire fails preflight with `params_invalid` before the task body runs. dicode warns about this at config-load time (visible in the daemon log), but the fix is on the task author: give the param a `default`, drop `required`, or — for a chain-triggered task — patch one in via that chain edge's own `overrides.params` (applied to the downstream task before that edge fires; cron and daemon have no equivalent escape hatch). See [Triggers](./triggers.md) for what each trigger type can and can't provide at fire time.
 :::
 
 ## Permissions
