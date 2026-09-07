@@ -23,6 +23,8 @@ trigger:
 
 The five fields are: `minute hour day-of-month month day-of-week`.
 
+Cron fires on a schedule and never supplies fire-time params — see [Params — `required` and trigger type](./tasks.md#params) before declaring a `required: true` param with no `default` on a cron-only task.
+
 ### Missed-run catchup
 
 If dicode was stopped when a cron task was due to fire, it runs the missed execution on startup (once, not all missed intervals). This ensures scheduled tasks do not silently skip runs during downtime.
@@ -289,6 +291,8 @@ log.info(f"Upstream returned count: {data['count']}")
 
 :::
 
+An un-overridden chain passes the upstream's return value as `input` only — it never supplies `params` — so a chained task with a `required: true` param and no `default` can never be satisfied. See [Params — `required` and trigger type](./tasks.md#params).
+
 ### Chaining multiple tasks
 
 Build pipelines by chaining tasks in sequence:
@@ -340,6 +344,8 @@ trigger:
   daemon: true
   restart: always          # always (default) | on-failure | never
 ```
+
+Daemon tasks fire once at startup with no fire-time params — see [Params — `required` and trigger type](./tasks.md#params) before declaring a `required: true` param with no `default` on a daemon-only task.
 
 ### Restart policies
 

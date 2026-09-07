@@ -347,6 +347,10 @@ params:
 | `default` | Default value if not provided |
 | `required` | If `true`, the task fails when the param is missing |
 
+::: warning `required` params and trigger type
+**Cron**, **daemon**, and an un-overridden **chain** trigger never supply fire-time params — cron fires on a schedule, daemon fires once at startup, and a plain chain dispatch only forwards the upstream task's return value as `input`, not `params`. A `required: true` param with no `default` on a task whose only trigger is one of these can never be satisfied: every single fire fails preflight with `params_invalid` before the task body runs. dicode warns about this at config-load time (visible in the daemon log), but the fix is on the task author: give the param a `default`, drop `required`, or move the task to a trigger that can actually supply one (`manual`, `webhook`, or a `chain` with a [taskset-level `params` override](./sources.md#what-can-be-overridden) that sets a default). See [Triggers](./triggers.md) for what each trigger type can and can't provide at fire time.
+:::
+
 ## Permissions
 
 The `permissions` block declares what the task is allowed to access. Nothing is implicitly available -- every environment variable, filesystem path, network host, and dicode API must be explicitly listed.
