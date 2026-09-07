@@ -291,7 +291,19 @@ log.info(f"Upstream returned count: {data['count']}")
 
 :::
 
-An un-overridden chain passes the upstream's return value as `input` only — it never supplies `params` — so a chained task with a `required: true` param and no `default` can never be satisfied. See [Params — `required` and trigger type](./tasks.md#params).
+An un-overridden chain passes the upstream's return value as `input` only — it never supplies `params` — so a chained task with a `required: true` param and no `default` can never be satisfied (see [Params — `required` and trigger type](./tasks.md#params)) unless the edge patches one in via `trigger.chain.overrides.params`:
+
+```yaml
+# task-b/task.yaml — task-b declares a required `limit` param with no default
+trigger:
+  chain:
+    from: task-a
+    overrides:
+      params:
+        limit: "10"     # supplies the default this edge needs to satisfy `required`
+```
+
+This is a per-edge patch on **this task's own** `trigger.chain` block, applied to a copy of the downstream spec right before this edge fires — manual/cron/direct-API fires of the same downstream are unaffected. It is distinct from `trigger.chain.params` (a separate field that enriches `input` with extra keys, but never sets `params`) and from the taskset-level `overrides:` in [Sources & TaskSets](./sources.md#what-can-be-overridden), which patches a different task's entry from a parent TaskSet.
 
 ### Chaining multiple tasks
 
