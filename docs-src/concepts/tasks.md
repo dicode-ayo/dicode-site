@@ -241,6 +241,41 @@ Setting a field to `null` removes it from the merge patch (per RFC 7396), revert
 
 The toggle propagates within ~1 second: the source manager triggers an out-of-band reconcile rather than waiting up to 30 s for the next poll tick.
 
+### Run a task
+
+Besides its normal trigger (cron, webhook, chain, or daemon start), any task can be fired immediately via the dashboard's **Run** button, the CLI (`dicode run <task-id>`, see [Triggers — Manual](./triggers.md#manual)), or the REST API directly.
+
+#### `POST /api/tasks/{id}/run`
+
+Fires the task immediately and returns the new run's ID. The request body is optional:
+
+- **No body** (or an empty one) fires the task with its declared `params` defaults -- this is what every existing caller, including the dashboard's Run button, already does.
+- `{"params": {...}}` supplies fire-time overrides. They're validated against the task's declared [param schema](#params) -- the same closed-schema coercion `POST /api/tasks/{id}/test` uses -- **before** a run row is created. A field that fails validation (wrong type, a missing `required` param, an unknown key) returns `422` naming every offending field; malformed JSON returns `400`.
+
+::: warning `kind: PipelineTask` params are string-only
+A pipeline has no param schema of its own (see [Pipelines](./pipelines.md)), so supplied values pass straight through to its first stage verbatim instead of being validated. They must already be JSON strings -- a number, boolean, object, or array is rejected with `400` rather than silently coerced.
+:::
+
+The route is gated by `requireAuth` (session cookie only -- API keys are not accepted here), same as [`PATCH /api/tasks/{id}/overrides`](#enable-disable) above:
+
+```sh
+# Fire with the task's declared defaults
+curl -X POST http://localhost:8080/api/tasks/my-source/my-task/run \
+  -b "dicode_secrets_sess=<paste-from-browser>"
+
+# Fire with fire-time params
+curl -X POST http://localhost:8080/api/tasks/my-source/my-task/run \
+  -H 'Content-Type: application/json' \
+  -b "dicode_secrets_sess=<paste-from-browser>" \
+  -d '{"params": {"repo": "denoland/deno"}}'
+```
+
+| Status | Meaning |
+|---|---|
+| `200` | Run created; body carries `{"runId": "..."}` |
+| `400` | Malformed JSON, a non-string param on a `kind: PipelineTask`, or the engine refused the fire (e.g. the task isn't found, is disabled, or is pending approval) |
+| `422` | Supplied params failed the task's schema; body carries `{"error": "invalid params", "fields": [{"field": "...", "message": "..."}]}` |
+
 ### Docker runtime config
 
 Required when `runtime` is `docker` or `podman`. Must specify either `image` or `build`.
@@ -315,7 +350,7 @@ async def main():
 
 ## Params
 
-Parameters are declared in `task.yaml` and can be provided at runtime via CLI, API, webhook body, or chain input.
+Parameters are declared in `task.yaml` and can be provided at runtime via CLI, [the REST API](#run-a-task), webhook body, or chain input.
 
 Two YAML formats are supported:
 

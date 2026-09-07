@@ -246,6 +246,8 @@ dicode run my-task
 dicode run my-task --param repo=denoland/deno
 ```
 
+The same firing path is available over the REST API: [`POST /api/tasks/{id}/run`](./tasks.md#run-a-task) accepts an optional `{"params": {...}}` body, validated against the task's declared params the same way `--param` values are, before a run row is created. An absent body fires with the task's declared defaults -- the CLI form above and the dashboard's Run button both do exactly that. A `kind: PipelineTask` has no param schema, so its params pass through verbatim and must already be strings.
+
 ---
 
 ## Chain
