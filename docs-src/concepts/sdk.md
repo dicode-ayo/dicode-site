@@ -527,6 +527,59 @@ Unlike `runs.replay` and `runs.get_input`, neither call is bounded by an ownersh
 
 ---
 
+## dicode.runs.list_expired
+
+List runs whose persisted input has passed its retention window — rows where `input_stored_at` is older than `before_ts` and the input isn't pinned (see `runs.pin_input` above; a pinned run never shows up here even if it's technically overdue). Used by the run-inputs-cleanup buildin to find work for a retention sweep.
+
+Deno-only today — the Python SDK has no `list_expired`/`delete_input`/`delete_inputs` equivalents.
+
+```ts [Deno]
+const expired = await dicode.runs.list_expired({ before_ts: Math.floor(Date.now() / 1000) - 86400 });
+// expired: [{ runID, storageKey, storedAt }, ...]
+
+// before_ts defaults to "now" when omitted
+const dueNow = await dicode.runs.list_expired();
+```
+
+```yaml
+permissions:
+  dicode:
+    runs_list_expired: true
+```
+
+`list_expired` is capability-gated only — no ownership check. Any task granted `runs_list_expired` sees expired-input rows system-wide, not just its own runs; the same sharp edge as `runs.pin_input`/`runs.unpin_input` above.
+
+---
+
+## dicode.runs.delete_input / dicode.runs.delete_inputs
+
+Drop a run's persisted input — the storage blob (when a blob store is configured) and the `input_storage_key`/`input_size`/`input_stored_at`/`input_redacted_fields` columns on the run row. `delete_inputs` is the batched sibling, added in [dicode-core#844](https://github.com/dicode-ayo/dicode-core/pull/844) (closing [#819](https://github.com/dicode-ayo/dicode-core/issues/819)) to collapse a retention sweep's per-row IPC round trips — draining a large backlog one `delete_input` call at a time was paying one round trip *and* one `UPDATE` per row.
+
+Deno-only today — the Python SDK has no `list_expired`/`delete_input`/`delete_inputs` equivalents.
+
+```ts [Deno]
+await dicode.runs.delete_input(runID);
+// -> { ok: true }
+
+const { count, failed } = await dicode.runs.delete_inputs(runIDs);
+// count: number of rows actually cleared (unknown/already-cleared IDs are silent no-ops)
+// failed: run IDs whose blob delete failed and were left uncleared for the next sweep, if any
+```
+
+```yaml
+permissions:
+  dicode:
+    runs_delete_input: true
+```
+
+`delete_inputs` reuses `runs_delete_input` — the same permission as the singular form, not a separate capability. It's the same action on more rows, gated identically.
+
+`delete_inputs` caps a single call at **5000 run IDs**; a caller with a bigger backlog issues more calls. Unlike `delete_input` — which clears the row's columns even when its blob delete fails, on the theory that a single failure is contained and rare — a batch failure is deliberately *not* cleared: a run ID whose blob delete fails is left out of that call's cleared set (and shows up in `failed`) so it's picked up again on the next sweep instead of permanently leaking its blob with no retry path.
+
+Neither call is bounded by an ownership check — any task granted `runs_delete_input` can delete **any** run's persisted input system-wide, not just runs it owns or is chained from. The capability check is the only gate, the same sharp edge as `runs.pin_input`/`runs.unpin_input` and `runs.list_expired` above.
+
+---
+
 ## dicode.tasks.test
 
 Run a task's sibling test file (`task.test.{ts,js,py}`) and return the result. Same shape as `POST /api/tasks/{id}/test`.
