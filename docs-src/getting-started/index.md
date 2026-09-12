@@ -93,7 +93,7 @@ yourself with `--detach` (`-d`):
 dicode daemon --detach
 ```
 
-This starts `dicoded` in a session of its own (`setsid`) so it keeps running after you log out or
+This starts the daemon in a session of its own (`setsid`) so it keeps running after you log out or
 close the SSH connection, waits for the control socket to come up, then prints the pid to stop it
 with (`kill <pid>`) and the path of the log file its output is streamed to. The CLI's own
 auto-started daemon (see [First launch](#first-launch-the-setup-wizard) below) detaches the same
