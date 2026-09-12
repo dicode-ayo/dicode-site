@@ -1,6 +1,6 @@
 # Installation & Quickstart
 
-dicode is a single Go binary that runs as a background daemon (`dicoded`) with a thin CLI (`dicode`) that auto-starts the daemon on first use. No infrastructure, no accounts required. A multi-arch Docker image is also published if you'd rather run it as a container.
+dicode is a single Go binary: the same `dicode` binary runs as the background daemon (via `dicode daemon`) and as the thin CLI, which auto-starts the daemon on first use. No infrastructure, no accounts required. A multi-arch Docker image is also published if you'd rather run it as a container.
 
 ## Install
 
@@ -11,19 +11,19 @@ Download the latest release for your platform from [GitHub Releases](https://git
 ```sh [Linux (amd64)]
 curl -Lo dicode.tar.gz https://github.com/dicode-ayo/dicode-core/releases/latest/download/dicode-linux-amd64.tar.gz
 tar xzf dicode.tar.gz
-sudo mv dicode dicoded /usr/local/bin/
+sudo mv dicode /usr/local/bin/
 ```
 
 ```sh [macOS (Apple Silicon)]
 curl -Lo dicode.tar.gz https://github.com/dicode-ayo/dicode-core/releases/latest/download/dicode-darwin-arm64.tar.gz
 tar xzf dicode.tar.gz
-sudo mv dicode dicoded /usr/local/bin/
+sudo mv dicode /usr/local/bin/
 ```
 
 ```sh [macOS (Intel)]
 curl -Lo dicode.tar.gz https://github.com/dicode-ayo/dicode-core/releases/latest/download/dicode-darwin-amd64.tar.gz
 tar xzf dicode.tar.gz
-sudo mv dicode dicoded /usr/local/bin/
+sudo mv dicode /usr/local/bin/
 ```
 
 :::
@@ -104,7 +104,7 @@ keeps the console's process group and exits when that console closes.
 
 ## First launch: the setup wizard
 
-You do not need to start the daemon manually, and you do not need to write `dicode.yaml` by hand. Any CLI command auto-starts `dicoded` in the background:
+You do not need to start the daemon manually, and you do not need to write `dicode.yaml` by hand. Any CLI command auto-starts the daemon in the background:
 
 ```sh
 dicode list
