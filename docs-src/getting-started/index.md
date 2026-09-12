@@ -1,6 +1,6 @@
 # Installation & Quickstart
 
-dicode is a single Go binary that runs as a background daemon (`dicoded`) with a thin CLI (`dicode`) that auto-starts the daemon on first use. No infrastructure, no accounts required. A multi-arch Docker image is also published if you'd rather run it as a container.
+dicode is a single Go binary: the same `dicode` binary runs as the background daemon (via `dicode daemon`) and as the thin CLI, which auto-starts the daemon on first use. No infrastructure, no accounts required. A multi-arch Docker image is also published if you'd rather run it as a container.
 
 ## Install
 
@@ -11,19 +11,19 @@ Download the latest release for your platform from [GitHub Releases](https://git
 ```sh [Linux (amd64)]
 curl -Lo dicode.tar.gz https://github.com/dicode-ayo/dicode-core/releases/latest/download/dicode-linux-amd64.tar.gz
 tar xzf dicode.tar.gz
-sudo mv dicode dicoded /usr/local/bin/
+sudo mv dicode /usr/local/bin/
 ```
 
 ```sh [macOS (Apple Silicon)]
 curl -Lo dicode.tar.gz https://github.com/dicode-ayo/dicode-core/releases/latest/download/dicode-darwin-arm64.tar.gz
 tar xzf dicode.tar.gz
-sudo mv dicode dicoded /usr/local/bin/
+sudo mv dicode /usr/local/bin/
 ```
 
 ```sh [macOS (Intel)]
 curl -Lo dicode.tar.gz https://github.com/dicode-ayo/dicode-core/releases/latest/download/dicode-darwin-amd64.tar.gz
 tar xzf dicode.tar.gz
-sudo mv dicode dicoded /usr/local/bin/
+sudo mv dicode /usr/local/bin/
 ```
 
 :::
@@ -83,9 +83,28 @@ volumes:
 
 Multi-arch (`linux/amd64` + `linux/arm64`) for every published tag.
 
+## Running in the background
+
+If you're not using Docker -- for example on a bare VPS, a homelab box, or over an SSH session that
+you don't want to hold open -- run the daemon directly with `dicode daemon` and background it
+yourself with `--detach` (`-d`):
+
+```sh
+dicode daemon --detach
+```
+
+This starts the daemon in a session of its own (`setsid`) so it keeps running after you log out or
+close the SSH connection, waits for the control socket to come up, then prints the pid to stop it
+with (`kill <pid>`) and the path of the log file its output is streamed to. The CLI's own
+auto-started daemon (see [First launch](#first-launch-the-setup-wizard) below) detaches the same
+way, so a stray terminal hangup won't take it down either.
+
+On Windows, `--detach` still backgrounds the daemon, but there's no session to detach into -- it
+keeps the console's process group and exits when that console closes.
+
 ## First launch: the setup wizard
 
-You do not need to start the daemon manually, and you do not need to write `dicode.yaml` by hand. Any CLI command auto-starts `dicoded` in the background:
+You do not need to start the daemon manually, and you do not need to write `dicode.yaml` by hand. Any CLI command auto-starts the daemon in the background:
 
 ```sh
 dicode list
@@ -182,6 +201,7 @@ The daemon clones the repo, polls for changes at the configured interval, and re
 | Command | Description |
 | --- | --- |
 | `dicode run <task-id> [key=value ...]` | Trigger a task and wait for the result. Pass params as `key=value` pairs. |
+| `dicode daemon [--detach\|-d]` | Run the daemon directly in the foreground (the default). With `--detach`/`-d`, it starts in a session of its own, waits for the control socket to come up, then prints the pid to stop it by (`kill <pid>`) and the log path its output goes to. See [Running in the background](#running-in-the-background). |
 | `dicode list` | List all registered tasks with their trigger type and last status. |
 | `dicode logs <run-id>` | Show log output for a specific run. |
 | `dicode status [task-id]` | Show daemon health, or the latest run for a specific task. |
