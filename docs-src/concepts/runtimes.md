@@ -12,6 +12,12 @@ The default and most fully featured runtime. Uses [Deno](https://deno.com/) to r
 - **Sandboxed**: Deno's permission system enforces the `permissions` block in `task.yaml`. Network, filesystem, environment, and subprocess access must be explicitly granted.
 - **SDK globals**: All [SDK globals](./sdk.md) (`params`, `kv`, `input`, `output`, `mcp`, `dicode`) are injected automatically.
 
+### Platform support
+
+dicode tasks run on Linux, macOS, and Windows. The daemon talks to a running task over a per-run IPC transport that differs by platform: a Unix domain socket in a `0700` per-run directory on Linux and macOS, and a loopback TCP port (`127.0.0.1:<port>`) on Windows, since neither the Deno nor the Python SDK can speak Unix domain sockets there.
+
+On Windows, a Deno task's effective `--allow-net` grant includes that exact `127.0.0.1:<port>` endpoint in addition to whatever hosts `permissions.net` declares -- worth knowing if you're auditing a task's effective network permissions, since it shows up as an extra entry you didn't write in `task.yaml`.
+
 ### Task structure
 
 ```
