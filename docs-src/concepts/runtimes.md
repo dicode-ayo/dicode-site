@@ -18,7 +18,7 @@ The default and most fully featured runtime. Uses [Deno](https://deno.com/) to r
 
 ### Windows `--allow-net` grant
 
-On Windows, a Deno task's effective `--allow-net` grant includes that exact `127.0.0.1:<port>` endpoint (see [Platform support](#platform-support) above) in addition to whatever hosts `permissions.net` declares -- worth knowing if you're auditing a task's effective network permissions, since it shows up as an extra entry you didn't write in `task.yaml`.
+On Windows, a Deno task whose `permissions.net` names specific hosts gets that exact `127.0.0.1:<port>` endpoint (see [Platform support](#platform-support) above) prepended to its effective `--allow-net` grant -- worth knowing if you're auditing a task's effective network permissions, since it shows up as an extra entry you didn't write in `task.yaml`. A task declaring `permissions.net: ["*"]` doesn't get a separate loopback entry: it already receives a bare `--allow-net` with no host list, since the whole network is open.
 
 ### Task structure
 
