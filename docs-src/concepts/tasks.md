@@ -503,7 +503,7 @@ Everything else is taken literally.
 Resolution order: built-ins → process env → **leave literal** (unknown `${VAR}` references stay in place so bugs surface loudly rather than silently collapsing to an empty string).
 
 ::: tip Prefer `${TEMPDIR}` / `${CACHEDIR}` over hardcoded paths
-Use `${TEMPDIR}` and `${CACHEDIR}` instead of hardcoding `/tmp` or `~/.cache` in `permissions.fs[].path`. Those literals only name the right directory on Linux — on macOS or Windows a task granted the literal path fails with a permission error at runtime instead of failing to load.
+Use `${TEMPDIR}` and `${CACHEDIR}` instead of hardcoding `/tmp` or `~/.cache` in `permissions.fs[].path`. Those literals are only the conventional default on Linux — and can differ even there if `$TMPDIR` or `$XDG_CACHE_HOME` is set — while on macOS or Windows a task granted the literal path fails with a permission error at runtime instead of failing to load.
 :::
 
 ::: warning Docker fields: daemon env vars are not a fallback
