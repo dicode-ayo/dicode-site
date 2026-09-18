@@ -281,9 +281,33 @@ Returns the review surface for a pending task (`Gate.State()`): the resolved tas
   "runtime": "deno",
   "triggers": [ ... ],
   "permissions": { ... },
-  "files": [ ... ]
+  "files": [
+    {
+      "path": "task.js",
+      "kind": "file",
+      "size": 842,
+      "hash": "9c1d…",
+      "status": "changed"
+    },
+    {
+      "path": "task.yaml",
+      "kind": "file",
+      "size": 210,
+      "hash": "5e7a…"
+    }
+  ]
 }
 ```
+
+Each entry's `path`, `kind` (`file`, `symlink`, or `missing`), `size`, and `hash` are the same file inventory `GET /api/tasks/{id}` implies — this surface never displays file content itself, only names, sizes, and hashes.
+
+`status` is an additional, optional field on each entry. It appears **only** on a *pending* task's review — an armed task's current-state render never carries it:
+
+- `"new"` — the file did not exist at the task's last-approved commit.
+- `"changed"` — the file existed at the last-approved commit, but its content differs from the commit the pending content was observed at.
+- **Absent** — either the file is unchanged, or its status could not be determined: there is no prior approval to diff against, the source isn't git-backed, or the git lookup itself failed. These two cases are indistinguishable on the wire, and the absence of `status` must never be read as an assertion that the file *is* unchanged.
+
+`status` is computed by diffing git blob hashes for that path between the last-approved commit and the commit the pending content was observed at — no blob content is ever read for this comparison, only git tree/blob hashes are compared.
 
 **Auth:** session cookie or Bearer API key — same route group as `POST /api/tasks/{id}/approve`.
 
