@@ -2,6 +2,10 @@
 
 dicode supports four runtimes for task execution. Each runtime is declared in `task.yaml` with the `runtime` field.
 
+## Platform support
+
+dicode tasks run on Linux, macOS, and Windows. The daemon talks to a running task over a per-run IPC transport that differs by platform: a Unix domain socket in a `0700` per-run directory on Linux and macOS, and a loopback TCP port (`127.0.0.1:<port>`) on Windows, since neither the Deno nor the Python SDK can speak Unix domain sockets there. This applies to both the Deno and Python runtimes; the Windows-specific `--allow-net` implication for Deno is called out in the Deno section below.
+
 ## Deno (TypeScript / JavaScript)
 
 The default and most fully featured runtime. Uses [Deno](https://deno.com/) to run TypeScript or JavaScript tasks in a sandboxed environment.
@@ -11,6 +15,10 @@ The default and most fully featured runtime. Uses [Deno](https://deno.com/) to r
 - **npm imports**: Use any npm package directly with the `npm:` specifier.
 - **Sandboxed**: Deno's permission system enforces the `permissions` block in `task.yaml`. Network, filesystem, environment, and subprocess access must be explicitly granted.
 - **SDK globals**: All [SDK globals](./sdk.md) (`params`, `kv`, `input`, `output`, `mcp`, `dicode`) are injected automatically.
+
+### Windows `--allow-net` grant
+
+On Windows, a Deno task gets that exact `127.0.0.1:<port>` endpoint (see [Platform support](#platform-support) above) prepended to its effective `--allow-net` grant -- even one that declares no `permissions.net` at all, since it still needs a narrow path to reach the daemon. Worth knowing if you're auditing a task's effective network permissions: it shows up as an extra entry you didn't write in `task.yaml`. The one exception is `permissions.net: ["*"]` (unrestricted network) -- that already produces a bare `--allow-net` with no host list, so there's no separate loopback entry to add.
 
 ### Task structure
 
@@ -109,6 +117,8 @@ Runs tasks using [uv](https://docs.astral.sh/uv/), the fast Python package manag
 - **PEP 723 inline dependencies**: Declare dependencies directly in your script -- no `requirements.txt` or `pyproject.toml` needed.
 - **Async detection**: If your script defines an `async def main()` function, the runtime detects it and runs `main()` via `asyncio.run()` with no arguments — SDK globals are available as module-level globals, same as sync tasks.
 - **SDK globals**: All globals (`log`, `params`, `env`, `kv`, `input`, `output`, `mcp`, `dicode`) are available at module level.
+
+See [Platform support](#platform-support) above for how the per-run IPC transport (Unix domain socket vs. loopback TCP) differs on Windows -- the same carve-out applies to the Python runtime's `dicode_sdk` module.
 
 ### Task structure
 
