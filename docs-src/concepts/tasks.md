@@ -497,8 +497,14 @@ Everything else is taken literally.
 | `${HOME}` | User home directory |
 | `${SOURCE_ROOT}` | Absolute path to the source root (injected by the source loader) |
 | `${SKILLS_DIR}` | Auto-derived as `${SOURCE_ROOT}/skills` |
+| `${TEMPDIR}` | Absolute path to the system temp directory (`os.TempDir()` — `$TMPDIR` or `/tmp` on Unix, `GetTempPath` on Windows) |
+| `${CACHEDIR}` | Absolute path to the user cache directory (`os.UserCacheDir()` — `$XDG_CACHE_HOME` or `~/.cache` on Linux, `~/Library/Caches` on macOS, `%LOCALAPPDATA%` on Windows) |
 
 Resolution order: built-ins → process env → **leave literal** (unknown `${VAR}` references stay in place so bugs surface loudly rather than silently collapsing to an empty string).
+
+::: tip Prefer `${TEMPDIR}` / `${CACHEDIR}` over hardcoded paths
+Use `${TEMPDIR}` and `${CACHEDIR}` instead of hardcoding `/tmp` or `~/.cache` in `permissions.fs[].path`. Those literals are only the conventional default on Linux — and can differ even there if `$TMPDIR` or `$XDG_CACHE_HOME` is set — while on macOS or Windows a task granted the literal path fails with a permission error at runtime instead of failing to load.
+:::
 
 ::: warning Docker fields: daemon env vars are not a fallback
 For all `docker.*` fields listed above, `envFallback` is **off**: built-in variables (`${TASK_DIR}`, `${DATADIR}`, etc.) are expanded, but daemon process environment variables are **not** accessible as a fallback. An unrecognised `${VAR}` reference is left as-is rather than silently replaced with a daemon env var value.
