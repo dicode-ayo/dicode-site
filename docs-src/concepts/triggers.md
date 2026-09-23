@@ -291,6 +291,45 @@ log.info(f"Upstream returned count: {data['count']}")
 
 :::
 
+This raw pass-through is what you get by default. Add a `params:` block to the edge to also merge in your own keys and a handful of engine-reserved ones describing the upstream run:
+
+```yaml
+# alerts/task.yaml -- fires when data-fetch succeeds
+trigger:
+  chain:
+    from: data-fetch
+    params:
+      destination: "#alerts"
+      verbose: true
+```
+
+Inside `alerts`, `input` is now a map instead of the raw return value:
+
+```typescript
+input.destination   // "#alerts"          (your param)
+input.verbose       // true                (your param)
+input.output        // data-fetch's return value
+input.taskID        // "data-fetch"        (engine-reserved)
+input.runID         // upstream run ID
+input.status        // "success"
+input._chain_depth  // hop count
+input.run_url       // link to data-fetch's run in the web UI
+```
+
+::: tip Omitting `params` keeps the raw shape unchanged
+An edge with no `params:` block gets exactly the unwrapped return value from the first example above -- adding `params` is opt-in and backwards compatible with chains that already exist.
+:::
+
+**Reserved keys.** `taskID`, `runID`, `status`, `output`, `_chain_depth`, and `run_url` are the six keys the engine stamps into `input` whenever it's wrapped. A `params` entry that reuses one of these names is rejected at config-load, so pick a different key for your own data.
+
+**`trigger.chain` vs. `on_failure_chain`.** The two behave differently around this wrapping. On `trigger.chain`, wrapping is gated by whether the edge declares any `params` at all -- a bare edge (like the first example) gets the raw, unwrapped output, while an edge with even one param gets the full wrapped shape. `on_failure_chain` has no such gate: a failure-chain fire always wraps `input` and stamps all six reserved keys, whether or not `on_failure_chain.params` declares any params of its own.
+
+**`run_url`.** Links to the *upstream* run that fired the chain (`input.runID`) -- never the chained task's own run. It's built from `server.public_url`; if that's unset, the link falls back to a `localhost` address rather than being left out, so a downstream notification task (Slack, Telegram, email) can always render a clickable link back to the run that triggered it. It's present for the whole of normal daemon operation.
+
+::: tip `${input.…}` interpolation in `params` values
+A `params` value can pull from the upstream's runtime state at dispatch time -- e.g. `destination: "${input.output.channel}"` -- using the same `${input.…}` token grammar documented for [pipeline stage input threading](./pipelines.md#stage-input-threading), plus a chain-only `${input.params.<name>}` form that reads one of the upstream's own caller-supplied params.
+:::
+
 ### Chaining multiple tasks
 
 Build pipelines by chaining tasks in sequence:
