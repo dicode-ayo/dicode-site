@@ -110,6 +110,8 @@ Three ways to find what is held:
 task my-task/processor is pending approval (hash: a3f2…); approve via UI, CLI, or: POST /api/tasks/my-task/processor/approve
 ```
 
+To inspect an armed task's resolved spec — its effective permissions, triggers, and the rest of the review surface — outside the brief pend/approve window, use [`GET /api/tasks/{id}/state`](#get-api-tasks-id-state) instead of `/pending-state`; it never 409s regardless of approval status.
+
 ## Approving tasks
 
 ### 1. Web UI
@@ -295,6 +297,36 @@ Returns the review surface for a pending task (`Gate.State()`): the resolved tas
 | `503` | Approval gate not wired up |
 
 `pending_hash` is the content hash the gate observed when it held the task. Pass it back as `hash` on `POST /api/tasks/{id}/approve` to bind the approval to the version you reviewed — see below.
+
+### `GET /api/tasks/{id}/state`
+
+Returns the same review surface as `/pending-state` — runtime, triggers, effective permissions, declared env, params, and a file inventory — but **never 409s on approval status**. Where `/pending-state` errors the moment a task is no longer pending, `/state` always renders a snapshot of the task's current review surface, whatever state it's in:
+
+- If the task is currently pending, the response is identical to `/pending-state`, including a real `pending_hash`.
+- Otherwise, it resolves the task's current (armed) spec from the registry and renders it the same way, with `pending_hash` always **empty** — so a snapshot of an already-armed task can never be replayed into `POST /api/tasks/{id}/approve` as though it were a live pending review.
+
+Use this endpoint to inspect what an armed task can reach — its effective permissions, triggers, etc. — outside the brief pend/approve window that `/pending-state` is limited to.
+
+```json
+{
+  "task_id": "my-source/my-task",
+  "pending_hash": "",
+  "runtime": "deno",
+  "triggers": [ ... ],
+  "permissions": { ... },
+  "files": [ ... ]
+}
+```
+
+**Auth:** session cookie or Bearer API key — same route group as `/pending-state` and `POST /api/tasks/{id}/approve`.
+
+| Status | Meaning |
+|---|---|
+| `200` | State returned, whether the task is pending or armed |
+| `404` | Task ID not found in the registry |
+| `503` | Approval gate not wired up |
+
+There is no `409` case for this endpoint — that's the whole point of it versus `/pending-state`: it never errors based on approval status, so a caller can always fetch a task's current review surface without first checking whether it happens to be pending.
 
 ### `POST /api/tasks/{id}/approve`
 
