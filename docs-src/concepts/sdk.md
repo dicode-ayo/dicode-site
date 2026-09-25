@@ -559,7 +559,9 @@ Deno-only today — the Python SDK has no `list_expired`/`delete_input`/`delete_
 
 ```ts [Deno]
 await dicode.runs.delete_input(runID);
-// -> { ok: true }
+// -> { ok: true } on success. If the underlying blob delete fails, the call
+// rejects with an error instead -- the row's input metadata is left intact
+// so the next retention sweep retries it (see dicode-core#861).
 
 const { count, failed } = await dicode.runs.delete_inputs(runIDs);
 // count: number of rows actually cleared (unknown/already-cleared IDs are silent no-ops)
@@ -574,7 +576,7 @@ permissions:
 
 `delete_inputs` reuses `runs_delete_input` — the same permission as the singular form, not a separate capability. It's the same action on more rows, gated identically.
 
-`delete_inputs` caps a single call at **5000 run IDs**; a caller with a bigger backlog issues more calls. Unlike `delete_input` — which clears the row's columns even when its blob delete fails, on the theory that a single failure is contained and rare — a batch failure is deliberately *not* cleared: a run ID whose blob delete fails is left out of that call's cleared set (and shows up in `failed`) so it's picked up again on the next sweep instead of permanently leaking its blob with no retry path.
+`delete_inputs` caps a single call at **5000 run IDs**; a caller with a bigger backlog issues more calls. `delete_input` and `delete_inputs` now share the same on-failure behavior ([dicode-core#861](https://github.com/dicode-ayo/dicode-core/pull/861), closing [#845](https://github.com/dicode-ayo/dicode-core/issues/845)): a run whose blob delete fails is deliberately left uncleared rather than having its row wiped, so it's picked up again on the next retention sweep instead of permanently leaking its blob with no retry path. The singular form surfaces this to the caller as an error (not `{ ok: true }`); the batched form leaves that run ID out of the call's cleared set and reports it in `failed` instead of failing the whole call.
 
 Neither call is bounded by an ownership check — any task granted `runs_delete_input` can delete **any** run's persisted input system-wide, not just runs it owns or is chained from. The capability check is the only gate, the same sharp edge as `runs.pin_input`/`runs.unpin_input` and `runs.list_expired` above.
 
