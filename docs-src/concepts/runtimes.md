@@ -351,6 +351,14 @@ To opt in to a specific exception, add a `container_security:` block to `dicode.
 When `permissions.net` is empty and the task publishes no `docker.ports`, the container starts with `network_mode: none` — no outbound network access. Declare `permissions.net: ["*"]` for unrestricted network, or list specific hosts (allowed but not yet per-host enforced; a warning is logged). An explicit `docker.network_mode` always takes precedence.
 :::
 
+### Testing
+
+`dicode task test` (and `POST /api/tasks/{id}/test`) runs a build stage
+named `test` in the task's `Dockerfile` (`FROM <base> AS test`), then runs
+the resulting image and reports the container's exit code as the pass/fail
+signal. See [SDK Globals — Running task tests over HTTP](./sdk.md#running-task-tests-over-http)
+for the request/response shape and its Docker/Podman caveats.
+
 ---
 
 ## Podman
@@ -362,6 +370,7 @@ A rootless, daemonless alternative to Docker. Uses the same `docker:` config blo
 - **Drop-in replacement**: If you can run it with Docker, you can run it with Podman.
 - **Security floor**: Certain host-facing options (`network_mode: host`, dangerous `cap_add`, insecure `security_opt`, sensitive bind mounts) are rejected by default. See [Container Security](/getting-started/configuration#container-security) for details and opt-in configuration.
 - **Network isolation**: Same zero-default as Docker — containers with empty `permissions.net` and no published ports start with `network_mode: none`. See the Docker section above.
+- **Testing**: Same `Dockerfile` `test`-stage convention as Docker — see [Testing](#testing) above.
 
 ```yaml
 apiVersion: dicode/v1

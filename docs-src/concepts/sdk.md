@@ -1041,7 +1041,11 @@ Return values are:
 ## Running task tests over HTTP
 
 Tasks may ship a sibling `task.test.ts` (or `task.test.js` / `.mjs`) file that
-exercises the task's logic with mocked SDK globals. The dicode daemon exposes
+exercises the task's logic with mocked SDK globals. Python tasks ship the
+equivalent `task.test.py`, run via `uv run` + pytest. Docker and Podman tasks
+have no `task.test.*` sibling; instead their `Dockerfile` declares a build
+stage named `test` that gets built and run as the task's test (see
+[Runtime support](#runtime-support) below). The dicode daemon exposes
 this test harness over a REST endpoint so CI scripts, MCP clients, and other
 external automation can invoke it without the CLI:
 
@@ -1104,6 +1108,24 @@ field, not the HTTP code:
 
 ### Runtime support
 
-Currently only the **deno** runtime is supported (see `Runtime` table in
-[Runtimes](./runtimes.md)). Tasks using `python`, `docker`, or `podman`
-return HTTP 200 with `status: "errored"` and an explanatory error message.
+All four runtimes are supported: **deno**, **python**, **docker**, and
+**podman**.
+
+- **deno** runs the sibling `task.test.ts`/`.js`/`.mjs` through `deno test`.
+- **python** runs the sibling `task.test.py` through `uv run` + pytest.
+- **docker**/**podman** build and run a build stage named `test` in the
+  task's `Dockerfile` (`FROM <base> AS test`) — there's no `task.test.*`
+  file for these runtimes, and no mock harness, since a container test runs
+  the actual built image. `dicode task test` builds that stage explicitly
+  (`docker build --target test` / `podman build --target test`) and runs
+  the resulting image, treating the container's exit code as the pass/fail
+  signal — the same way a shell script's own exit code would. There's no
+  per-test summary to parse out of arbitrary container output the way there
+  is for Deno's or pytest's own summary line, so the response's `passed`
+  and `failed` fields stay `0` for Docker/Podman regardless of outcome;
+  `exit_code` and `stdout`/`output` carry the actual result.
+
+A task with no test file for its runtime — a missing `task.test.{ts,js,mjs,py}`
+for Deno/Python, or a Docker/Podman task with no `docker.build` config, no
+Dockerfile, or a Dockerfile with no `test` stage — returns HTTP 200 with
+`status: "errored"` and an explanatory error message.
