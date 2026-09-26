@@ -141,7 +141,7 @@ The daemon can generate a single-use tokenized approve URL — typically deliver
 https://your-dicode-host/approve/<token>
 ```
 
-- `GET /approve/<token>` — renders a confirmation page with the task ID and, when available, a commit-range summary linking to the git host's compare view. Safe for link prefetchers; does **not** consume the token.
+- `GET /approve/<token>` — renders a confirmation page with the task ID and, when available, a "what moved" summary: the commit range, how many commits fall in it (first-parent history, capped at a lower bound like "500+" so a very large range isn't walked in full), and a link to the git host's compare view. Safe for link prefetchers; does **not** consume the token.
 - `POST /approve/<token>` — redeems the token and approves the task.
 
 Token properties:
