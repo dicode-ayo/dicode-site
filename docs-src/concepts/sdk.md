@@ -1131,7 +1131,8 @@ All four runtimes are supported: **deno**, **python**, **docker**, and
   declared last is rejected rather than treated as valid. Avoid building a
   later stage `FROM test`, too — it inherits `test`'s `CMD`/`ENTRYPOINT`.
 
-A task with no test file for its runtime — a missing `task.test.{ts,js,mjs,py}`
-for Deno/Python, or a Docker/Podman task with no `docker.build` config, no
-Dockerfile, or a Dockerfile with no `test` stage — returns HTTP 200 with
+A task with no test file for its runtime — a missing `task.test.{ts,js,mjs}`
+for Deno (or any runtime other than Python), a missing `task.test.py` for
+Python specifically, or a Docker/Podman task with no `docker.build` config,
+no Dockerfile, or a Dockerfile with no `test` stage — returns HTTP 200 with
 `status: "errored"` and an explanatory error message.
