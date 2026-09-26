@@ -4,7 +4,7 @@ dicode supports four runtimes for task execution. Each runtime is declared in `t
 
 ## Platform support
 
-dicode tasks run on Linux, macOS, and Windows. The daemon talks to a running task over a per-run IPC transport that differs by platform: a Unix domain socket in a `0700` per-run directory on Linux and macOS, and a loopback TCP port (`127.0.0.1:<port>`) on Windows, since neither the Deno nor the Python SDK can speak Unix domain sockets there. This applies to both the Deno and Python runtimes; the Windows-specific `--allow-net` implication for Deno is called out in the Deno section below.
+dicode tasks run on Linux, macOS, and Windows. The daemon talks to a running task over a per-run IPC transport that differs by platform: a Unix domain socket in a `0700` per-run directory on Linux and macOS, and a loopback TCP port (`127.0.0.1:<port>`) on Windows, since neither the Deno nor the Python SDK can speak Unix domain sockets there. This applies to both the Deno and Python runtimes; the implicit `--allow-net` grant this transport implies for Deno, on both platforms, is called out in the Deno section below.
 
 ## Deno (TypeScript / JavaScript)
 
@@ -16,9 +16,15 @@ The default and most fully featured runtime. Uses [Deno](https://deno.com/) to r
 - **Sandboxed**: Deno's permission system enforces the `permissions` block in `task.yaml`. Network, filesystem, environment, and subprocess access must be explicitly granted.
 - **SDK globals**: All [SDK globals](./sdk.md) (`params`, `kv`, `input`, `output`, `mcp`, `dicode`) are injected automatically.
 
-### Windows `--allow-net` grant
+### Implicit `--allow-net` grant for the IPC socket
 
-On Windows, a Deno task gets that exact `127.0.0.1:<port>` endpoint (see [Platform support](#platform-support) above) prepended to its effective `--allow-net` grant -- even one that declares no `permissions.net` at all, since it still needs a narrow path to reach the daemon. Worth knowing if you're auditing a task's effective network permissions: it shows up as an extra entry you didn't write in `task.yaml`. The one exception is `permissions.net: ["*"]` (unrestricted network) -- that already produces a bare `--allow-net` with no host list, so there's no separate loopback entry to add.
+Every Deno task needs a narrow path back to the daemon's per-run IPC control channel (see [Platform support](#platform-support) above), so dicode prepends one extra entry to the task's effective `--allow-net` grant for that endpoint -- even a task that declares no `permissions.net` at all. Which entry depends on platform and, on Linux/macOS, on the pinned Deno version:
+
+- **Windows**: the task's `127.0.0.1:<port>` loopback endpoint is prepended.
+- **Linux/macOS, on Deno 2.9.0 and later**: a `unix:<socket-path>` entry, scoped only to that one socket path, is prepended instead -- Deno 2.9 gates `Deno.connect({ transport: "unix" })` behind net permission, so the daemon's control socket now needs an explicit grant too. It is not a general network grant.
+- **Linux/macOS, below Deno 2.9.0** (including a task pinned to an older release via [`runtimes.deno.version`](/getting-started/configuration#runtimes)): no such entry is added. Older Deno releases don't gate the Unix transport this way, and reject the `unix:` scope syntax outright.
+
+Worth knowing if you're auditing a task's effective network permissions: it shows up as an extra entry you didn't write in `task.yaml`. The one exception, on either platform, is `permissions.net: ["*"]` (unrestricted network) -- that already produces a bare `--allow-net` with no host list, so there's no separate entry to add.
 
 ### Task structure
 
