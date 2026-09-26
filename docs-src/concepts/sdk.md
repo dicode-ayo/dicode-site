@@ -1123,7 +1123,13 @@ All four runtimes are supported: **deno**, **python**, **docker**, and
   per-test summary to parse out of arbitrary container output the way there
   is for Deno's or pytest's own summary line, so the response's `passed`
   and `failed` fields stay `0` for Docker/Podman regardless of outcome;
-  `exit_code` and `stdout`/`output` carry the actual result.
+  `exit_code` and `stdout`/`output` carry the actual result. `test` must
+  not be the Dockerfile's last stage — production Docker/Podman builds
+  never pass `--target`, so a plain build always builds whatever stage is
+  last, and a trailing `test` stage would make production silently build
+  and run the test image instead of the real one. A Dockerfile with `test`
+  declared last is rejected rather than treated as valid. Avoid building a
+  later stage `FROM test`, too — it inherits `test`'s `CMD`/`ENTRYPOINT`.
 
 A task with no test file for its runtime — a missing `task.test.{ts,js,mjs,py}`
 for Deno/Python, or a Docker/Podman task with no `docker.build` config, no
