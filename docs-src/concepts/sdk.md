@@ -584,7 +584,7 @@ Neither call is bounded by an ownership check — any task granted `runs_delete_
 
 ## dicode.tasks.test
 
-Run a task's sibling test file (`task.test.{ts,js,py}`) and return the result. Same shape as `POST /api/tasks/{id}/test`.
+Run a task's sibling test file (`task.test.{ts,js,py}`) and return the result — or, for Docker/Podman tasks, which have no sibling test file, build and run the Dockerfile's `test` build stage instead (see [Runtime support](#runtime-support)). Same shape as `POST /api/tasks/{id}/test`.
 
 ::: code-group
 
