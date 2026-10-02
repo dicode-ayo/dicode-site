@@ -433,6 +433,11 @@ Re-fire an earlier run with its persisted input. The new run carries `triggerSou
 
 Used by the auto-fix loop to retry a failed run after an AI agent has patched the source. Requires run-input persistence.
 
+The replay runs with the fire-time params of the original run, restored from its persisted input (string params only):
+
+- Params the input redactor masked at rest (secret-looking names such as `api_token` or `password`) are **not** restored. They fall back to the task's declared `default`, or fail preflight with `params_invalid` if the param is `required`. The redaction placeholder is never injected.
+- When replaying against a different task (`task_name` / the second argument), no params are restored.
+
 ::: code-group
 
 ```ts [Deno]

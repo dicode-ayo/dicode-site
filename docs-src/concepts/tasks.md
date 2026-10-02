@@ -382,7 +382,7 @@ params:
 | `default` | Default value if not provided |
 | `required` | If `true`, the run is rejected before dispatch when the param is missing — see below |
 
-`required` is enforced on every fire path (cron, webhook, manual, chain, resume, pipeline stage, daemon, provider, replay, input storage, `if_missing` prereqs) — not only by `dicode task test`. A run with an unsatisfied required param fails *before* the task body ever executes; the run finalizes with a categorized `fail_reason` in the log/audit trail, e.g. `params_invalid: title, body are required`.
+`required` is enforced on every fire path (cron, webhook, manual, chain, resume, pipeline stage, daemon, provider, replay, input storage, `if_missing` prereqs) — not only by `dicode task test`. A run with an unsatisfied required param fails *before* the task body ever executes; the run finalizes with a categorized `fail_reason` in the log/audit trail, e.g. `params_invalid: title, body are required`. On replay, params the input redactor masked at rest (e.g. `api_token`) are not restored, so a `required` one fails this check unless it has a default.
 
 A param's effective value is the fire's override wherever that key is present, else the declared default. A key the fire simply omits falls back to the default. A key the fire supplies as `""` does *not* — the override replaces the default rather than falling back to it, so an empty string still counts as missing. This matters when piping a possibly-empty `${...}` interpolation into a chain or pipeline param: a resolved-empty upstream value will trip `required` even though a default is declared.
 
