@@ -370,6 +370,8 @@ Success chains have a maximum depth of **10 hops** past the root trigger. The ca
 Failure chains have a configurable depth cap with a default of **2** (`on_failure_chain.max_depth` in `task.yaml`). Both caps prevent infinite loops caused by misconfigured chains.
 :::
 
+Failure chains pass `input` only, so a target with a `required` param and no `default` is flagged at source resolve — see [Params](./tasks.md#params).
+
 ---
 
 ## Daemon

@@ -62,6 +62,8 @@ A pipeline does **not** have a daemon trigger. It becomes daemon-shaped *implici
 
 A pipeline accepts `manual`, `cron`, `webhook` (with optional `webhook_secret` / `auth`), and `chain`. It does **not** accept `daemon`. As with `kind: Task`, at most one trigger type may be set.
 
+A cron-triggered pipeline fires every stage without fire-time params, so a stage task with a `required` param and no `default` is flagged at source resolve unless the stage's `overrides.params` supplies one — see [Params](./tasks.md#params).
+
 ## Sequential semantics
 
 `subtype: sequential` runs the stages in declaration order:
