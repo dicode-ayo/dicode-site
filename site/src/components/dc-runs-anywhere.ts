@@ -1,14 +1,14 @@
 import { LitElement, html } from "lit";
 import { customElement } from "lit/decorators.js";
 
-import appleIcon from "@iconify-icons/logos/apple.js";
-import linuxIcon from "@iconify-icons/logos/linux-tux.js";
-import windowsIcon from "@iconify-icons/logos/microsoft-windows-icon.js";
-import raspberryPiIcon from "@iconify-icons/logos/raspberry-pi.js";
-import dockerIcon from "@iconify-icons/logos/docker-icon.js";
-import kubernetesIcon from "@iconify-icons/logos/kubernetes.js";
-import postgresIcon from "@iconify-icons/logos/postgresql.js";
-import sqliteIcon from "@iconify-icons/logos/sqlite.js";
+import appleIcon from "@iconify-icons/logos/apple";
+import linuxIcon from "@iconify-icons/logos/linux-tux";
+import windowsIcon from "@iconify-icons/logos/microsoft-windows-icon";
+import raspberryPiIcon from "@iconify-icons/logos/raspberry-pi";
+import dockerIcon from "@iconify-icons/logos/docker-icon";
+import kubernetesIcon from "@iconify-icons/logos/kubernetes";
+import postgresIcon from "@iconify-icons/logos/postgresql";
+import sqliteIcon from "@iconify-icons/logos/sqlite";
 
 import { renderIcon } from "../utils/icon.js";
 

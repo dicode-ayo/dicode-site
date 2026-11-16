@@ -1,10 +1,10 @@
 import { LitElement, html } from "lit";
 import { customElement } from "lit/decorators.js";
 
-import denoIcon from "@iconify-icons/logos/deno.js";
-import pythonIcon from "@iconify-icons/logos/python.js";
-import dockerIcon from "@iconify-icons/logos/docker-icon.js";
-import juliaIcon from "@iconify-icons/logos/julia.js";
+import denoIcon from "@iconify-icons/logos/deno";
+import pythonIcon from "@iconify-icons/logos/python";
+import dockerIcon from "@iconify-icons/logos/docker-icon";
+import juliaIcon from "@iconify-icons/logos/julia";
 
 import { renderIcon, type IconData } from "../utils/icon.js";
 

@@ -1,7 +1,7 @@
 import { LitElement, html } from "lit";
 import { customElement, state } from "lit/decorators.js";
 
-import githubIcon from "@iconify-icons/logos/github-icon.js";
+import githubIcon from "@iconify-icons/logos/github-icon";
 import { renderIcon } from "../utils/icon.js";
 
 const REPO = "dicode-ayo/dicode-core";

@@ -1,12 +1,12 @@
 import { LitElement, html, nothing, type PropertyValues } from "lit";
 import { customElement, state } from "lit/decorators.js";
 
-import appleIcon from "@iconify-icons/logos/apple.js";
-import linuxIcon from "@iconify-icons/logos/linux-tux.js";
-import windowsIcon from "@iconify-icons/logos/microsoft-windows-icon.js";
-import dockerIcon from "@iconify-icons/logos/docker-icon.js";
-import githubIcon from "@iconify-icons/logos/github-icon.js";
-import helmIcon from "@iconify-icons/logos/helm.js";
+import appleIcon from "@iconify-icons/logos/apple";
+import linuxIcon from "@iconify-icons/logos/linux-tux";
+import windowsIcon from "@iconify-icons/logos/microsoft-windows-icon";
+import dockerIcon from "@iconify-icons/logos/docker-icon";
+import githubIcon from "@iconify-icons/logos/github-icon";
+import helmIcon from "@iconify-icons/logos/helm";
 
 import { renderIcon, type IconData } from "../utils/icon.js";
 
