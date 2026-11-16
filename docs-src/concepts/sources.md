@@ -1,6 +1,6 @@
 # Sources & TaskSets
 
-dicode watches one or more **sources** for task files and reconciles them automatically. Add a file, the task is live. Delete a file, it stops. Remove a whole source and its tasks stop with it. No restart needed.
+dicode watches one or more **sources** for task files and reconciles them automatically. Add a file, the task is live. Delete a file, it stops. Remove a whole source through the API or the **Remove** button and its tasks stop with it. No restart needed.
 
 `dicode.yaml` is itself a **root TaskSet**: every source is declared as an entry under `spec.entries`, where the key is the namespace and the `ref` block points at a `taskset.yaml` (local or git). The same parent-override mechanism that operators use inside a `taskset.yaml` works at the top level too, so you can disable or patch a built-in task directly in `dicode.yaml` without forking the taskset.
 
@@ -271,11 +271,13 @@ Load failures are merged onto the task list:
 
 Each task belongs to exactly one source. When a task is registered, the source ID is recorded. This matters for `dicode task commit` — it knows which source to commit to.
 
-Internally, each source's identity (used by the reconciler to track and tear down its watch/poll loop) is derived from **both** its `spec.entries` name and its `ref` (git URL or local path) — not the ref alone. Two entries that happen to reference the identical `taskset.yaml` path or git URL (e.g. a source added dynamically via the web UI's "Add source" form pointed at a path another entry already watches) still get distinct internal IDs, so removing one never disturbs the other's reconciler bookkeeping. Starting a second source with an ID that is already running, still starting, or still being torn down is refused; the add-source API answers 409 Conflict.
+Internally, each source's identity (used by the reconciler to track and tear down its watch/poll loop) is derived from **both** its `spec.entries` name and its `ref` (git URL or local path) — not the ref alone. Two entries that happen to reference the identical `taskset.yaml` path or git URL (e.g. a source added dynamically via the web UI's "Add source" form pointed at a path another entry already watches) still get distinct internal IDs, so removing one never disturbs the other's reconciler bookkeeping. `POST /api/settings/sources` answers 409 Conflict both when a source with that name is already configured and when a source with the same ID is still running, starting, or being torn down (for example, when re-adding a source right after removing it).
 
 ### Removing a source
 
-`DELETE /api/settings/sources/{name}` (the **Remove** button on the **Sources** page) stops the source and deregisters every task it registered before the request returns: they drop out of `GET /api/tasks`, their crons stop, and their webhooks answer 404. No restart is needed. A source removed while it is still starting is cancelled and registers nothing.
+`DELETE /api/settings/sources/{name}` (the **Remove** button in the **Sources** section of the **Configuration** page) stops the source and deregisters every task it registered before the request returns: they drop out of `GET /api/tasks`, their crons stop, and their webhooks answer 404. No restart is needed. A source removed while it is still starting is cancelled and registers nothing.
+
+Deleting a source's entry in the Raw YAML config editor does not tear the source down: its tasks stay registered until the daemon restarts, and because the entry is gone from the daemon's config, a later `DELETE /api/settings/sources/{name}` answers 404. The running daemon does not watch `dicode.yaml`, so deleting the entry from the file by hand also leaves the source running until a restart. Remove sources with `DELETE /api/settings/sources/{name}` or the **Remove** button instead.
 
 Removal also ends the source's dev mode and deletes the clones under `dev-clones/<namespace>/` that it created during the current daemon run, after its tasks are deregistered (tasks loaded from a clone run from inside it). A clone still in progress when the source is removed is cancelled, and the removal request waits for it to stop before deleting its directory. Cancellation interrupts the fetch, but the checkout that follows it does not stop early, so a removal that lands during a large checkout returns only once that checkout finishes. The empty `dev-clones/<namespace>/` directory itself is left in place, because a source re-added under the same name may already be cloning into it.
 
@@ -287,7 +289,7 @@ Deregistering a task stops new runs but does not cancel runs already in progress
 
 TaskSet sources support a **dev mode** that temporarily swaps a source ref for a local directory. This lets you develop and test changes to tasks without pushing to a remote repository.
 
-Removing the source ends its dev mode and deletes its dev clones; see [Removing a source](#removing-a-source).
+Removing the source ends its dev mode and deletes the dev clones it created during the current daemon run (local-path dev mode has no clone); see [Removing a source](#removing-a-source).
 
 ### Activating dev mode
 
