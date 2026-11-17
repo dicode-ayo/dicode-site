@@ -1,27 +1,27 @@
 import { LitElement, html } from "lit";
 import { customElement } from "lit/decorators.js";
 
-import githubIcon from "@iconify-icons/logos/github-icon.js";
-import slackIcon from "@iconify-icons/logos/slack-icon.js";
-import googleIcon from "@iconify-icons/logos/google-icon.js";
-import discordIcon from "@iconify-icons/logos/discord-icon.js";
-import gitlabIcon from "@iconify-icons/logos/gitlab.js";
-import spotifyIcon from "@iconify-icons/logos/spotify-icon.js";
-import linearIcon from "@iconify-icons/logos/linear-icon.js";
-import notionIcon from "@iconify-icons/logos/notion-icon.js";
-import stripeIcon from "@iconify-icons/logos/stripe.js";
-import salesforceIcon from "@iconify-icons/logos/salesforce.js";
-import microsoftOfficeIcon from "@iconify-icons/logos/microsoft-icon.js";
-import microsoftAzureIcon from "@iconify-icons/logos/microsoft-azure.js";
-import airtableIcon from "@iconify-icons/logos/airtable.js";
-import confluenceIcon from "@iconify-icons/logos/confluence.js";
-import linkedinIcon from "@iconify-icons/logos/linkedin-icon.js";
-import whatsappIcon from "@iconify-icons/logos/whatsapp-icon.js";
-import hubspotIcon from "@iconify-icons/logos/hubspot.js";
-import telegramIcon from "@iconify-icons/logos/telegram.js";
-import jiraIcon from "@iconify-icons/logos/jira.js";
-import dropboxIcon from "@iconify-icons/logos/dropbox.js";
-import pinterestIcon from "@iconify-icons/logos/pinterest.js";
+import githubIcon from "@iconify-icons/logos/github-icon";
+import slackIcon from "@iconify-icons/logos/slack-icon";
+import googleIcon from "@iconify-icons/logos/google-icon";
+import discordIcon from "@iconify-icons/logos/discord-icon";
+import gitlabIcon from "@iconify-icons/logos/gitlab";
+import spotifyIcon from "@iconify-icons/logos/spotify-icon";
+import linearIcon from "@iconify-icons/logos/linear-icon";
+import notionIcon from "@iconify-icons/logos/notion-icon";
+import stripeIcon from "@iconify-icons/logos/stripe";
+import salesforceIcon from "@iconify-icons/logos/salesforce";
+import microsoftOfficeIcon from "@iconify-icons/logos/microsoft-icon";
+import microsoftAzureIcon from "@iconify-icons/logos/microsoft-azure";
+import airtableIcon from "@iconify-icons/logos/airtable";
+import confluenceIcon from "@iconify-icons/logos/confluence";
+import linkedinIcon from "@iconify-icons/logos/linkedin-icon";
+import whatsappIcon from "@iconify-icons/logos/whatsapp-icon";
+import hubspotIcon from "@iconify-icons/logos/hubspot";
+import telegramIcon from "@iconify-icons/logos/telegram";
+import jiraIcon from "@iconify-icons/logos/jira";
+import dropboxIcon from "@iconify-icons/logos/dropbox";
+import pinterestIcon from "@iconify-icons/logos/pinterest";
 
 import { renderIcon, type IconData } from "../utils/icon.js";
 
