@@ -251,7 +251,7 @@ When `server.auth: true`, the dashboard, REST API, and any webhook task declarin
 
 1. `server.secret` — YAML override; highest priority
 2. `kv["auth.passphrase"]` — stored in SQLite; managed via the dashboard or API
-3. _(none)_ — on first boot with `server.auth: true` and no passphrase set, dicode auto-generates a cryptographically random 43-character passphrase and prints it to stdout **once**:
+3. _(none)_ — on first boot with `server.auth: true` and no passphrase set, dicode auto-generates a passphrase, stores its bcrypt hash in SQLite, and prints the plaintext to stdout **once**:
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
@@ -264,17 +264,43 @@ When `server.auth: true`, the dashboard, REST API, and any webhook task declarin
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
-Save it somewhere safe — the banner is not shown again. The passphrase is immediately persisted in SQLite; subsequent restarts read it from the database.
+Save it somewhere safe — the banner is not shown again. Subsequent restarts read the stored hash from the database.
+
+**Generated passphrases.** Every passphrase dicode generates — on first boot, by the [onboarding wizard](/getting-started/#first-launch-the-setup-wizard) (browser and CLI), by silent onboarding, and by `dicode auth reset-passphrase` — is a 43-character URL-safe base64 value (32 random bytes). The onboarding wizard writes its passphrase to `server.secret` in the generated `dicode.yaml`. Passphrases that are already stored or configured are left unchanged.
 
 **Rotating the passphrase.** Once you have a valid session, visit `/security` in the dashboard or `POST /api/auth/passphrase` with `{"current": "…", "passphrase": "…"}`. New passphrases must be at least 16 characters.
 
-**Recovering a lost passphrase.** Delete the stored value and restart — dicode will auto-generate and print a new one:
+**Recovering a lost passphrase.** Run:
 
 ```sh
-sqlite3 <datadir>/dicode.db "DELETE FROM kv WHERE key='auth.passphrase';"
+dicode auth reset-passphrase
 ```
 
-**YAML override behaviour.** When `server.secret` is set, the API refuses passphrase rotation requests with `409 Conflict` to prevent split-brain state between YAML and database. Remove the YAML field to manage the passphrase via the dashboard.
+The CLI talks to the daemon over its control socket (starting one in the background if none is running). The daemon generates a new passphrase, stores its bcrypt hash at `kv["auth.passphrase"]`, and the CLI prints the plaintext once:
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║  dicode — auth passphrase reset                              ║
+║                                                              ║
+║  <43-char passphrase>                                        ║
+║                                                              ║
+║  Restart dicode (Ctrl-C, then `dicode daemon`) for this to   ║
+║  take effect — the running WebUI still caches the previous   ║
+║  hash. After restart, log in at /security with this value.   ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+Restart the daemon before logging in — until then the running WebUI still accepts only the previous passphrase.
+
+Alternatively, with the daemon stopped, delete the stored value and start it again — dicode auto-generates and prints a new one:
+
+```sh
+sqlite3 <data_dir>/data.db "DELETE FROM kv WHERE key='auth.passphrase';"
+```
+
+(`<data_dir>/data.db` is the default `database.path`.)
+
+**YAML override behaviour.** When `server.secret` is set, it always wins over the stored value. The API refuses passphrase rotation requests with `409 Conflict` to prevent split-brain state between YAML and database, and neither `dicode auth reset-passphrase` nor the `sqlite3` fallback has any effect on login. To change a YAML-set passphrase, edit `server.secret` and restart; to manage it via the dashboard or the CLI instead, remove the field and restart.
 
 ### Reverse proxy (`server.trust_proxy`)
 
