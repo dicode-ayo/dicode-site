@@ -110,7 +110,7 @@ You do not need to start the daemon manually, and you do not need to write `dico
 dicode list
 ```
 
-When `~/.dicode/dicode.yaml` does not yet exist, the daemon runs a first-launch wizard, picks one of three surfaces based on your environment, generates a dashboard passphrase, and writes a ready-to-run config to `~/.dicode/dicode.yaml` (mode `0600` under a `0700` directory). The passphrase is printed **once** at the end of the wizard — copy it before closing the terminal. To change it later, edit `server.secret` in `dicode.yaml` and restart.
+When `~/.dicode/dicode.yaml` does not yet exist, the daemon runs a first-launch wizard, picks one of three surfaces based on your environment, generates a dashboard passphrase (43 URL-safe base64 characters — see [Auth passphrase](/getting-started/configuration#auth-passphrase)), and writes a ready-to-run config to `~/.dicode/dicode.yaml` (mode `0600` under a `0700` directory). The passphrase is printed **once** at the end of the wizard — copy it before closing the terminal. To change it later, edit `server.secret` in `dicode.yaml` and restart.
 
 ### Wizard surfaces
 
@@ -209,6 +209,7 @@ The daemon clones the repo, polls for changes at the configured interval, and re
 | `dicode secrets list` | List all secret keys in the local store. |
 | `dicode secrets set <key> <value>` | Store a secret value. |
 | `dicode secrets delete <key>` | Delete a secret. |
+| `dicode auth reset-passphrase` | Generate a new dashboard passphrase and print it once. Restart the daemon for it to take effect; it has no effect while `server.secret` is set. See [Auth passphrase](/getting-started/configuration#auth-passphrase). |
 | `dicode version` | Print the dicode version. |
 
 ## Next steps
