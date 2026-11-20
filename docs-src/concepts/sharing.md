@@ -75,7 +75,7 @@ ID                                       NAME                           DESCRIPT
 community/slack-digest                   Slack Daily Digest             Posts a digest of the day's messages to a channel.
 ```
 
-`ID` is `<taskset>/<task-id>`. For a configured source, the prefix is the `dicode.yaml` entry key, which is also the id the daemon registers. For a `--taskset`, the prefix is the last element of the URL path or local path, with any `.git`, `.yaml` or `.yml` suffix removed. If that leaves `taskset`, the element before it is used instead, so `.../community/taskset.yaml` becomes `community`. If there is no element before it, or nothing is left, a remote uses its host name and a local path uses `taskset`. If two `--taskset` values would get the same prefix, later ones get `-2`, `-3` and so on, in flag order. Descriptions are cut to one line of 60 characters, and an empty name or description is shown as `-`.
+`ID` is `<taskset>/<task-id>`. For a configured source, the prefix is the `dicode.yaml` entry key, which is also the id the daemon registers. For a `--taskset`, the prefix is the last element of the URL path or local path, with any `.git`, `.yaml` or `.yml` suffix removed. If that leaves `taskset`, the nearest element above it that isn't `taskset` (after the same suffix removal) is used instead, so `.../community/taskset.yaml` and `.../community/taskset/taskset.yaml` both become `community`. If no such element exists, or nothing is left, a remote uses its host name and a local path uses `taskset`. If two `--taskset` values would get the same prefix, later ones get `-2`, `-3` and so on, in flag order. Descriptions are cut to one line of 60 characters, and an empty name or description is shown as `-`.
 
 Without `--json`, if nothing matches, stdout is empty and `no tasks match "<query>"` is written to stderr. In either format, the exit status is `0` only if every TaskSet was searched (see [Exit status](#exit-status)).
 
@@ -93,7 +93,7 @@ Without `--json`, if nothing matches, stdout is empty and `no tasks match "<quer
 
 ### Exit status
 
-The exit status is `0` on success, including when nothing matches. It is non-zero for bad usage (no query, an unknown flag, a flag with no value), a missing or untrusted config, or a TaskSet that could not be fetched or parsed. When some TaskSets fail, the results from the ones that worked are still printed, and each failure is reported on stderr. A single task entry that fails to load inside a TaskSet is printed as a warning on stderr and does not change the exit status.
+The exit status is `0` on success, including when nothing matches. It is non-zero for bad usage (no query, an unknown flag, a flag with no value), a missing or untrusted config, or a TaskSet that could not be fetched or parsed. A `--taskset` with a disallowed scheme fails the whole command before anything is searched, and no results are printed. When some TaskSets fail to fetch or parse, the results from the ones that worked are still printed, and each failure is reported on stderr. A single task entry that fails to load inside a TaskSet is printed as a warning on stderr and does not change the exit status.
 
 ## Adding a task you found
 
