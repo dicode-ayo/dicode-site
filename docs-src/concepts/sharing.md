@@ -1,4 +1,4 @@
-# Task Sharing & Community Registry
+# Task Sharing & Search
 
 Tasks are folders in git repos. Sharing is built into the model — no special packaging, no proprietary format.
 
@@ -56,7 +56,7 @@ The query is split into words. A task matches when **every** word appears, case-
 ### What gets searched
 
 - **Without `--taskset`**, every source under `spec.entries` in `dicode.yaml` is searched, local and git, with its `overrides` applied. Use `--config PATH` to read a different file; the default is `./dicode.yaml`. The config is only read if it is a regular file owned by the user running the command, even when that user is root. Git sources use the same `ref.auth.token_env`, `source_security.allowed_token_envs` and `source_security.allow_internal_hosts` settings the daemon does. A relative `ref.path` resolves against the current working directory, as it does for the daemon, so run `task search` from the directory you start the daemon in.
-- **`--taskset <src>[@ref]`** searches the named TaskSets **instead of** the configured ones. It can be repeated. Use it to browse a remote or community TaskSet before you add it. `<src>` is a git remote if it contains `://` or is in SCP form (`git@host:org/repo.git`). A remote must use `https://`, `http://` or `ssh://`; any other scheme, such as `file://` or `git://`, is an error. A value with no scheme is a local path to a `taskset.yaml` or to the directory that holds one. For a git remote, `taskset.yaml` is read from the repo root. `@ref` is only parsed on a git remote; on a local path an `@` stays part of the path. On a remote, `@ref` names a branch or a tag: the branch is tried first, then a tag with that name. Without `@ref`, the `main` branch is used, or the remote's default (`HEAD`) branch if it has no `main`.
+- **`--taskset <src>[@ref]`** searches the named TaskSets **instead of** the configured ones. It can be repeated. Use it to browse a remote or community TaskSet before you add it. `<src>` is a git remote if it contains `://` or is in SCP form (`user@host:path`, where `host` has only letters, digits, `.`, `-` and `_`, as in `git@github.com:org/repo.git`). A remote must use `https://`, `http://` or `ssh://`; any other scheme, such as `file://` or `git://`, is an error. Any other value is a local path to a `taskset.yaml` or to the directory that holds one. For a git remote, `taskset.yaml` is read from the repo root. `@ref` is only parsed on a git remote; on a local path an `@` stays part of the path, unless the value is in SCP form and so is treated as a remote. On a remote, `@ref` names a branch or a tag: the branch is tried first, then a tag with that name. Without `@ref`, the `main` branch is used, or the remote's default (`HEAD`) branch if it has no `main`.
 
 A `--taskset` is treated as untrusted, including a local path. It carries no credentials, and any `ref.auth.token_env` declared in the TaskSet's own entries is ignored, so a TaskSet you are only browsing can't get your tokens sent to a host it names. Internal hosts are refused by the default SSRF guard.
 
@@ -111,7 +111,7 @@ spec:
               check_url: "https://api.myapp.com/health"
 ```
 
-The entry key (`dicode-tasks` here) sets the namespace, so the task registers as `dicode-tasks/uptime-ping`. It matches the prefix `task search --taskset` printed only when the key equals the repo name. The reconciler picks up the new source on its next sync; no restart is needed. Tasks from a new source still go through the [approval gate](./approval) before they run, unless the gate is off (`approval.enabled: false`) or the source is trusted (`approval.sources.<key>.trust: always`). See [Sources & TaskSets](./sources) for every `ref` field and for how overrides cascade.
+The entry key (`dicode-tasks` here) sets the namespace, so the task registers as `dicode-tasks/uptime-ping`. It matches the prefix `task search --taskset` printed only when the key equals the repo name. The daemon reads `dicode.yaml` only at startup, so restart it after a hand edit. To add a source without a restart, use the web UI's source settings or `POST /api/settings/sources`. Either one starts the source right away and saves the entry to `dicode.yaml`, but takes only the `ref` (URL or path, plus `branch`, `tag` and `token_env`), not `overrides`. Saving the config in the web UI's raw editor applies `overrides` to sources that are already running, but it does not start a newly added entry. Tasks from a new source still go through the [approval gate](./approval) before they run, unless the gate is off (`approval.enabled: false`) or the source is trusted (`approval.sources.<key>.trust: always`). See [Sources & TaskSets](./sources) for every `ref` field and for how overrides cascade.
 
 ### Installing a task (planned)
 
