@@ -100,7 +100,7 @@ The gate resolves trust in the following priority order:
 <a id="pinned-buildin-webui"></a>
 
 ::: warning Pinning buildin also gates the web UI
-With `buildin` pinned to a tag, `buildin/webui` is gated too. If a new tag changes its content, or the lock is lost, it goes pending, and the daemon stops serving the web UI. You then can't approve anything from the browser. Approve it from the CLI with `dicode task approve buildin/webui`, or trust it ahead of time with `approval.tasks.buildin/webui.trust: always` (which also skips review of its future changes).
+With `buildin` pinned to a tag, `buildin/webui` is gated too. If a new tag changes its content, or the lock is lost, it goes pending, and the daemon stops serving the dashboard. The CLI and tokenized approve links still work, because the Go server serves `/approve/<token>` itself. A link only arrives if the [notify task](#notification-on-hold) can fire, though, and a pinned `buildin/*` notify task may be pending too. Approve the web UI from the CLI with `dicode task approve buildin/webui`, or trust it ahead of time with `approval.tasks.buildin/webui.trust: always` (which also skips review of its future changes).
 :::
 
 ## Pending tasks
@@ -164,7 +164,7 @@ If the task's content hash changes before the token is redeemed (e.g., another p
 
 ## Notification on hold
 
-Set `approval.notify_task` to the ID of a task that should fire whenever a task goes pending. The daemon calls it via `FireManual` — bypassing the gate, since the notify task itself must be trusted or builtin.
+Set `approval.notify_task` to the ID of a task that should fire whenever a task goes pending. The daemon fires it as a manual run. That fire is still subject to the gate: its fire guard refuses a pending notify task. The notify task must therefore be trusted, or be a `buildin/*` task from an unpinned `buildin` entry.
 
 Parameters passed to the notify task:
 
@@ -227,7 +227,7 @@ The `approve_url` token is also protected by shape, not just by field name: a cu
 
 The gate is on by default. On a genuine first run — no `dicode.lock` and no record of a completed bootstrap — the daemon seeds the tasks it registers during a settle window after startup as approved, so the existing inventory is not stranded. The window is 10 seconds and restarts each time a task registers during it, so it stays open until the initial source sync goes quiet. Everything the watched sources contain at that point is approved without review, so check them before the first start. Outside that window, **every non-bypassed task whose content hash has no approval in `dicode.lock` goes pending**. A task is bypassed when it is trusted with `trust: always`, when the gate is off (`approval.enabled: false`), or when it is a `buildin/*` task and the `buildin` entry has no `ref.tag`. Bypassed tasks arm without needing a lock record. A task whose own `task.yaml` sets `enabled: false` is not bypassed: with the gate on, it is still held pending.
 
-When the window closes, the daemon records that bootstrap is complete in two places: the HMAC-covered `bootstrapped` flag in `dicode.lock` and the `approval.bootstrap_completed` key in the SQLite `kv` table. Seeding runs again only when both are gone. The lock flag counts only when the lock is signed. If the daemon can't derive a lock-signing key, it runs the lock unsigned and logs a warning, and then only the SQLite key records completion. Deleting `dicode.lock` alone does not restart seeding. The DB key survives, so the daemon holds every gated task pending for explicit re-approval.
+When the window closes, the daemon records that bootstrap is complete in two places: the HMAC-covered `bootstrapped` flag in `dicode.lock` and the `approval.bootstrap_completed` key in the SQLite `kv` table. Seeding runs only when `dicode.lock` is missing and no completion marker remains. The lock flag counts as a marker only when the lock is signed. If the daemon can't derive a lock-signing key, it runs the lock unsigned and logs a warning, and the SQLite key is then the only marker. Deleting `dicode.lock` alone does not restart seeding: the DB key survives, so the daemon holds every gated task pending for explicit re-approval.
 
 ::: tip Upgrading
 Older docs described an unset `approval.enabled` as off. Unset now means on, so set `approval.enabled: false` to keep the old behavior. If `dicode.lock` already exists, bootstrap seeding is skipped: tasks at their recorded hash arm immediately, and any later content change goes pending.
