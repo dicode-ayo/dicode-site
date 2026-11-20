@@ -1,12 +1,12 @@
 # Task Approval Gate
 
-The approval gate ensures that new or changed tasks in a watched git source cannot silently arm their triggers. Every non-builtin task must pass an explicit approval step before it can be scheduled, receive webhooks, or be fired manually.
+The approval gate ensures that new or changed tasks in a watched git source cannot silently arm their triggers. A task must pass an explicit approval step before it can be scheduled, receive webhooks, or be fired manually, unless a [trust policy](#trust-policies) lets it through. Policies cover `buildin/*` tasks when the `buildin` entry has no `ref.tag`, `trust: always` tasks and sources, and a gate turned off with `approval.enabled: false`. Tasks registered during the [first-run bootstrap](#first-run-bootstrap) window also arm without review.
 
 ## How it works
 
 ### Trust-on-change model
 
-dicode watches git sources and reconciles tasks on every poll. Without the approval gate, a `git push` that introduces a new task (or edits an existing one) takes effect within the next reconcile cycle — quietly and automatically. With `approval.enabled: true`, the gate intercepts every registration and checks whether the task has been approved at its current content hash.
+dicode watches git sources and reconciles tasks on every poll. Without the approval gate, a `git push` that introduces a new task (or edits an existing one) takes effect within the next reconcile cycle — quietly and automatically. The gate is on by default (`approval.enabled` unset or `true`). It intercepts every registration and checks whether the task has been approved at its current content hash.
 
 The decision is made once per `(task_id, content_hash)` pair:
 
@@ -34,7 +34,7 @@ Do not hand-edit `dicode.lock` while the daemon is running. The daemon reads and
 | | |
 |---|---|
 | Captured | At pend time, not re-read from HEAD when the task is later approved, so a recorded commit always matches the tree that produced the approved hash |
-| Populated on | Every path that writes a lock entry, manual approval and auto-approve alike (trust-always source/task, gate disabled, bootstrap) |
+| Populated on | Every path that writes a lock entry, manual approval and auto-approve alike (`builtin` for `buildin/*` tasks when the `buildin` entry has no `ref.tag`, trust-always source/task, gate disabled, bootstrap) |
 | Left empty when | The task's directory isn't tracked by the resolved repository's HEAD — e.g. the source isn't a git repo, has no commits, or the task is a dir-less inline taskset entry |
 
 A task directory that merely happens to sit inside an unrelated version-controlled folder does not get a `commit` recorded — the directory has to be tracked by the *resolved* repository's HEAD. Pre-existing lock records written before this field was added remain valid; `commit` is simply absent on them.
@@ -66,7 +66,7 @@ A taskset override that adds a network host to `permissions.net`, grants `permis
 
 ```yaml
 approval:
-  enabled: true                    # enable the gate (default: false)
+  enabled: true                    # the gate (default: true; set false to turn it off)
   sources:
     my-git-source:
       trust: always                # trust all tasks from this source without approval
@@ -80,7 +80,7 @@ approval:
 
 | Field | Default | Description |
 |---|---|---|
-| `approval.enabled` | `false` | Set to `true` to enable the gate. When `false`, all tasks arm immediately and are recorded in `dicode.lock` as inventory. |
+| `approval.enabled` | `true` | The gate is on unless this is set to `false`. When `false`, all tasks arm immediately and are recorded in `dicode.lock` as inventory. |
 | `approval.sources.<name>.trust` | — | Set to `always` to trust all tasks from the named source without manual approval. |
 | `approval.tasks.<id>.trust` | — | Set to `always` to trust a specific task by ID without manual approval. Useful for individual tasks in an otherwise-gated source. |
 | `approval.notify_task` | `""` | Task ID to fire whenever a task goes pending. See [Notification on hold](#notification-on-hold). |
@@ -89,12 +89,19 @@ approval:
 
 The gate resolves trust in the following priority order:
 
-1. **Builtin tasks** (`buildin/*`) — always armed; recorded as `builtin`.
+1. **Builtin tasks** (`buildin/*`), unless `spec.entries.buildin.ref.tag` is set — armed without a hash check; recorded as `builtin`. The bypass depends only on whether `ref.tag` is set, whatever kind of entry it is. When the tag is set, builtin tasks skip this step and are gated like any other source.
 2. **Per-task trust** — `approval.tasks.<id>.trust: always`.
 3. **Per-source trust** — `approval.sources.<name>.trust: always`.
 4. **Gate disabled** — `approval.enabled: false`.
 5. **Lock match** — the stored hash matches the current content hash.
-6. **Pending** — all other cases.
+6. **Bootstrap window** — during [first-run bootstrap](#first-run-bootstrap), the task is seeded as approved; recorded as `bootstrap`.
+7. **Pending** — all other cases.
+
+<a id="pinned-buildin-webui"></a>
+
+::: warning Pinning buildin also gates the web UI
+With `buildin` pinned to a tag, `buildin/webui` is gated too. If a new tag changes its content, or the lock is lost, it goes pending, and the daemon stops serving the dashboard. The first switch from a branch to a tag can do this by itself: the lock records were written as `builtin` at the branch's hashes, so every buildin task whose content differs at the tag goes pending on that restart. That can include `buildin/mcp`, which backs `/mcp`, and `buildin/relay-client`, so check `dicode task pending` and approve or trust those too. The CLI and tokenized approve links still work, because the Go server serves `/approve/<token>` itself. A link only arrives if the [notify task](#notification-on-hold) can fire, though, and a pinned `buildin/*` notify task may be pending too. Approve the web UI from the CLI with `dicode task approve buildin/webui`, or trust it ahead of time with `approval.tasks.buildin/webui.trust: always` (which also skips review of its future changes). A fresh install that pins `buildin` from the first start can hit this too: if the first clone takes more than 10 seconds to arm a task, the [first-run bootstrap](#first-run-bootstrap) window closes empty. For pinned first runs, set `approval.tasks.buildin/webui.trust: always` before you start.
+:::
 
 ## Pending tasks
 
@@ -157,7 +164,7 @@ If the task's content hash changes before the token is redeemed (e.g., another p
 
 ## Notification on hold
 
-Set `approval.notify_task` to the ID of a task that should fire whenever a task goes pending. The daemon calls it via `FireManual` — bypassing the gate, since the notify task itself must be trusted or builtin.
+Set `approval.notify_task` to the ID of a task that should fire whenever a task goes pending. The daemon fires the notify task as a manual run. That fire is still subject to the gate: its fire guard refuses a pending notify task. The notify task must not be pending: it must either be trusted (including a `buildin/*` task when the `buildin` entry has no `ref.tag`) or be approved at its current content hash. No notify task is guaranteed to fire for a hold raised before the notify task itself has registered. The engine can't fire a task it doesn't know yet, and a missed notification isn't retried. The hook fires again only if the pending task's hash or its enabled flag changes, or when the daemon restarts and the task goes pending again. There are two separate cases. A notify task that is not yet registered can't fire, and trust doesn't help. A notify task approved by hash but not yet admitted by the gate is refused, and trusting it with `approval.tasks.<id>.trust: always` removes that refusal. Holds missed this way are still listed by `dicode task pending` and in the web UI task list. The web UI broadcast reaches only dashboards that are already connected. When the task that went pending has `enabled: false` from its `task.yaml` or an override, the notify task is skipped and only the web UI broadcast fires. The daemon's built-in gating of `buildin/relay-server-body` (in `applyBuiltinOverrides`) doesn't count as such an override: a pending `buildin/relay-server-body` still triggers the notify task.
 
 Parameters passed to the notify task:
 
@@ -210,15 +217,23 @@ permissions:
     - hooks.slack.com
 ```
 
-::: warning Notify task must be trusted or builtin
-If the notify task itself is not trusted (or builtin), it will sit pending and never fire. Either add it to `approval.tasks.<id>.trust: always`, use a `buildin/*` task, or trust its source.
+::: warning Notify task must not be pending
+If the notify task itself is pending, it never fires. Holds raised during startup, before the notify task registers, can be missed whether or not it is trusted, so check `dicode task pending` after a restart. Trusting the notify task removes the extra refusal an approved but untrusted task gets until the gate admits it: add it to `approval.tasks.<id>.trust: always`, trust its source, or use a `buildin/*` task while the `buildin` entry has no `ref.tag`. A pinned `buildin/*` notify task approved at its current tag also works once it has registered, but goes pending again when a new tag changes it.
 :::
 
 The `approve_url` token is also protected by shape, not just by field name: a custom notify task that forwards the same link through a differently-named param (`link`, `cta`, `callback`, …) still gets it redacted from persisted run-input and the audit log — see [Redaction](./security.md#redaction).
 
 ## First-run bootstrap
 
-On first upgrade to a version with `approval.enabled: true`, **all non-builtin tasks go pending**. Choose one of three approaches:
+The gate is on by default. On a genuine first run — no `dicode.lock` and no record of a completed bootstrap — the daemon seeds the tasks it registers during a settle window as approved, so the existing inventory is not stranded. The 10-second window starts at daemon startup, before the first source sync begins, and restarts each time a task is armed during it. It stays open only while tasks keep arming at least every 10 seconds. If the first sync takes longer than 10 seconds to arm its first task (a slow first git clone, for example), the window closes with nothing seeded, and those tasks go pending. The completion marker is still written, so restarting or deleting `dicode.lock` won't retry the seeding; recover by approving or trusting those tasks. Every task seeded during the window is approved without review, so check what the watched sources contain before the first start. Outside that window, **every non-bypassed task whose content hash has no approval in `dicode.lock` goes pending**. A task is bypassed when it is trusted with `trust: always`, when the gate is off (`approval.enabled: false`), or when it is a `buildin/*` task and the `buildin` entry has no `ref.tag`. Bypassed tasks arm without needing a lock record. After the window closes, a task that resolves to `enabled: false` (task.yaml or an override) is not bypassed: with the gate on, it is still held pending.
+
+When the window closes, the daemon records that bootstrap is complete: it sets a `bootstrapped` flag in `dicode.lock` and writes the `approval.bootstrap_completed` key to the SQLite `kv` table. Seeding runs only when `dicode.lock` is missing and that DB key is absent. An existing lock blocks seeding by itself, so once the lock is gone the DB key decides. The daemon writes the markers only while the gate is on, so this protection starts once the daemon has run with the gate on at least once. An install that has only ever run with `approval.enabled: false` has a lock but no marker; deleting that lock and then turning the gate on seeds everything as approved. After the gate has run, deleting `dicode.lock` alone does not restart seeding: the DB key survives, so the daemon holds every gated task pending for explicit re-approval.
+
+::: tip Upgrading
+Older docs described an unset `approval.enabled` as off. Unset now means on, so set `approval.enabled: false` to keep the old behavior. If `dicode.lock` already exists, bootstrap seeding is skipped: tasks at their recorded hash arm immediately, and any later content change goes pending.
+:::
+
+To adopt the gate with existing tasks deliberately, choose one of three approaches:
 
 ### Option 1 — Trust the source
 

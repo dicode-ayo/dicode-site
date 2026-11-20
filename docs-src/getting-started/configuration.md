@@ -339,7 +339,7 @@ See [Webhook Relay](/concepts/relay) for details.
 
 ```yaml
 approval:
-  enabled: false                   # enable trust-on-change gate (default: false)
+  enabled: true                    # trust-on-change gate (default: true; false turns it off)
   sources:
     my-source:
       trust: always                # trust all tasks from this source without approval
@@ -349,7 +349,7 @@ approval:
   notify_task: ""                  # task to fire when a task goes pending (optional)
 ```
 
-When `enabled: true`, new or changed tasks are held pending until approved — their triggers are not armed and they cannot be fired. Builtin tasks (`buildin/*`) are always trusted. Tasks or sources configured with `trust: always` bypass the gate. All other tasks must be explicitly approved via the web UI, `dicode task approve <task-id>`, or a tokenized link.
+The gate is on unless `enabled: false` is set. While on, new or changed tasks are held pending until approved — their triggers are not armed and they cannot be fired. Builtin tasks (`buildin/*`) skip the gate unless `spec.entries.buildin.ref.tag` is set; with a tag, they are gated like any other source (see [Trust policies](/concepts/approval#trust-policies), and the [web UI warning](/concepts/approval#pinned-buildin-webui) for pinned tags). Tasks or sources configured with `trust: always` bypass the gate. All other tasks must be explicitly approved via the web UI, `dicode task approve <task-id>`, or a tokenized link. With `enabled: false`, every task arms immediately and is still recorded in `dicode.lock` as inventory.
 
 See [Task Approval Gate](/concepts/approval) for the full reference.
 
