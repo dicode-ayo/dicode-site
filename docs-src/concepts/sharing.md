@@ -60,7 +60,7 @@ The query is split into words. A task matches when **every** word appears, case-
 
 A `--taskset` is treated as untrusted, including a local path. It carries no credentials, and any `ref.auth.token_env` declared in the TaskSet's own entries is ignored, so a TaskSet you are only browsing can't get your tokens sent to a host it names. Internal hosts are refused by the default SSRF guard.
 
-Git TaskSets are cloned into a temporary directory that is deleted when the command exits. Your sources are never written to, with one exception: loading the config creates `<data_dir>/ai-tasks/` and a `taskset.yaml` with no entries inside it if they are missing, as the daemon does. An existing file is never overwritten. Any credentials in a URL's userinfo are stripped from the URLs and errors the command prints.
+Git TaskSets are cloned into a temporary directory that is deleted when the command exits. Your sources are never written to, with one exception: without `--taskset`, loading the config creates `<data_dir>/ai-tasks/` and a `taskset.yaml` with no entries inside it if they are missing, as the daemon does, unless `dicode.yaml` defines its own `ai-scratch` entry. An existing file is never overwritten. Any credentials in a URL's userinfo are stripped from the URLs and errors the command prints.
 
 ### Output
 
@@ -73,9 +73,9 @@ community/slack-digest                   Slack Daily Digest             Posts a 
 
 `ID` is `<taskset>/<task-id>`. For a configured source, the prefix is the `dicode.yaml` entry key, which is also the id the daemon registers. For a `--taskset`, the prefix is the last element of the URL path or local path, with any `.git`, `.yaml` or `.yml` suffix removed. If that leaves `taskset`, the element before it is used instead, so `.../community/taskset.yaml` becomes `community`. If there is no element before it, or nothing is left, a remote uses its host name and a local path uses `taskset`. If two `--taskset` values would get the same prefix, later ones get `-2`, `-3` and so on, in flag order. Descriptions are cut to one line of 60 characters, and an empty name or description is shown as `-`.
 
-If nothing matches, stdout is empty and `no tasks match "<query>"` is written to stderr. With `--json`, `[]` is printed instead and nothing goes to stderr. The exit status is `0` only if every TaskSet was searched (see [Exit status](#exit-status)).
+Without `--json`, if nothing matches, stdout is empty and `no tasks match "<query>"` is written to stderr. In either format, the exit status is `0` only if every TaskSet was searched (see [Exit status](#exit-status)).
 
-`--json` prints a JSON array instead, or `[]` if nothing matches. Every object has the same keys, set to an empty string when the value is unknown:
+`--json` prints a JSON array instead, or `[]` with nothing on stderr if nothing matches. Every object has the same keys, set to an empty string when the value is unknown:
 
 | Key | Value |
 |---|---|
@@ -113,13 +113,13 @@ spec:
 
 The entry key (`dicode-tasks` here) sets the namespace, so the task registers as `dicode-tasks/uptime-ping`. It matches the id `task search --taskset` printed only when the key equals the prefix that search showed (see [Output](#output) for how that prefix is derived). The daemon reads `dicode.yaml` only at startup, so restart it after a hand edit. To add a source without a restart, use the web UI's source settings or `POST /api/settings/sources`. Either one starts the source right away and saves the entry to `dicode.yaml`, but takes only the `ref` (URL or path, plus `branch`, `tag` and `token_env`), not `overrides`. Saving the config in the web UI's raw editor applies `overrides` to sources that are already running, but it does not start a newly added entry. Tasks from a new source still go through the [approval gate](./approval) before they run, unless the gate is off (`approval.enabled: false`) or the source is trusted (`approval.sources.<key>.trust: always`). See [Sources & TaskSets](./sources) for every `ref` field and for how overrides cascade.
 
-### Installing a task (planned)
+### Installing a task (planned) {#installing-a-task}
 
 ::: info Planned
 `dicode task install` does not exist yet. It is planned as a one-command shortcut that writes the `dicode.yaml` entry above for you, with flags for param overrides. Until it ships, add the entry by hand. Progress is tracked in [dicode-ayo/dicode-core#118](https://github.com/dicode-ayo/dicode-core/issues/118).
 :::
 
-## Task registry as a TaskSet (planned)
+## Task registry as a TaskSet (planned) {#task-registry-as-a-taskset}
 
 ::: info Planned
 A community task registry does not exist yet. The plan is for it to be an ordinary TaskSet that lists community task repos, in the same format as everything else, so it can be searched with `--taskset` and added like any other source. `dicode task search` does **not** query a registry by default. It only searches the TaskSets in your `dicode.yaml` or the ones you name with `--taskset`.
@@ -154,7 +154,7 @@ To share a task with the community:
 2. Share the repo URL. Anyone can browse it with `dicode task search <query> --taskset <url>` and add it as a source in their `dicode.yaml`
 3. That's it — no packaging, no publishing step
 
-Listing your repo in a community registry TaskSet will be possible once the [registry](#task-registry-as-a-taskset-planned) exists.
+Listing your repo in a community registry TaskSet will be possible once the [registry](#task-registry-as-a-taskset) exists.
 
 ## Running on multiple machines
 
