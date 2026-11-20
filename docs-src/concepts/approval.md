@@ -6,7 +6,7 @@ The approval gate ensures that new or changed tasks in a watched git source cann
 
 ### Trust-on-change model
 
-dicode watches git sources and reconciles tasks on every poll. Without the approval gate, a `git push` that introduces a new task (or edits an existing one) takes effect within the next reconcile cycle — quietly and automatically. With `approval.enabled: true`, the gate intercepts every registration and checks whether the task has been approved at its current content hash.
+dicode watches git sources and reconciles tasks on every poll. Without the approval gate, a `git push` that introduces a new task (or edits an existing one) takes effect within the next reconcile cycle — quietly and automatically. The gate is on by default (`approval.enabled` unset or `true`) and intercepts every registration and checks whether the task has been approved at its current content hash.
 
 The decision is made once per `(task_id, content_hash)` pair:
 
@@ -66,7 +66,7 @@ A taskset override that adds a network host to `permissions.net`, grants `permis
 
 ```yaml
 approval:
-  enabled: true                    # enable the gate (default: false)
+  enabled: true                    # the gate (default: true; set false to turn it off)
   sources:
     my-git-source:
       trust: always                # trust all tasks from this source without approval
@@ -80,7 +80,7 @@ approval:
 
 | Field | Default | Description |
 |---|---|---|
-| `approval.enabled` | `false` | Set to `true` to enable the gate. When `false`, all tasks arm immediately and are recorded in `dicode.lock` as inventory. |
+| `approval.enabled` | `true` | The gate is on unless this is set to `false`. When `false`, all tasks arm immediately and are recorded in `dicode.lock` as inventory. |
 | `approval.sources.<name>.trust` | — | Set to `always` to trust all tasks from the named source without manual approval. |
 | `approval.tasks.<id>.trust` | — | Set to `always` to trust a specific task by ID without manual approval. Useful for individual tasks in an otherwise-gated source. |
 | `approval.notify_task` | `""` | Task ID to fire whenever a task goes pending. See [Notification on hold](#notification-on-hold). |
@@ -218,7 +218,7 @@ The `approve_url` token is also protected by shape, not just by field name: a cu
 
 ## First-run bootstrap
 
-On first upgrade to a version with `approval.enabled: true`, **all non-builtin tasks go pending**. Choose one of three approaches:
+The gate is on by default. On a genuine first run — no `dicode.lock` and no record of a completed bootstrap — the daemon seeds the tasks it registers during a short settle window after startup as approved, so the existing inventory is not stranded. Outside that window, **every non-builtin task with no matching record in `dicode.lock` goes pending**. To adopt the gate with existing tasks deliberately, choose one of three approaches:
 
 ### Option 1 — Trust the source
 
