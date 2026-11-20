@@ -6,7 +6,7 @@ The approval gate ensures that new or changed tasks in a watched git source cann
 
 ### Trust-on-change model
 
-dicode watches git sources and reconciles tasks on every poll. Without the approval gate, a `git push` that introduces a new task (or edits an existing one) takes effect within the next reconcile cycle — quietly and automatically. The gate is on by default (`approval.enabled` unset or `true`) and intercepts every registration. For each one, it checks whether the task has been approved at its current content hash.
+dicode watches git sources and reconciles tasks on every poll. Without the approval gate, a `git push` that introduces a new task (or edits an existing one) takes effect within the next reconcile cycle — quietly and automatically. The gate is on by default (`approval.enabled` unset or `true`). It intercepts every registration and checks whether the task has been approved at its current content hash.
 
 The decision is made once per `(task_id, content_hash)` pair:
 
