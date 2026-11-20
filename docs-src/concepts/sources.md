@@ -75,7 +75,7 @@ spec:
         poll_interval: 5m
 ```
 
-The `buildin` namespace is a case where pinning matters more than usual, not less: while `buildin` tracks a branch, `buildin/*` tasks [skip the approval gate](./approval#trust-policies). The gate auto-approves them before any hash check runs, so a new commit there reaches the daemon with **no re-approval step at all** ([dicode-core#832](https://github.com/dicode-ayo/dicode-core/issues/832)). Pinning `buildin` to a release tag of `dicode-ayo/dicode-buildin` you trust (`ref.tag`) removes that bypass. Builtin tasks are then gated like any other source: a task at its recorded hash in `dicode.lock` arms, and a re-cut tag that changes a task's content re-pends it.
+The `buildin` namespace is a case where pinning matters more than usual, not less: unless the `buildin` entry sets `ref.tag` (a branch-tracking or local-path entry), `buildin/*` tasks [skip the approval gate](./approval#trust-policies). The gate auto-approves them before any hash check runs, so a new commit there reaches the daemon with **no re-approval step at all** ([dicode-core#832](https://github.com/dicode-ayo/dicode-core/issues/832)). Pinning `buildin` to a release tag of `dicode-ayo/dicode-buildin` you trust (`ref.tag`) removes that bypass. Builtin tasks are then gated like any other source: a task at its recorded hash in `dicode.lock` arms, and a re-cut tag that changes a task's content re-pends it. That includes `buildin/webui`; see [Pinning buildin also gates the web UI](./approval#pinned-buildin-webui) before you pin.
 
 ### Field reference for `spec.entries.<name>` (entry-level)
 

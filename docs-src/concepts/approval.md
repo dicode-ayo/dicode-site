@@ -1,6 +1,6 @@
 # Task Approval Gate
 
-The approval gate ensures that new or changed tasks in a watched git source cannot silently arm their triggers. Every task must pass an explicit approval step before it can be scheduled, receive webhooks, or be fired manually. The exception is `buildin/*` tasks while the `buildin` source tracks a branch rather than a pinned tag.
+The approval gate ensures that new or changed tasks in a watched git source cannot silently arm their triggers. A task must pass an explicit approval step before it can be scheduled, receive webhooks, or be fired manually, unless a [trust policy](#trust-policies) lets it through. Policies cover `buildin/*` tasks when the `buildin` entry has no `ref.tag` (a branch-tracking or local-path entry), `trust: always` tasks and sources, and a gate turned off with `approval.enabled: false`.
 
 ## How it works
 
@@ -89,12 +89,19 @@ approval:
 
 The gate resolves trust in the following priority order:
 
-1. **Builtin tasks** (`buildin/*`), when the `buildin` source is not pinned to a tag — armed without a hash check; recorded as `builtin`. When `spec.entries.buildin.ref.tag` is set, builtin tasks skip this step and are gated like any other source.
+1. **Builtin tasks** (`buildin/*`), unless `spec.entries.buildin.ref.tag` is set — armed without a hash check; recorded as `builtin`. This includes a `buildin` entry that tracks a branch or points at a local path with no `ref`. When the tag is set, builtin tasks skip this step and are gated like any other source.
 2. **Per-task trust** — `approval.tasks.<id>.trust: always`.
 3. **Per-source trust** — `approval.sources.<name>.trust: always`.
 4. **Gate disabled** — `approval.enabled: false`.
 5. **Lock match** — the stored hash matches the current content hash.
-6. **Pending** — all other cases.
+6. **Bootstrap window** — during [first-run bootstrap](#first-run-bootstrap), the task is seeded as approved; recorded as `bootstrap`.
+7. **Pending** — all other cases.
+
+<a id="pinned-buildin-webui"></a>
+
+::: warning Pinning buildin also gates the web UI
+With `buildin` pinned to a tag, `buildin/webui` is gated too. If a new tag changes its content, or the lock is lost, it goes pending, and the daemon stops serving the web UI. You then can't approve anything from the browser. Approve it from the CLI with `dicode task approve buildin/webui`, or trust it ahead of time with `approval.tasks.buildin/webui.trust: always` (which also skips review of its future changes).
+:::
 
 ## Pending tasks
 
@@ -218,12 +225,12 @@ The `approve_url` token is also protected by shape, not just by field name: a cu
 
 ## First-run bootstrap
 
-The gate is on by default. On a genuine first run — no `dicode.lock` and no record of a completed bootstrap — the daemon seeds the tasks it registers during a settle window after startup as approved, so the existing inventory is not stranded. The window is 10 seconds and restarts each time a task registers during it, so it stays open until the initial source sync goes quiet. Everything the watched sources contain at that point is approved without review, so check them before the first start. Outside that window, **every non-bypassed task whose content hash has no approval in `dicode.lock` goes pending**. A task is bypassed when it is trusted with `trust: always`, when `enabled: false`, or when it is a `buildin/*` task and the `buildin` source is not pinned to a tag. Bypassed tasks arm without needing a lock record.
+The gate is on by default. On a genuine first run — no `dicode.lock` and no record of a completed bootstrap — the daemon seeds the tasks it registers during a settle window after startup as approved, so the existing inventory is not stranded. The window is 10 seconds and restarts each time a task registers during it, so it stays open until the initial source sync goes quiet. Everything the watched sources contain at that point is approved without review, so check them before the first start. Outside that window, **every non-bypassed task whose content hash has no approval in `dicode.lock` goes pending**. A task is bypassed when it is trusted with `trust: always`, when the gate is off (`approval.enabled: false`), or when it is a `buildin/*` task and the `buildin` entry has no `ref.tag`. Bypassed tasks arm without needing a lock record. A task whose own `task.yaml` sets `enabled: false` is not bypassed: with the gate on, it is still held pending.
 
-When the window closes, the daemon records that bootstrap is complete in two places: the HMAC-covered `bootstrapped` flag in `dicode.lock` and the `approval.bootstrap_completed` key in the SQLite `kv` table. Seeding runs again only when both are gone. Deleting `dicode.lock` alone does not restart seeding. The DB key survives, so the daemon holds every gated task pending for explicit re-approval.
+When the window closes, the daemon records that bootstrap is complete in two places: the HMAC-covered `bootstrapped` flag in `dicode.lock` and the `approval.bootstrap_completed` key in the SQLite `kv` table. Seeding runs again only when both are gone. The lock flag counts only when the lock is signed. If the daemon can't derive a lock-signing key, it runs the lock unsigned and logs a warning, and then only the SQLite key records completion. Deleting `dicode.lock` alone does not restart seeding. The DB key survives, so the daemon holds every gated task pending for explicit re-approval.
 
 ::: tip Upgrading
-Older docs described an unset `approval.enabled` as off. Unset now means on, so set `enabled: false` to keep the old behavior. If `dicode.lock` already exists, bootstrap seeding is skipped: tasks at their recorded hash arm immediately, and any later content change goes pending.
+Older docs described an unset `approval.enabled` as off. Unset now means on, so set `approval.enabled: false` to keep the old behavior. If `dicode.lock` already exists, bootstrap seeding is skipped: tasks at their recorded hash arm immediately, and any later content change goes pending.
 :::
 
 To adopt the gate with existing tasks deliberately, choose one of three approaches:
