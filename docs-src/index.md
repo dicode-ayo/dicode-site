@@ -73,8 +73,8 @@ features:
     link: /concepts/suspend-resume
     linkText: Suspend & Resume docs
   - icon: "\U0001F4E6"
-    title: Task Sharing & Community Registry
-    details: "Community tasks are git repos. Reference any task via a TaskSet git URL, override params for your environment, fork and customize. The registry is itself a TaskSet — no new format, no separate system. dicode task search and dicode task install from the CLI. Git is the package manager."
+    title: Task Sharing & Search
+    details: "Community tasks are git repos. Reference any task via a TaskSet git URL, override params for your environment, fork and customize. dicode task search finds tasks across your TaskSets or any git TaskSet URL; one-command install and a community registry are coming. Git is the package manager."
     link: /concepts/sharing
     linkText: Task sharing docs
   - icon: "\U0001F4E1"
