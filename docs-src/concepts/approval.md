@@ -100,7 +100,7 @@ The gate resolves trust in the following priority order:
 <a id="pinned-buildin-webui"></a>
 
 ::: warning Pinning buildin also gates the web UI
-With `buildin` pinned to a tag, `buildin/webui` is gated too. If a new tag changes its content, or the lock is lost, it goes pending, and the daemon stops serving the dashboard. The CLI and tokenized approve links still work, because the Go server serves `/approve/<token>` itself. A link only arrives if the [notify task](#notification-on-hold) can fire, though, and a pinned `buildin/*` notify task may be pending too. Approve the web UI from the CLI with `dicode task approve buildin/webui`, or trust it ahead of time with `approval.tasks.buildin/webui.trust: always` (which also skips review of its future changes).
+With `buildin` pinned to a tag, `buildin/webui` is gated too. If a new tag changes its content, or the lock is lost, it goes pending, and the daemon stops serving the dashboard. The first switch from a branch to a tag can do this by itself: the lock records were written as `builtin` at the branch's hashes, so every buildin task whose content differs at the tag goes pending on that restart. That can include `buildin/mcp`, which backs `/mcp`, and `buildin/relay-client`, so check `dicode task pending` and approve or trust those too. The CLI and tokenized approve links still work, because the Go server serves `/approve/<token>` itself. A link only arrives if the [notify task](#notification-on-hold) can fire, though, and a pinned `buildin/*` notify task may be pending too. Approve the web UI from the CLI with `dicode task approve buildin/webui`, or trust it ahead of time with `approval.tasks.buildin/webui.trust: always` (which also skips review of its future changes).
 :::
 
 ## Pending tasks
@@ -164,7 +164,7 @@ If the task's content hash changes before the token is redeemed (e.g., another p
 
 ## Notification on hold
 
-Set `approval.notify_task` to the ID of a task that should fire whenever a task goes pending. Tasks that resolve to `enabled: false` are the exception: for those, only the web UI broadcast fires. The daemon fires it as a manual run. That fire is still subject to the gate: its fire guard refuses a pending notify task. The notify task must not be pending: it must either be trusted (including a `buildin/*` task when the `buildin` entry has no `ref.tag`) or be approved at its current content hash.
+Set `approval.notify_task` to the ID of a task that should fire whenever a task goes pending. The daemon fires the notify task as a manual run. That fire is still subject to the gate: its fire guard refuses a pending notify task. The notify task must not be pending: it must either be trusted (including a `buildin/*` task when the `buildin` entry has no `ref.tag`) or be approved at its current content hash. The exception is a pending task whose `task.yaml` or a taskset override sets `enabled: false`: for that task, only the web UI broadcast fires. A task disabled only by daemon-side configuration still triggers the notify task.
 
 Parameters passed to the notify task:
 
