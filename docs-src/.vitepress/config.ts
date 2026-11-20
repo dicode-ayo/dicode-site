@@ -70,7 +70,7 @@ export default defineConfig({
           { text: "Secrets", link: "/concepts/secrets" },
           { text: "Sources & TaskSets", link: "/concepts/sources" },
           { text: "Task Approval Gate", link: "/concepts/approval" },
-          { text: "Task Sharing & Registry", link: "/concepts/sharing" },
+          { text: "Task Sharing & Search", link: "/concepts/sharing" },
           { text: "Hot Reload & Dev Workflow", link: "/concepts/hot-reload" },
           { text: "Webhook Relay", link: "/concepts/relay" },
           { text: "AI Agent", link: "/concepts/ai-agent" },

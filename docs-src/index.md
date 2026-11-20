@@ -73,8 +73,8 @@ features:
     link: /concepts/suspend-resume
     linkText: Suspend & Resume docs
   - icon: "\U0001F4E6"
-    title: Task Sharing & Community Registry
-    details: "Community tasks are git repos. Reference any task via a TaskSet git URL, override params for your environment, fork and customize. The registry is itself a TaskSet — no new format, no separate system. dicode task search and dicode task install from the CLI. Git is the package manager."
+    title: Task Sharing & Search
+    details: "Community tasks are git repos. Reference any task via a TaskSet git URL, override params for your environment, fork and customize. dicode task search (next release) finds tasks across your TaskSets or any git TaskSet URL; one-command install and a community registry are coming. Git is the package manager."
     link: /concepts/sharing
     linkText: Task sharing docs
   - icon: "\U0001F4E1"
@@ -187,7 +187,7 @@ return { prCount: prs.length };
 | [**Suspend & Resume**](/concepts/suspend-resume) | Pause for human input, JSON-Schema forms, main/resume/steps auto-dispatch |
 | [**Secrets**](/concepts/secrets) | Encrypted store, provider chain, CLI management |
 | [**Sources & TaskSets**](/concepts/sources) | Git sources, local sources, TaskSet composition, dev mode |
-| [**Task Sharing**](/concepts/sharing) | Community registry, overrides, multi-machine deployment |
+| [**Task Sharing**](/concepts/sharing) | Task search (next release), overrides, multi-machine deployment |
 | [**Hot Reload**](/concepts/hot-reload) | 100ms local reload, git webhook sync, dev mode |
 | [**Webhook Relay & OAuth**](/concepts/relay) | NAT traversal, ECDSA identity, zero-setup OAuth |
 | [**AI Agent**](/concepts/ai-agent) | Built-in AI chat, MCP server, skills, BYO provider |
