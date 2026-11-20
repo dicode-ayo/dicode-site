@@ -187,7 +187,7 @@ return { prCount: prs.length };
 | [**Suspend & Resume**](/concepts/suspend-resume) | Pause for human input, JSON-Schema forms, main/resume/steps auto-dispatch |
 | [**Secrets**](/concepts/secrets) | Encrypted store, provider chain, CLI management |
 | [**Sources & TaskSets**](/concepts/sources) | Git sources, local sources, TaskSet composition, dev mode |
-| [**Task Sharing**](/concepts/sharing) | Community registry, overrides, multi-machine deployment |
+| [**Task Sharing**](/concepts/sharing) | Task search, overrides, multi-machine deployment |
 | [**Hot Reload**](/concepts/hot-reload) | 100ms local reload, git webhook sync, dev mode |
 | [**Webhook Relay & OAuth**](/concepts/relay) | NAT traversal, ECDSA identity, zero-setup OAuth |
 | [**AI Agent**](/concepts/ai-agent) | Built-in AI chat, MCP server, skills, BYO provider |
