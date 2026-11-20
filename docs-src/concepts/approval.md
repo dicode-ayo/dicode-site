@@ -6,7 +6,7 @@ The approval gate ensures that new or changed tasks in a watched git source cann
 
 ### Trust-on-change model
 
-dicode watches git sources and reconciles tasks on every poll. Without the approval gate, a `git push` that introduces a new task (or edits an existing one) takes effect within the next reconcile cycle — quietly and automatically. The gate is on by default (`approval.enabled` unset or `true`) and intercepts every registration and checks whether the task has been approved at its current content hash.
+dicode watches git sources and reconciles tasks on every poll. Without the approval gate, a `git push` that introduces a new task (or edits an existing one) takes effect within the next reconcile cycle — quietly and automatically. The gate is on by default (`approval.enabled` unset or `true`) and intercepts every registration. For each one, it checks whether the task has been approved at its current content hash.
 
 The decision is made once per `(task_id, content_hash)` pair:
 
@@ -218,7 +218,13 @@ The `approve_url` token is also protected by shape, not just by field name: a cu
 
 ## First-run bootstrap
 
-The gate is on by default. On a genuine first run — no `dicode.lock` and no record of a completed bootstrap — the daemon seeds the tasks it registers during a short settle window after startup as approved, so the existing inventory is not stranded. Outside that window, **every non-builtin task with no matching record in `dicode.lock` goes pending**. To adopt the gate with existing tasks deliberately, choose one of three approaches:
+The gate is on by default. On a genuine first run — no `dicode.lock` and no record of a completed bootstrap — the daemon seeds the tasks it registers during a short settle window after startup as approved, so the existing inventory is not stranded. Outside that window, **every non-builtin, non-trusted task whose content hash has no approval in `dicode.lock` goes pending**. Tasks trusted with `trust: always`, and every task when `enabled: false`, arm without needing a lock record.
+
+::: tip Upgrading
+Older docs described an unset `approval.enabled` as off. Unset now means on, so set `enabled: false` to keep the old behavior. If `dicode.lock` already exists, bootstrap seeding is skipped: tasks at their recorded hash arm immediately, and any later content change goes pending.
+:::
+
+To adopt the gate with existing tasks deliberately, choose one of three approaches:
 
 ### Option 1 — Trust the source
 
