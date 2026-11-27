@@ -1106,9 +1106,12 @@ field, not the HTTP code:
 | Code | Meaning |
 |---|---|
 | 200 | Runner completed (test pass, fail, or runner error — inspect `status`) |
+| 400 | Request body isn't valid JSON |
 | 401 | Missing or invalid `Authorization: Bearer` API key |
+| 403 | A scoped MCP token whose minting task lacks `permissions.dicode.tasks_test` |
 | 404 | Task ID is not registered |
 | 408 | The configured `timeout_s` elapsed before the runner finished |
+| 409 | Task is pending approval; its test code isn't run |
 | 422 | `params` payload failed schema validation; response includes a `fields[]` array with per-field errors |
 
 ### Runtime support
