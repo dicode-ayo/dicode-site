@@ -1141,3 +1141,8 @@ for Deno (or any runtime other than Python), a missing `task.test.py` for
 Python specifically, or a Docker/Podman task with no `docker.build` config,
 no Dockerfile, or a Dockerfile with no `test` stage — returns HTTP 200 with
 `status: "errored"` and an explanatory error message.
+
+The task detail ([`GET /api/tasks/{id}`](./approval.md#get-api-tasks-id))
+reports `test_file` / `test_exists` from this same discovery, so it names
+the file this endpoint runs. The one divergence: a Dockerfile outside the
+task dir still runs here, but the detail reports an empty `test_file` for it.
