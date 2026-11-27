@@ -272,6 +272,22 @@ Returns the task state. When the task is held by the approval gate, the response
 
 A task with `pending_approval: true` cannot be fired — manual fire, chain fire, and trigger dispatch are all blocked.
 
+For a `kind: Task`, the response also names the task's script and test files (a `kind: PipelineTask` detail has none of these fields):
+
+| Field | Meaning |
+|---|---|
+| `script_file` | The file the runtime executes, e.g. `task.ts`. Deno looks for `task.ts` then `task.js`; Python and other subprocess runtimes take the first of `task.py`, `.jl`, `.rb`, `.sh`, `.ts`, `.js`, `.mjs`. With no script on disk it falls back to `task.py` for Python and `task.ts` otherwise. Docker/Podman report the Dockerfile path relative to the task dir (honouring `docker.build.dockerfile`); an image-only task (no `docker.build`) or a Dockerfile outside the task dir reports the placeholder `Dockerfile`, which is not a file that gets built. |
+| `test_file` | The test `dicode task test` would run, relative to the task dir — or, when none exists, the name a new test should use. |
+| `test_exists` | Whether `test_file` is an existing test. |
+
+`test_file` / `test_exists` come from the same discovery `dicode task test` and [`POST /api/tasks/{id}/test`](./sdk.md#runtime-support) use, so the detail names the file the runner executes — with one Docker/Podman exception below:
+
+- **Python** — only `task.test.py`; a stale `task.test.ts` beside it doesn't count.
+- **Deno** — `task.test.ts`, `.js`, or `.mjs` (in that order), never `.py`.
+- **Docker/Podman** — the task's Dockerfile, existing when it declares a `test` stage that isn't its last. It must be a regular file of at most 1 MiB. An image-only task (no `docker.build`) reports an empty `test_file`. So does a Dockerfile outside the task dir, which this endpoint never reads because it also renders tasks still pending approval — although `dicode task test` still runs such a Dockerfile.
+
+Only regular files count as tests; symlinks and directories don't. When a Deno or Python task has no test, `test_file` is the name a new test should use: `task.test.py` for Python, `task.test.js` for a Deno task whose script is `task.js`, and `task.test.ts` otherwise. A Docker/Podman task without a usable `test` stage keeps reporting its Dockerfile with `test_exists: false`. Runtimes `dicode task test` can't run report an empty `test_file` and `test_exists: false`.
+
 ### `GET /api/tasks/{id}/pending-state`
 
 Returns the review surface for a pending task (`Gate.State()`): the resolved task as it will run if the operator arms it — runtime, triggers, permissions, declared env (names and where each value comes from, never the values), params, and a file inventory of names/sizes/hashes.
