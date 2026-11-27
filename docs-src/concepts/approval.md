@@ -276,7 +276,7 @@ For a `kind: Task`, the response also names the task's script and test files (a 
 
 | Field | Meaning |
 |---|---|
-| `script_file` | The file the runtime executes, e.g. `task.ts`. Deno looks for `task.ts` then `task.js`; Python takes the first of `task.py`, `.jl`, `.rb`, `.sh`, `.ts`, `.js`, `.mjs`. With no script on disk it falls back to `task.py` for Python and `task.ts` otherwise. Docker/Podman report the Dockerfile path relative to the task dir (honouring `docker.build.dockerfile`); an image-only task (no `docker.build`) or a Dockerfile outside the task dir reports the placeholder `Dockerfile`, which is not a file that gets built. |
+| `script_file` | The file the runtime executes, e.g. `task.ts`. Deno looks for `task.ts` then `task.js`; Python and other subprocess runtimes take the first of `task.py`, `.jl`, `.rb`, `.sh`, `.ts`, `.js`, `.mjs`. With no script on disk it falls back to `task.py` for Python and `task.ts` otherwise. Docker/Podman report the Dockerfile path relative to the task dir (honouring `docker.build.dockerfile`); an image-only task (no `docker.build`) or a Dockerfile outside the task dir reports the placeholder `Dockerfile`, which is not a file that gets built. |
 | `test_file` | The test `dicode task test` would run, relative to the task dir — or, when none exists, the name a new test should use. |
 | `test_exists` | Whether `test_file` is an existing test. |
 

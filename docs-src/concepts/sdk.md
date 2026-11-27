@@ -1106,7 +1106,7 @@ field, not the HTTP code:
 | Code | Meaning |
 |---|---|
 | 200 | Runner completed (test pass, fail, or runner error — inspect `status`) |
-| 400 | Request body isn't valid JSON |
+| 400 | Malformed request body — invalid JSON, an unknown field, a wrong type, or over the size cap |
 | 401 | Missing or invalid `Authorization: Bearer` API key |
 | 403 | A scoped MCP token whose minting task lacks `permissions.dicode.tasks_test` |
 | 404 | Task ID is not registered |
@@ -1141,8 +1141,9 @@ All four runtimes are supported: **deno**, **python**, **docker**, and
 
 A task with no test file for its runtime — a missing `task.test.{ts,js,mjs}`
 for Deno, a missing `task.test.py` for Python, or a Docker/Podman task with
-no `docker.build` config, no Dockerfile, or a Dockerfile with no `test`
-stage — returns HTTP 200 with `status: "errored"` and an explanatory error
+no `docker.build` config, no Dockerfile, a Dockerfile that isn't a regular
+file or is over 1 MiB, or a Dockerfile with no `test` stage (or `test` as
+its last stage) — returns HTTP 200 with `status: "errored"` and an explanatory error
 message. A task on any other runtime isn't supported and errors the same way.
 
 The task detail ([`GET /api/tasks/{id}`](./approval.md#get-api-tasks-id))
