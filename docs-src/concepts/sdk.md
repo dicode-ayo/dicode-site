@@ -1137,10 +1137,10 @@ All four runtimes are supported: **deno**, **python**, **docker**, and
   later stage `FROM test`, too — it inherits `test`'s `CMD`/`ENTRYPOINT`.
 
 A task with no test file for its runtime — a missing `task.test.{ts,js,mjs}`
-for Deno (or any runtime other than Python), a missing `task.test.py` for
-Python specifically, or a Docker/Podman task with no `docker.build` config,
-no Dockerfile, or a Dockerfile with no `test` stage — returns HTTP 200 with
-`status: "errored"` and an explanatory error message.
+for Deno, a missing `task.test.py` for Python, or a Docker/Podman task with
+no `docker.build` config, no Dockerfile, or a Dockerfile with no `test`
+stage — returns HTTP 200 with `status: "errored"` and an explanatory error
+message. A task on any other runtime isn't supported and errors the same way.
 
 The task detail ([`GET /api/tasks/{id}`](./approval.md#get-api-tasks-id))
 reports `test_file` / `test_exists` from this same discovery, so it names
